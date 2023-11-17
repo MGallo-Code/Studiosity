@@ -1,0 +1,33 @@
+services:
+  nginx:
+    image: nginx:1.25.3
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html
+    depends_on:
+      - django
+
+  django:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/usr/src/app
+      - .env:/usr/src/.env
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16.1
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: lifelocker
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
