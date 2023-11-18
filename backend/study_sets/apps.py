@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class StudySetConfig(AppConfig):
+class StudySetsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "study_set"
+    name = "study_sets"

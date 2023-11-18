@@ -47,7 +47,7 @@ class StudyTermSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudyTerm
-        field = ['id',
+        fields = ['id',
                  'study_set',
                  'front_text',
                  'back_text',
