@@ -1,47 +1,97 @@
 from django.db import models
 
-# StudySet Model
-class StudySet(models.Model):
-    pk_study_set_id = models.AutoField(primary_key=True)
-    set_title = models.CharField(max_length=64)
-    set_description = models.TextField(blank=True, default='')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-# StudyTerm Model
-class StudyTerm(models.Model):
-    pk_term_id = models.AutoField(primary_key=True)
-    study_set = models.ForeignKey(StudySet, on_delete=models.CASCADE, related_name='study_terms')
-    front_text = models.TextField(blank=True, default='Front')
-    back_text = models.TextField(blank=True, default='Back')
-    # Foreign keys for image and audio will be added later
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-# Tag Model
-class Tag(models.Model):
-    pk_tag_id = models.AutoField(primary_key=True)
-    tag_name = models.CharField(max_length=16)
-
-# StudyTermTag Model
-class StudyTermTag(models.Model):
-    study_term = models.ForeignKey(StudyTerm, on_delete=models.CASCADE)
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-
 # AudioFile Model
 class AudioFile(models.Model):
-    pk_audio_file_id = models.AutoField(primary_key=True)
-    file_path = models.CharField(max_length=255)
+    """
+    Represents an audio file associated with study materials.
+    Stores the file path and upload timestamp of the audio file.
+    """
+    file_path = models.FileField(upload_to='audio_files/study_set/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"AudioFile {self.id}: {self.file_path.name}"
 
 # ImageFile Model
 class ImageFile(models.Model):
-    pk_image_file_id = models.AutoField(primary_key=True)
-    file_path = models.CharField(max_length=255)
+    """
+    Represents an image file associated with study materials.
+    Stores the file path and upload timestamp of the image file.
+    """
+    file_path = models.ImageField(upload_to='image_files/study_set/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
-# Adding the foreign key relationships to StudyTerm for Audio and Image files
-StudyTerm.add_to_class('fk_front_image', models.ForeignKey(ImageFile, on_delete=models.SET_NULL, null=True, blank=True, related_name='front_terms'))
-StudyTerm.add_to_class('fk_back_image', models.ForeignKey(ImageFile, on_delete=models.SET_NULL, null=True, blank=True, related_name='back_terms'))
-StudyTerm.add_to_class('fk_front_audio', models.ForeignKey(AudioFile, on_delete=models.SET_NULL, null=True, blank=True, related_name='front_audio_terms'))
-StudyTerm.add_to_class('fk_back_audio', models.ForeignKey(AudioFile, on_delete=models.SET_NULL, null=True, blank=True, related_name='back_audio_terms'))
+    def __str__(self):
+        return f"ImageFile {self.id}: {self.file_path.name}"
+
+# StudySet Model
+class StudySet(models.Model):
+    """
+    Represents a set of study materials.
+    Contains information about the study set including title, description,
+    and timestamps for creation and last update.
+    """
+    title = models.CharField(max_length=64)
+    description = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Study Set {self.id}: {self.title}"
+
+# Tag Model
+class Tag(models.Model):
+    """
+    Represents a tag for categorizing study terms.
+    Each tag has a unique name.
+    """
+    name = models.CharField(max_length=16, unique=True)
+
+    def __str__(self):
+        return f"Tag {self.id}: {self.name}"
+
+
+# StudyTerm Model
+class StudyTerm(models.Model):
+    """
+    Represents a study term within a study set.
+    Includes text for the front and back, optional associated image and audio files,
+    and a set of tags for categorization. Also tracks creation and update times.
+    """
+    study_set = models.ForeignKey(StudySet, on_delete=models.CASCADE, related_name='study_terms')
+    front_text = models.TextField(blank=True, default='Front')
+    back_text = models.TextField(blank=True, default='Back')
+    front_image = models.OneToOneField(
+        ImageFile, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='front_image_study_term'
+    )
+    back_image = models.OneToOneField(
+        ImageFile, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='back_image_study_term'
+    )
+    front_audio = models.OneToOneField(
+        AudioFile, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='front_audio_study_term'
+    )
+    back_audio = models.OneToOneField(
+        AudioFile, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='back_audio_study_term'
+    )
+    tags = models.ManyToManyField(Tag, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Term {self.id}: {self.front_text} | {self.back_text}"
