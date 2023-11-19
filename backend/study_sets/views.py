@@ -2,16 +2,9 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .serializers import AudioFileSerializer, ImageFileSerializer, StudySetSerializer, TagSerializer, StudyTermSerializer
-from .models import AudioFile, ImageFile, StudySet, Tag, StudyTerm
+from .serializers import StudySetSerializer, TagSerializer, StudyTermSerializer
+from .models import StudySet, Tag, StudyTerm
 
-class AudioFileViewSet(viewsets.ModelViewSet):
-    queryset = AudioFile.objects.all()
-    serializer_class = AudioFileSerializer
-
-class ImageFileViewSet(viewsets.ModelViewSet):
-    queryset = ImageFile.objects.all()
-    serializer_class = ImageFileSerializer
 
 # URL pattern(s):
 #  /study_sets/

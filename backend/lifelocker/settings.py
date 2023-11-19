@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "study_sets",
+    "uploads",
+    "users",
 ]
 
 MIDDLEWARE = [
