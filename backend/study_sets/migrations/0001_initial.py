@@ -4,7 +4,7 @@ from django.db import migrations, models
 import django.db.models.deletion
 import study_sets.models
 
-from uploads.models import get_safe_audio_path, get_safe_image_path
+from uploads.models import get_audio_path, get_image_path
 
 class Migration(migrations.Migration):
 
@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='AudioFile',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file_path', models.FileField(upload_to=get_safe_audio_path)),
+                ('file_path', models.FileField(upload_to=get_audio_path)),
                 ('uploaded_at', models.DateTimeField(auto_now_add=True)),
             ],
         ),
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             name='ImageFile',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file_path', models.ImageField(upload_to=get_safe_image_path)),
+                ('file_path', models.ImageField(upload_to=get_image_path)),
                 ('uploaded_at', models.DateTimeField(auto_now_add=True)),
             ],
         ),

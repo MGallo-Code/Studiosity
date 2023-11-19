@@ -5,8 +5,8 @@ from .views import AudioFileViewSet, ImageFileViewSet
 
 
 router = DefaultRouter()
-router.register(r'audio_files', AudioFileViewSet)
-router.register(r'image_files', ImageFileViewSet)
+router.register(r'audio', AudioFileViewSet)
+router.register(r'images', ImageFileViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='AudioFile',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file_path', models.FileField(upload_to=uploads.models.get_safe_audio_path)),
+                ('file_path', models.FileField(upload_to=uploads.models.get_audio_path)),
                 ('uploaded_at', models.DateTimeField(auto_now_add=True)),
             ],
         ),
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
             name='ImageFile',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file_path', models.ImageField(upload_to=uploads.models.get_safe_image_path)),
+                ('file_path', models.ImageField(upload_to=uploads.models.get_image_path)),
                 ('uploaded_at', models.DateTimeField(auto_now_add=True)),
             ],
         ),
