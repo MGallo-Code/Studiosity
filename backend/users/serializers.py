@@ -10,7 +10,7 @@ class UserCreationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
-        fields = ('username', 'email', 'password')  # Fields to be included in the serializer
+        fields = ('id', 'username', 'email', 'password')  # Fields to be included in the serializer
 
     def create(self, validated_data):
         """

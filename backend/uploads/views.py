@@ -19,7 +19,8 @@ class IsUploaderOrSuperuser(BasePermission):
         # Write permissions are only allowed to the uploader of the file or a superuser.
         return obj.uploader == request.user or request.user.is_superuser
 
-class AudioFileViewSet(mixins.CreateModelMixin,
+class AudioFileViewSet(mixins.RetrieveModelMixin,
+                       mixins.CreateModelMixin,
                        mixins.DestroyModelMixin,
                        viewsets.GenericViewSet):
     queryset = AudioFile.objects.all()
@@ -30,7 +31,8 @@ class AudioFileViewSet(mixins.CreateModelMixin,
     def perform_create(self, serializer):
         serializer.save(uploader=self.request.user)
 
-class ImageFileViewSet(mixins.CreateModelMixin, 
+class ImageFileViewSet(mixins.RetrieveModelMixin,
+                       mixins.CreateModelMixin, 
                        mixins.DestroyModelMixin, 
                        viewsets.GenericViewSet):
     queryset = ImageFile.objects.all()

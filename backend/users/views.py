@@ -16,7 +16,7 @@ class IsOwnerOrSuperuser(BasePermission):
         # Check if the request user is the owner of the object or a superuser
         return obj == request.user or request.user.is_superuser
 
-class AuthenticatedUserProfileView(APIView):
+class GetAuthUserProfileView(APIView):
     """
     API endpoint for retrieving the authenticated user's full profile.
     Requires the user to be authenticated.
@@ -28,7 +28,7 @@ class AuthenticatedUserProfileView(APIView):
         Retrieve and return the profile of the authenticated user.
         """
         user = request.user
-        serializer = UserFullProfileSerializer(user)
+        serializer = GetFullUserView(user)
         return Response(serializer.data)
 
 class CreateUserView(generics.CreateAPIView):
@@ -53,7 +53,7 @@ class UpdateUserView(generics.UpdateAPIView):
         """
         return [permissions.IsAuthenticated(), IsOwnerOrSuperuser()]
 
-class UserPublicProfileView(generics.RetrieveAPIView):
+class GetPublicUserView(generics.RetrieveAPIView):
     """
     API endpoint for retrieving a user's public profile.
     No authentication required to view public profiles.
@@ -62,7 +62,7 @@ class UserPublicProfileView(generics.RetrieveAPIView):
     serializer_class = UserPublicProfileSerializer
     lookup_field = 'username'  # We're using the username to retrieve the profile
 
-class UserFullProfileView(generics.RetrieveAPIView):
+class GetFullUserView(generics.RetrieveAPIView):
     """
     API endpoint for retrieving a user's full profile.
     Only the user themselves or a superuser can view the full profile.
@@ -70,6 +70,21 @@ class UserFullProfileView(generics.RetrieveAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserFullProfileSerializer
     lookup_field = 'username'  # Assume we're using the username to retrieve the profile
+
+    def get_permissions(self):
+        """
+        Override get_permissions to enforce custom permissions.
+        """
+        return [permissions.IsAuthenticated(), IsOwnerOrSuperuser()]
+
+class DeleteUserView(generics.DestroyAPIView):
+    """
+    API endpoint for deleting a user's profile.
+    Only the user themselves or a superuser can delete the profile.
+    """
+    queryset = UserModel.objects.all()
+    permission_classes = [IsOwnerOrSuperuser]
+    lookup_field = 'id'
 
     def get_permissions(self):
         """
