@@ -79,6 +79,17 @@ class UserModel(AbstractBaseUser):
         Simple implementation: if user is active and is a superuser, grant all permissions.
         """
         return self.is_active and self.is_superuser
+    
+    def delete(self, *args, **kwargs):
+        """
+        Overridden delete method to remove the associated profile image 
+        from the filesystem and database upon deletion of the user.
+        """
+        # Check if the user has a profile image and delete the ImageFile object
+        if hasattr(self, 'profile_image') and self.profile_image:
+            self.profile_image.delete()  # This calls the overridden delete method of ImageFile
+
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return f"User {self.id}: {self.username}, {self.email}"

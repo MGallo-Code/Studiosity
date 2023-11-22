@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import AuthenticatedUserProfileView, CreateUserView, UpdateUserView, UserPublicProfileView, UserFullProfileView
 
-app_name = 'users'  # It's a good practice to use app_name for namespacing in Django apps
+app_name = 'users'
 
 urlpatterns = [
     path('create/', CreateUserView.as_view(), name='create_user'),
