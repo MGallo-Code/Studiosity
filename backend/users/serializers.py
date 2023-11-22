@@ -1,51 +1,63 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from django.core.validators import EmailValidator
 
 from .models import UserModel
 
 
 class UserCreationSerializer(serializers.ModelSerializer):
+    # Define a password field with write-only access and add Django's built-in password validators
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = UserModel
-        fields = ('username', 'email', 'password', 'password2')
-
-    def validate_email(self, value):
-        """
-        Check that the email is not already in use.
-        """
-        EmailValidator()(value)
-        if UserModel.objects.filter(email=value).exists():
-            raise serializers.ValidationError("A user with that email already exists.")
-        return value
-
-    def validate(self, data):
-        """
-        Check that the two password entries match.
-        """
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError("Passwords must match.")
-        return data
+        fields = ('username', 'email', 'password')  # Fields to be included in the serializer
 
     def create(self, validated_data):
-        user = UserModel.objects.create_user(
+        """
+        Overrides the create method to create a new UserModel instance using the model manager.
+        This ensures that the user is created with the hashed password and other model-specific logic.
+        """
+        return UserModel.objects.create_user(
             email=validated_data['email'],
-            username=validated_data['username'],
-            password=validated_data['password']
+            password=validated_data['password'],
+            username=validated_data['username']
         )
-        return user
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserModel
-        fields = ('id', 'username', 'email', 'profile_image', 'created_at', 'updated_at')
-        read_only_fields = ('id', 'created_at', 'updated_at')
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
-        fields = ('username', 'email', 'profile_image')
-        read_only_fields = ('email',)  # Prevent email from being changed
+        fields = ('username', 'profile_image')  # Fields to be included in the serializer
+        extra_kwargs = {'username': {'required': False}}  # Make username not required for updates
+
+    def update(self, instance, validated_data):
+        """
+        Overrides the update method to update an existing UserModel instance.
+        Only the specified fields (username, profile_image) are updated.
+        """
+        instance.username = validated_data.get('username', instance.username)
+        instance.profile_image = validated_data.get('profile_image', instance.profile_image)
+        instance.save()  # Save the updated instance to the database
+        return instance
+
+class UserPublicProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserModel
+        fields = ('username', 'profile_image')  # Publicly accessible fields
+
+# Serializer for the full profile of a user, excluding sensitive information like password
+class UserFullProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserModel
+        exclude = ('password',)  # Exclude password field from the serializer
+        # Set fields that should not be modified directly via the API
+        read_only_fields = ('email', 'is_staff', 'is_superuser', 'created_at', 'updated_at')
+
+    def to_representation(self, instance):
+        """
+        Override the to_representation method to customize the representation of the profile_image field.
+        This method ensures the correct format and URL of the profile image is returned.
+        """
+        representation = super().to_representation(instance)
+        # Provide the URL of the profile image if it exists, otherwise set it to None
+        representation['profile_image'] = instance.profile_image.file.url if instance.profile_image else None
+        return representation

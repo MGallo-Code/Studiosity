@@ -1,12 +1,12 @@
 from django.urls import path
+from .views import AuthenticatedUserProfileView, CreateUserView, UpdateUserView, UserPublicProfileView, UserFullProfileView
 
-from .views import UserRegistrationView, UserProfileView, UserUpdateView, LoginView, CurrentUserProfileView
-
+app_name = 'users'  # It's a good practice to use app_name for namespacing in Django apps
 
 urlpatterns = [
-    path('register/', UserRegistrationView.as_view(), name='user-registration'),
-    path('login/', LoginView.as_view(), name='login'),
-    path('profile/', CurrentUserProfileView.as_view(), name='current-user-profile'),
-    path('profile/<int:pk>/', UserProfileView.as_view(), name='user-profile'),
-    path('update/', UserUpdateView.as_view(), name='user-update'),
+    path('create/', CreateUserView.as_view(), name='create_user'),
+    path('update/<int:pk>/', UpdateUserView.as_view(), name='update_user'),
+    path('public/<str:username>/', UserPublicProfileView.as_view(), name='public_profile'),
+    path('profile/', AuthenticatedUserProfileView.as_view(), name='authenticated_user_profile'),
+    path('profile/<str:username>/', UserFullProfileView.as_view(), name='full_profile'),
 ]

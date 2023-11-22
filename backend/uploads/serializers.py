@@ -16,7 +16,8 @@ class AudioFileSerializer(serializers.ModelSerializer):
         return value
     class Meta:
         model = AudioFile
-        fields = ['id', 'file_path']
+        fields = ['id', 'file_path', 'uploaded_at', 'uploader']
+        read_only_fields = ['uploaded_at', 'uploader']
 
 class ImageFileSerializer(serializers.ModelSerializer):
     def validate_file_path(self, value):
@@ -28,4 +29,5 @@ class ImageFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ImageFile
-        fields = ['id', 'file_path']
+        fields = ['id', 'file_path', 'uploaded_at', 'uploader']
+        read_only_fields = ['uploaded_at', 'uploader']

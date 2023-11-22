@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 import os
 import uuid
@@ -21,6 +22,7 @@ class AudioFile(models.Model):
     Stores the file path and upload timestamp of the audio file.
     """
     file_path = models.FileField(upload_to=get_audio_path, max_length=200)
+    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='uploaded_audio_files')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def delete(self, *args, **kwargs):
@@ -40,6 +42,7 @@ class ImageFile(models.Model):
     Stores the file path and upload timestamp of the image file.
     """
     file_path = models.ImageField(upload_to=get_image_path, max_length=200)
+    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='uploaded_image_files')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def delete(self, *args, **kwargs):

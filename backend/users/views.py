@@ -1,66 +1,78 @@
-from django.contrib.auth import authenticate, login
-from django.contrib.auth import logout
-from rest_framework import views, generics, status
+from rest_framework import generics, permissions
+from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
 
 from .models import UserModel
-from .serializers import UserSerializer, UserCreationSerializer, UserUpdateSerializer
+from .serializers import UserCreationSerializer, UserUpdateSerializer, UserPublicProfileSerializer, UserFullProfileSerializer
 
 
-class LoginView(views.APIView):
-    permission_classes = [AllowAny]
+class IsOwnerOrSuperuser(BasePermission):
+    """
+    Custom permission to only allow owners of an object or superusers to edit it.
+    """
 
-    def post(self, request, format=None):
-        email = request.data.get('email')
-        password = request.data.get('password')
-        user = authenticate(username=email, password=password)
-        if user is not None:
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }, status=status.HTTP_200_OK)
-        return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    def has_object_permission(self, request, view, obj):
+        # Check if the request user is the owner of the object or a superuser
+        return obj == request.user or request.user.is_superuser
 
-class UserRegistrationView(generics.CreateAPIView):
+class AuthenticatedUserProfileView(APIView):
+    """
+    API endpoint for retrieving the authenticated user's full profile.
+    Requires the user to be authenticated.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieve and return the profile of the authenticated user.
+        """
+        user = request.user
+        serializer = UserFullProfileSerializer(user)
+        return Response(serializer.data)
+
+class CreateUserView(generics.CreateAPIView):
+    """
+    API endpoint for creating a new user.
+    No authentication required to create a new user.
+    """
+    queryset = UserModel.objects.all()
     serializer_class = UserCreationSerializer
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response({
-                "user": UserCreationSerializer(user, context=self.get_serializer_context()).data,
-                "message": "User created successfully."
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class CurrentUserProfileView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = UserSerializer
-
-    def get_object(self):
-        # Return the currently authenticated user
-        return self.request.user
-
-class UserProfileView(generics.RetrieveAPIView):
+class UpdateUserView(generics.UpdateAPIView):
+    """
+    API endpoint for updating a user's profile.
+    Only the user themselves or a superuser can update the profile.
+    """
     queryset = UserModel.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]  # Anyone can view user profiles
-
-class UserUpdateView(generics.UpdateAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = UserUpdateSerializer
 
-    def get_object(self):
-        return self.request.user
+    def get_permissions(self):
+        """
+        Override get_permissions to enforce custom permissions.
+        """
+        return [permissions.IsAuthenticated(), IsOwnerOrSuperuser()]
 
-    def update(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        serializer = self.get_serializer(self.object, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class UserPublicProfileView(generics.RetrieveAPIView):
+    """
+    API endpoint for retrieving a user's public profile.
+    No authentication required to view public profiles.
+    """
+    queryset = UserModel.objects.all()
+    serializer_class = UserPublicProfileSerializer
+    lookup_field = 'username'  # We're using the username to retrieve the profile
+
+class UserFullProfileView(generics.RetrieveAPIView):
+    """
+    API endpoint for retrieving a user's full profile.
+    Only the user themselves or a superuser can view the full profile.
+    """
+    queryset = UserModel.objects.all()
+    serializer_class = UserFullProfileSerializer
+    lookup_field = 'username'  # Assume we're using the username to retrieve the profile
+
+    def get_permissions(self):
+        """
+        Override get_permissions to enforce custom permissions.
+        """
+        return [permissions.IsAuthenticated(), IsOwnerOrSuperuser()]
