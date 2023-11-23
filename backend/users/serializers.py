@@ -43,6 +43,16 @@ class UserPublicProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
         fields = ('username', 'profile_image')  # Publicly accessible fields
+    
+    def to_representation(self, instance):
+        """
+        Override the to_representation method to customize the representation of the profile_image field.
+        This method ensures the correct format and URL of the profile image is returned.
+        """
+        representation = super().to_representation(instance)
+        # Provide the URL of the profile image if it exists, otherwise set it to None
+        representation['profile_image'] = instance.profile_image.file_path.url if instance.profile_image else None
+        return representation
 
 # Serializer for the full profile of a user, excluding sensitive information like password
 class UserFullProfileSerializer(serializers.ModelSerializer):
@@ -59,5 +69,5 @@ class UserFullProfileSerializer(serializers.ModelSerializer):
         """
         representation = super().to_representation(instance)
         # Provide the URL of the profile image if it exists, otherwise set it to None
-        representation['profile_image'] = instance.profile_image.file.url if instance.profile_image else None
+        representation['profile_image'] = instance.profile_image.file_path.url if instance.profile_image else None
         return representation

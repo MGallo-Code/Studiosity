@@ -28,7 +28,7 @@ class GetAuthUserProfileView(APIView):
         Retrieve and return the profile of the authenticated user.
         """
         user = request.user
-        serializer = GetFullUserView(user)
+        serializer = UserFullProfileSerializer(user)
         return Response(serializer.data)
 
 class CreateUserView(generics.CreateAPIView):
@@ -61,21 +61,6 @@ class GetPublicUserView(generics.RetrieveAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserPublicProfileSerializer
     lookup_field = 'username'  # We're using the username to retrieve the profile
-
-class GetFullUserView(generics.RetrieveAPIView):
-    """
-    API endpoint for retrieving a user's full profile.
-    Only the user themselves or a superuser can view the full profile.
-    """
-    queryset = UserModel.objects.all()
-    serializer_class = UserFullProfileSerializer
-    lookup_field = 'username'  # Assume we're using the username to retrieve the profile
-
-    def get_permissions(self):
-        """
-        Override get_permissions to enforce custom permissions.
-        """
-        return [permissions.IsAuthenticated(), IsOwnerOrSuperuser()]
 
 class DeleteUserView(generics.DestroyAPIView):
     """
