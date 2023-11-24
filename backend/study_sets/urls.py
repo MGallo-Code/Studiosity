@@ -2,13 +2,14 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .views import (
-    MyStudySetsView, PublicStudySetsView, AllStudySetsView, 
+    MyStudySetsView, PublicStudySetsView, AllStudySetsView, StudyTermViewSet,
     StudySetViewSet, CreateStudySetView, StudyTermsInSetView, TagViewSet
 )
 
 
 router = DefaultRouter()
 router.register(r'sets', StudySetViewSet, basename='study_set')
+router.register(r'study_terms', StudyTermViewSet, basename='study_term')
 router.register(r'tags', TagViewSet, basename='tag')
 
 urlpatterns = [

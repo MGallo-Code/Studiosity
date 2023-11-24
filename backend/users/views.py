@@ -1,11 +1,22 @@
 from rest_framework import generics
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from uploads.models import ImageFile
 from .models import UserModel
 from .serializers import UserCreationSerializer, UserUpdateSerializer, UserPublicProfileSerializer, UserFullProfileSerializer
 
+
+class IsSuperuser(BasePermission):
+    """
+    Custom permission to only allow owners of an object or superusers to edit it.
+    """
+
+    def has_permission(self, request, view):
+        # Check if the request user is the owner of the object or a superuser
+        return request.user.is_superuser
 
 class IsOwnerOrSuperuser(BasePermission):
     """
@@ -53,6 +64,22 @@ class UpdateUserView(generics.UpdateAPIView):
         """
         return [IsAuthenticated(), IsOwnerOrSuperuser()]
 
+    def perform_update(self, serializer):
+        """
+        Override perform_update to check the uploader of the profile image.
+        """
+        profile_image_id = self.request.data.get('profile_image')
+        if profile_image_id:
+            try:
+                profile_image = ImageFile.objects.get(pk=profile_image_id)
+            except ImageFile.DoesNotExist:
+                raise PermissionDenied(detail="Profile image not found.")
+
+            if profile_image.uploader != self.request.user:
+                raise PermissionDenied(detail="You do not have permission to use this image.")
+
+        serializer.save()
+
 class GetPublicUserView(generics.RetrieveAPIView):
     """
     API endpoint for retrieving a user's public profile.
@@ -76,3 +103,14 @@ class DeleteUserView(generics.DestroyAPIView):
         Override get_permissions to enforce custom permissions.
         """
         return [IsAuthenticated(), IsOwnerOrSuperuser()]
+
+class AllUsersView(generics.ListAPIView):
+    serializer_class = UserFullProfileSerializer
+    permission_classes = [IsSuperuser]
+
+    def get_queryset(self):
+        """
+        This view returns a list of all the study sets.
+        Admin privilege required.
+        """
+        return UserModel.objects.all()

@@ -11,7 +11,7 @@ class IsSuperuser(BasePermission):
     """
     Custom permission to only allow superusers to access it.
     """
-    def has_object_permission(self, request, view, obj):
+    def has_permission(self, request, view):
         return request.user.is_superuser
 
 class IsOwnerOrSuperuser(BasePermission):
@@ -21,13 +21,25 @@ class IsOwnerOrSuperuser(BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.uploader == request.user or request.user.is_superuser
 
-class IsOwnerOfRelatedStudySetOrSuperuser(BasePermission):
-    """
-    Custom permission to only allow owners of the related study set or superusers to access it.
-    """
+class IsOwnerOfRelatedStudySet(BasePermission):
+    """Allow access if the user is the owner of the related study set."""
     def has_object_permission(self, request, view, obj):
-        # Assuming the related study set is accessible via 'study_set' attribute
-        return obj.study_set.uploader == request.user or request.user.is_superuser
+        return obj.study_set.uploader == request.user
+
+class CanViewStudyTerm(BasePermission):
+    """
+    Allow access to view a study term if the user is an admin, the owner of the related study set,
+    or if the related study set is not private.
+    """
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_superuser:
+            return True
+        if view.action == 'retrieve':
+            study_term_id = view.kwargs.get('pk')
+            study_term = get_object_or_404(StudyTerm, pk=study_term_id)
+            return study_term.study_set.uploader == user or not study_term.study_set.private
+        return True
 
 class MyStudySetsView(generics.ListAPIView):
     serializer_class = StudySetSerializer
@@ -80,13 +92,13 @@ class StudySetViewSet(viewsets.GenericViewSet,
 
     def get_queryset(self):
         """
-        Returns a study set based on the user's permission.
+        Returns a queryset of study sets based on the user's permission.
         """
         user = self.request.user
         if user.is_superuser:
             return StudySet.objects.all()
-
-        return StudySet.objects.filter(id=self.kwargs['pk'], uploader=user) | StudySet.objects.filter(id=self.kwargs['pk'], private=False)
+        
+        return StudySet.objects.filter(uploader=user) | StudySet.objects.filter(private=False)
 
 class CreateStudySetView(generics.CreateAPIView):
     """
@@ -116,6 +128,60 @@ class StudyTermsInSetView(generics.ListAPIView):
             raise PermissionDenied(detail="You do not have permission to view these study terms.")
         
         return StudyTerm.objects.filter(study_set=study_set)
+
+class StudyTermViewSet(viewsets.ModelViewSet):
+    serializer_class = StudyTermSerializer
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action in ['create']:
+            return [IsAuthenticated(), IsOwnerOfRelatedStudySet()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsOwnerOfRelatedStudySet()]
+        elif self.action in ['retrieve']:
+            return [CanViewStudyTerm()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        """
+        Returns a queryset of study terms based on the user's permission.
+        """
+        if self.request.user.is_superuser:
+            return StudyTerm.objects.all()
+        return StudyTerm.objects.filter(study_set__uploader=self.request.user) | StudyTerm.objects.filter(study_set__private=False)
+
+    def perform_create(self, serializer):
+        """
+        Sets the study set to one owned by the user upon creation.
+        """
+        user = self.request.user
+        study_set_id = self.request.data.get('study_set')
+
+        try:
+            study_set = StudySet.objects.get(pk=study_set_id)
+        except StudySet.DoesNotExist:
+            raise PermissionDenied(detail="Study set not found.")
+
+        if study_set.uploader != user:
+            raise PermissionDenied(detail="You do not have permission to add terms to this study set.")
+
+        serializer.save(study_set=study_set)
+    
+    def perform_update(self, serializer):
+        """
+        Override perform_update to check the uploader of the image and audio files.
+        """
+        user = self.request.user
+        data = serializer.validated_data
+
+        for field in ['front_image', 'back_image', 'front_audio', 'back_audio']:
+            file_object = data.get(field)
+            if file_object and file_object.uploader != user:
+                raise PermissionDenied(detail=f"You do not have permission to use this {field.split('_')[0]}.")
+
+        serializer.save()
 
 class TagViewSet(viewsets.ModelViewSet):
     """
