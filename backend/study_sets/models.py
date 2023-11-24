@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 from uploads.models import AudioFile, ImageFile
 
@@ -12,6 +13,8 @@ class StudySet(models.Model):
     """
     title = models.CharField(max_length=64)
     description = models.TextField(blank=True, default='')
+    private = models.BooleanField(default=True)
+    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='study_sets')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -24,7 +27,7 @@ class Tag(models.Model):
     Represents a tag for categorizing study terms.
     Each tag has a unique name.
     """
-    name = models.CharField(max_length=16, unique=True, null=False)
+    name = models.CharField(max_length=16, unique=True)
 
     def save(self, *args, **kwargs):
         self.name = self.name.lower()

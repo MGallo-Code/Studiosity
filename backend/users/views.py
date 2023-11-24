@@ -1,5 +1,5 @@
-from rest_framework import generics, permissions
-from rest_framework.permissions import BasePermission
+from rest_framework import generics
+from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -21,7 +21,7 @@ class GetAuthUserProfileView(APIView):
     API endpoint for retrieving the authenticated user's full profile.
     Requires the user to be authenticated.
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         """
@@ -51,7 +51,7 @@ class UpdateUserView(generics.UpdateAPIView):
         """
         Override get_permissions to enforce custom permissions.
         """
-        return [permissions.IsAuthenticated(), IsOwnerOrSuperuser()]
+        return [IsAuthenticated(), IsOwnerOrSuperuser()]
 
 class GetPublicUserView(generics.RetrieveAPIView):
     """
@@ -75,4 +75,4 @@ class DeleteUserView(generics.DestroyAPIView):
         """
         Override get_permissions to enforce custom permissions.
         """
-        return [permissions.IsAuthenticated(), IsOwnerOrSuperuser()]
+        return [IsAuthenticated(), IsOwnerOrSuperuser()]
