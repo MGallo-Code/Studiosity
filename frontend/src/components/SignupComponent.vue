@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axiosInstance from '../utils/axios-config';
 
 export default {
   data() {
@@ -49,7 +49,7 @@ export default {
       }
 
       try {
-        await axios.post('http://localhost:8000/api/users/create/', this.signupForm);
+        await axiosInstance.post('users/create/', this.signupForm);
         this.$router.push('/login');
       } catch (error) {
         if (error.response.data.username) {

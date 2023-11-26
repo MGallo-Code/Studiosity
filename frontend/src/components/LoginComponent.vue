@@ -17,8 +17,8 @@
   </template>
   
   <script>
-  import axios from 'axios';
-  import { mapActions } from 'vuex';
+import axiosInstance from '../utils/axios-config';
+import { mapActions } from 'vuex';
   
   export default {
     data() {
@@ -36,7 +36,7 @@
         // Reset error on new submission
         this.error = null;
         try {
-          const response = await axios.post('http://localhost:8000/api/token/', this.loginForm);
+          const response = await axiosInstance.post('token/', this.loginForm);
           this.login(response.data);
           this.$router.push('/');
         } catch (error) {
