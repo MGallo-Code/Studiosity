@@ -9,6 +9,7 @@
           <label for="password">Password:</label>
           <input type="password" id="password" v-model="loginForm.password" autocomplete="current-password" required>
         </div>
+        <div v-if="error" class="error-message">{{ error }}</div>
         <button type="submit">Login</button>
       </form>
       <p>No account? Click <router-link to="/signup">here</router-link> to register.</p>
@@ -25,20 +26,25 @@
         loginForm: {
           email: '',
           password: ''
-        }
+        },
+        error: null,
       };
     },
     methods: {
       ...mapActions(['login']),
       async handleLogin() {
+        // Reset error on new submission
+        this.error = null;
         try {
           const response = await axios.post('http://localhost:8000/api/token/', this.loginForm);
-          // Handle response, store token, etc.
-          this.login(response.data); // Vuex action to update the auth state
-          this.$router.push('/'); // Redirect to home or another page
+          this.login(response.data);
+          this.$router.push('/');
         } catch (error) {
-          // Handle error (e.g., display login error message)
-          console.error(error);
+            if (error.response.data.detail) {
+                this.error = error.response.data.detail;
+            } else {
+                this.error = "An unknown error occurred while signing up."
+            }
         }
       }
     }
