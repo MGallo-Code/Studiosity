@@ -1,9 +1,9 @@
 <template>
-    <div class="my-study-sets-container">
+    <div class="public-sets-container">
         <h1>My Study Sets</h1>
         <div v-if="error" class="error-message">{{ error }}</div>
-        <div v-if="my_sets">
-            <div v-for="set in my_sets" :key="set.id">
+        <div v-if="public_sets">
+            <div v-for="set in public_sets" :key="set.id">
                 <h3>{{ set.title }}</h3>
             </div>
         </div>
@@ -17,24 +17,24 @@ export default {
   data() {
     return {
       error: null,
-      my_sets: null,
+      public_sets: null,
     };
   },
   methods: {
-    async getMyStudySets() {
+    async getPublicStudySets() {
       // Reset error on new submission
       this.error = null;
 
       try {
-        let response = await axiosInstance.get('study_sets/my_sets/');
-        this.my_sets = response.data.results;
+        let response = await axiosInstance.get('study_sets/public_sets/');
+        this.public_sets = response.data.results;
       } catch (error) {
         this.error = error.response.data.detail;
       }
     }
   },
   mounted() {
-    this.getMyStudySets()
+    this.getPublicStudySets()
   }
 }
 </script>
