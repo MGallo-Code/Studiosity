@@ -21,8 +21,8 @@ LifeLocker is a comprehensive web application for personal productivity and data
 - **Security**: Secure connection to the database, and management of credentials.
 
 ### Client-Side
-- **Technologies**: HTML5, CSS3, JavaScript for a dynamic UI. CSS3 for responsive design through media queries and flexible layouts.
-- **Frameworks**: Choice between React or Vue.js for a single-page application, focusing on component structure, state management, and routing.
+
+- **Frameworks**: Vue.js for a single-page application, focusing on component structure, state management, and routing.
 - **Responsive Design**: Wireframes illustrate design principles for various devices. Utilization of Bootstrap or Tailwind CSS for responsive UI.
 
 ### Hosting
@@ -60,7 +60,7 @@ LifeLocker is a comprehensive web application for personal productivity and data
 
 ### Project Timeline
 #### Phase 1: Flashcard Functionality
-- Implementation of flashcard module and UI components (Duration: 3 weeks).
+- Implementation of flashcard module and UI components (Duration: 2 months).
 #### Phase 2: Recipe Book Module
 - Interface design and integration with local storage (Duration: 3 weeks).
 #### Phase 3: Journal Feature
