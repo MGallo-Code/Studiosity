@@ -1,0 +1,57 @@
+<template>
+    <div class="login-container">
+      <form @submit.prevent="handleLogin">
+        <div>
+          <label for="email">Email:</label>
+          <input type="email" id="email" v-model="loginForm.email" autocomplete="email" required>
+        </div>
+        <div>
+          <label for="password">Password:</label>
+          <input type="password" id="password" v-model="loginForm.password" autocomplete="current-password" required>
+        </div>
+        <div v-if="error" class="error-message">{{ error }}</div>
+        <button type="submit">Login</button>
+      </form>
+      <p>No account? Click <router-link to="/signup">here</router-link> to register.</p>
+    </div>
+  </template>
+  
+  <script>
+import axiosInstance from '../utils/axios-config';
+import { mapActions } from 'vuex';
+  
+  export default {
+    data() {
+      return {
+        loginForm: {
+          email: '',
+          password: ''
+        },
+        error: null,
+      };
+    },
+    methods: {
+      ...mapActions(['login']),
+      async handleLogin() {
+        // Reset error on new submission
+        this.error = null;
+        try {
+          const response = await axiosInstance.post('token/', this.loginForm);
+          this.login(response.data);
+          this.$router.push('/');
+        } catch (error) {
+            if (error.response.data.detail) {
+                this.error = error.response.data.detail;
+            } else {
+                this.error = "An unknown error occurred while signing up."
+            }
+        }
+      }
+    }
+  }
+  </script>
+  
+  <!-- Add styles as needed -->
+  <style>
+  /* Your CSS here */
+  </style>
