@@ -46,7 +46,7 @@ export default {
         this.current_page = response.data.current_page;
         this.total_pages = response.data.total_pages;
       } catch (error) {
-        this.error = error.response.data.detail;
+        this.error = error.response ? error.response.data.detail : 'An error occurred';
       }
     },
     navigatePage(direction) {

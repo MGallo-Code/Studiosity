@@ -19,12 +19,13 @@ export default createStore({
             }
         },
         login({ commit }, tokenData) {
-            console.log(tokenData.access);
-            localStorage.setItem("token", tokenData.access); // Store the token
+            localStorage.setItem("token", tokenData.access);
+            localStorage.setItem("refresh_token", tokenData.refresh);
             commit("setAuthentication", true);
         },
         logout({ commit }) {
-            localStorage.removeItem("token"); // Clear token
+            localStorage.removeItem("token");
+            localStorage.removeItem("refresh_token");
             commit("setAuthentication", false);
         },
     },
