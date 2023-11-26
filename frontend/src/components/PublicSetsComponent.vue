@@ -1,13 +1,19 @@
 <template>
-    <div class="public-sets-container">
-        <h1>My Study Sets</h1>
-        <div v-if="error" class="error-message">{{ error }}</div>
-        <div v-if="public_sets">
-            <div v-for="set in public_sets" :key="set.id">
-                <h3>{{ set.title }}</h3>
-            </div>
-        </div>
-    </div>
+  <div class="set-container">
+      <h1>Public Study Sets</h1>
+      <div v-if="error" class="error-message">{{ error }}</div>
+      <div class="sets-list" v-if="public_sets">
+          <div class="set-item" v-for="set in public_sets" :key="set.id">
+              <h3>{{ set.title }}</h3>
+              <p>{{ set.description || "No description provided." }}</p>
+          </div>
+      </div>
+      <div class="pagination">
+          <button @click="navigatePage('previous')" :disabled="!pagination_links.previous">Previous</button>
+          <span>Page {{ current_page }} of {{ total_pages }}</span>
+          <button @click="navigatePage('next')" :disabled="!pagination_links.next">Next</button>
+      </div>
+  </div>
 </template>
 
 <script>
@@ -18,28 +24,45 @@ export default {
     return {
       error: null,
       public_sets: null,
+      pagination_links: {},
+      current_page: 1,
+      total_pages: 1,
     };
   },
   methods: {
-    async getPublicStudySets() {
-      // Reset error on new submission
+    async getPublicStudySets(page) {
       this.error = null;
 
       try {
-        let response = await axiosInstance.get('study_sets/public_sets/');
+        const response = await axiosInstance.get(`study_sets/public_sets/?page=${page}`);
         this.public_sets = response.data.results;
+        this.pagination_links = response.data.links;
+        this.current_page = response.data.current_page;
+        this.total_pages = response.data.total_pages;
       } catch (error) {
         this.error = error.response.data.detail;
+      }
+    },
+    navigatePage(direction) {
+      const nextPage = direction === 'next' ? this.current_page + 1 : this.current_page - 1;
+      this.$router.push({ path: '/public-study-sets/' + nextPage.toString() });
+    }
+  },
+  watch: {
+    '$route.params.page': {
+      immediate: true,
+      handler(newPage) {
+        this.getPublicStudySets(newPage || 1);
       }
     }
   },
   mounted() {
-    this.getPublicStudySets()
+    const initialPage = this.$route.params.page || 1;
+    this.getPublicStudySets(initialPage);
   }
 }
 </script>
 
-<!-- Add styles as needed -->
 <style>
-/* Your CSS here */
+@import "@/assets/container-list-style.css";
 </style>
