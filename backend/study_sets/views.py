@@ -1,11 +1,32 @@
+from math import ceil
+
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, viewsets, mixins
+from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.pagination import PageNumberPagination
 
 from .models import StudySet, StudyTerm, Tag
 from .serializers import StudySetSerializer, StudyTermSerializer, TagSerializer
 
+
+class CustomPagination(PageNumberPagination):
+    page_size = 25
+
+    def get_paginated_response(self, data):
+        current_page = self.request.query_params.get(self.page_query_param, 1)
+        total_pages = ceil(self.page.paginator.count / self.page_size)
+
+        return Response({
+            'links': {
+               'next': self.get_next_link(),
+               'previous': self.get_previous_link()
+            },
+            'total_pages': total_pages,
+            'current_page': int(current_page),
+            'results': data
+        })
 
 class IsSuperuser(BasePermission):
     """
@@ -44,6 +65,7 @@ class CanViewStudyTerm(BasePermission):
 class MyStudySetsView(generics.ListAPIView):
     serializer_class = StudySetSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         """
@@ -55,6 +77,7 @@ class MyStudySetsView(generics.ListAPIView):
 
 class PublicStudySetsView(generics.ListAPIView):
     serializer_class = StudySetSerializer
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         """
@@ -65,6 +88,7 @@ class PublicStudySetsView(generics.ListAPIView):
 class AllStudySetsView(generics.ListAPIView):
     serializer_class = StudySetSerializer
     permission_classes = [IsSuperuser]
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         """
@@ -131,6 +155,7 @@ class StudyTermsInSetView(generics.ListAPIView):
 
 class StudyTermViewSet(viewsets.ModelViewSet):
     serializer_class = StudyTermSerializer
+    pagination_class = CustomPagination
 
     def get_permissions(self):
         """
