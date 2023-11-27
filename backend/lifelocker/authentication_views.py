@@ -11,10 +11,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             refresh_token = response.data['refresh']
             #TODO add , secure=True for https only
             response.set_cookie(
-                key='access_token', value=access_token, httponly=True, samesite='Lax'
+                key='access_token', value=access_token, httponly=True, samesite='Strict', secure=False
             )
             response.set_cookie(
-                key='refresh_token', value=refresh_token, httponly=True, samesite='Lax'
+                key='refresh_token', value=refresh_token, httponly=True, samesite='Strict', secure=False
             )
         return response
 
@@ -23,4 +23,6 @@ def logout_view(request):
     response = JsonResponse({'detail': 'Successfully logged out.'})
     response.delete_cookie('access_token')
     response.delete_cookie('refresh_token')
+    response.delete_cookie('sessionid')
+    response.delete_cookie('csrftoken')
     return response

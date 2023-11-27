@@ -60,11 +60,14 @@ ALLOWED_HOSTS = []
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
     "http://localhost:80",
     "http://localhost:8080",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    'http://localhost',
+    'http://localhost/80',
     'http://localhost:8080',
 ]
 
@@ -82,7 +85,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
         'users.custom_authentication.CustomJWTAuthentication',
     ]
 }
