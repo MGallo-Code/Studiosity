@@ -6,5 +6,4 @@ import store from "./utils/store";
 const app = createApp(App);
 app.use(router);
 app.use(store);
-store.dispatch("checkAuthState");
 app.mount("#app");

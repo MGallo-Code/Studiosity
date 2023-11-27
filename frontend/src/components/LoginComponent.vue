@@ -36,8 +36,8 @@ import { mapActions } from 'vuex';
         // Reset error on new submission
         this.error = null;
         try {
-          const response = await axiosInstance.post('token/', this.loginForm);
-          this.login(response.data);
+          await axiosInstance.post('/token/', this.loginForm);
+          this.$store.dispatch('updateAuthState', true);
           this.$router.push('/');
         } catch (error) {
             if (error.response.data.detail) {

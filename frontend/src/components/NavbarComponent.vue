@@ -11,13 +11,14 @@
                 <router-link to="/login">Login</router-link>
             </li>
             <li v-else>
-                <a href="#" @click="logout">Logout</a>
+                <a href="#" @click="handleLogout">Logout</a>
             </li>
         </ul>
     </nav>
 </template>
 
 <script>
+import axiosInstance from '../utils/axios-config';
 import { mapState, mapActions } from 'vuex';
 
 export default {
@@ -35,6 +36,19 @@ export default {
     },
     methods: {
         ...mapActions(['logout']),
+        async handleLogout() {
+        try {
+          await axiosInstance.post('/logout/');
+          this.$store.dispatch('updateAuthState', false);
+          this.$router.push('/login');
+        } catch (error) {
+            if (error.response && error.response.data.detail) {
+                console.log("Error: ", error.response.data.detail);
+            } else {
+                console.log("An unknown error occurred while signing up.");
+            }
+        }
+      }
     }
 };
 </script>

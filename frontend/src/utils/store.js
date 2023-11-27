@@ -10,23 +10,9 @@ export default createStore({
         },
     },
     actions: {
-        checkAuthState({ commit }) {
-            const token = localStorage.getItem("token");
-            if (token) {
-                commit("setAuthentication", true);
-            } else {
-                commit("setAuthentication", false);
-            }
-        },
-        login({ commit }, tokenData) {
-            localStorage.setItem("token", tokenData.access);
-            localStorage.setItem("refresh_token", tokenData.refresh);
-            commit("setAuthentication", true);
-        },
-        logout({ commit }) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("refresh_token");
-            commit("setAuthentication", false);
+        // This action can be triggered after login/logout API calls
+        updateAuthState({ commit }, isAuthenticated) {
+            commit("setAuthentication", isAuthenticated);
         },
     },
 });
