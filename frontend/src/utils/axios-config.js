@@ -1,14 +1,22 @@
 // axios-config.js
 import axios from "axios";
 
-const axiosInstance = axios.create({
+export const axiosAuthInstance = axios.create({
     baseURL: "http://localhost:8000/api/",
     withCredentials: true,
 });
 
-axiosInstance.interceptors.response.use(
+axiosAuthInstance.interceptors.response.use(
     (response) => response,
     (error) => Promise.reject(error)
 );
 
-export default axiosInstance;
+export const axiosNonAuthInstance = axios.create({
+    baseURL: "http://localhost:8000/api/",
+    withCredentials: true,
+});
+
+axiosNonAuthInstance.interceptors.response.use(
+    (response) => response,
+    (error) => Promise.reject(error)
+);

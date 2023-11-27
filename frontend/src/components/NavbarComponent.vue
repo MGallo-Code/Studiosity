@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import axiosInstance from '../utils/axios-config';
+import { axiosAuthInstance } from '../utils/axios-config';
 import { mapState, mapActions } from 'vuex';
 
 export default {
@@ -38,7 +38,7 @@ export default {
         ...mapActions(['logout']),
         async handleLogout() {
         try {
-          await axiosInstance.post('/logout/');
+          await axiosAuthInstance.post('/logout/');
           this.$store.dispatch('updateAuthState', false);
           this.$router.push('/login');
         } catch (error) {
@@ -54,23 +54,37 @@ export default {
 </script>
 
 <style>
-/* Add your CSS styling here */
 .navbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
     height: 4rem;
-    background-color: lightseagreen;
+    background-color: rgb(63, 152, 91);
 }
 .navbar-brand {
     margin: 0 1.5rem;
 }
 .navbar-menu {
-    margin: 0 1.5rem;
+    display: inline-block;
+    height: 100%;
 }
 .navbar-menu li {
     display: inline-block;
-    margin-left: 1rem;
+    height: 100%;
+    width: 10rem;
+}
+.navbar a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: black;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    background-color: rgb(104, 184, 129);
 }
 </style>
