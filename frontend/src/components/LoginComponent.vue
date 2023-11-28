@@ -17,7 +17,7 @@
   </template>
   
   <script>
-import { axiosAuthInstance } from '../utils/axios-config';
+import axiosInstance from '../utils/axios-config';
 import { mapActions } from 'vuex';
   
   export default {
@@ -36,9 +36,10 @@ import { mapActions } from 'vuex';
         // Reset error on new submission
         this.error = null;
         try {
-          await axiosAuthInstance.post('/token/', this.loginForm);
+          await axiosInstance.post('/token/', this.loginForm, { withCredentials: true });
           this.$store.dispatch('updateAuthState', true);
-          this.$router.push('/');
+          const redirect = this.$route.query.redirect || '/';
+          this.$router.push(redirect);
         } catch (error) {
             if (error.response.data.detail) {
                 this.error = error.response.data.detail;

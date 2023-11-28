@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { axiosNonAuthInstance } from '../utils/axios-config';
+import axiosInstance from '../utils/axios-config';
 
 export default {
     data() {
@@ -32,9 +32,9 @@ export default {
         async fetchSetDetail() {
             try {
                 const setId = this.$route.params.id;
-                const setResponse = await axiosNonAuthInstance.get(`study_sets/sets/${setId}/`);
+                const setResponse = await axiosInstance.get(`study_sets/sets/${setId}/`);
                 this.setDetail = setResponse.data;
-                const termsResponse = await axiosNonAuthInstance.get(`study_sets/terms_in_set/${setId}/`);
+                const termsResponse = await axiosInstance.get(`study_sets/terms_in_set/${setId}/`);
                 this.studyTerms = termsResponse.data;
             } catch (error) {
                 this.error = error.response ? error.response.data.detail : 'An error occurred';

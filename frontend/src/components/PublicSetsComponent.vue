@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { axiosNonAuthInstance } from '../utils/axios-config';
+import axiosInstance from '../utils/axios-config';
 
 export default {
   data() {
@@ -40,7 +40,7 @@ export default {
       this.error = null;
 
       try {
-        const response = await axiosNonAuthInstance.get(`study_sets/public_sets/?page=${page}`);
+        const response = await axiosInstance.get(`study_sets/public_sets/?page=${page}`);
         this.public_sets = response.data.results;
         this.pagination_links = response.data.links;
         this.current_page = response.data.current_page;

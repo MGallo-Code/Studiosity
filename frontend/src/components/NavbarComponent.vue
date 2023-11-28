@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { axiosAuthInstance } from '../utils/axios-config';
+import axiosInstance from '../utils/axios-config';
 import { mapState, mapActions } from 'vuex';
 
 export default {
@@ -38,14 +38,14 @@ export default {
         ...mapActions(['logout']),
         async handleLogout() {
         try {
-          await axiosAuthInstance.post('/logout/');
+          await axiosInstance.post('/logout/', { withCredentials: true });
           this.$store.dispatch('updateAuthState', false);
           this.$router.push('/login');
         } catch (error) {
             if (error.response && error.response.data.detail) {
                 console.log("Error: ", error.response.data.detail);
             } else {
-                console.log("An unknown error occurred while signing up.");
+                console.log("An unknown error occurred while logging out.");
             }
         }
       }

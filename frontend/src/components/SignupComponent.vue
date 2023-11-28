@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { axiosNonAuthInstance } from '../utils/axios-config';
+import axiosInstance from '../utils/axios-config';
 
 export default {
   data() {
@@ -49,7 +49,7 @@ export default {
       }
 
       try {
-        await axiosNonAuthInstance.post('users/create/', this.signupForm);
+        await axiosInstance.post('users/create/', this.signupForm);
         this.$router.push('/login');
       } catch (error) {
         if (error.response.data.username) {
