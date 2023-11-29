@@ -60,7 +60,7 @@ class UserFullProfileSerializer(serializers.ModelSerializer):
         model = UserModel
         exclude = ('password',)  # Exclude password field from the serializer
         # Set fields that should not be modified directly via the API
-        read_only_fields = ('email', 'is_staff', 'is_superuser', 'created_at', 'updated_at')
+        read_only_fields = ('email', 'is_validated', 'is_staff', 'is_superuser', 'created_at', 'updated_at')
 
     def to_representation(self, instance):
         """

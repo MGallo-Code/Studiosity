@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
@@ -8,6 +8,16 @@ from uploads.models import ImageFile
 from .models import UserModel
 from .serializers import UserCreationSerializer, UserUpdateSerializer, UserPublicProfileSerializer, UserFullProfileSerializer
 
+
+class IsAuthorizedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        # If the request reaches here, the user is authenticated
+        user = request.user
+        return Response({
+            'message': 'User is authenticated',
+        }, status=status.HTTP_200_OK)
 
 class IsSuperuser(BasePermission):
     """

@@ -8,7 +8,7 @@ class StudySetSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudySet
         fields = ['id', 'title', 'description', 'uploader', 'private', 'created_at']
-        read_only_fields = ['uploader']
+        read_only_fields = ['uploader', 'created_at']
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:

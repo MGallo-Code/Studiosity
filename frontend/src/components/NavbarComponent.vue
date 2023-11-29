@@ -4,13 +4,16 @@
             <a href="/">LifeLocker</a>
         </div>
         <ul class="navbar-menu">
-            <li v-for="item in menuItems" :key="item.text">
+            <li v-for="item in menuItems" :key="item.text" class="navbar-link">
                 <router-link :to="item.link">{{ item.text }}</router-link>
             </li>
             <li v-if="!isAuthenticated">
                 <router-link to="/login">Login</router-link>
             </li>
-            <li v-else>
+            <li v-else class="profile-picture">
+                <img :src="profileImage" alt="Profile" class="profile-pic">
+            </li>
+            <li v-if="isAuthenticated">
                 <a href="#" @click="handleLogout">Logout</a>
             </li>
         </ul>
@@ -18,8 +21,10 @@
 </template>
 
 <script>
-import axiosInstance from '../utils/axios-config';
+import { axiosAuthInstance } from '../utils/axios-config';
 import { mapState, mapActions } from 'vuex';
+
+import DefaultProfile from '@/assets/default-profile.png';
 
 export default {
     name: "NavbarComponent",
@@ -29,6 +34,8 @@ export default {
                 { text: "Public Study Sets", link: "/public-study-sets" },
                 { text: "My Study Sets", link: "/my-study-sets" },
             ],
+            profileImage: DefaultProfile,
+            username: "",
         };
     },
     computed: {
@@ -36,19 +43,39 @@ export default {
     },
     methods: {
         ...mapActions(['logout']),
+        async getUserProfile() {
+            if (this.$store.isAuthenticated) {
+                try {
+                    const response = await axiosAuthInstance.get('/users/profile/');
+                    if (response.data.profile_image) {
+                        this.profileImage = response.data.profile_image;
+                    }
+                    this.username = response.data.username;
+                } catch (error) {
+                    if (error.response && error.response.data.detail) {
+                        console.log("Error getting profile: ", error.response.data.detail);
+                    } else {
+                        console.log("An unknown error occurred getting profile.");
+                    }
+                }
+            }
+        },
         async handleLogout() {
-        try {
-          await axiosInstance.post('/logout/', { withCredentials: true });
-          this.$store.dispatch('updateAuthState', false);
-          this.$router.push('/login');
-        } catch (error) {
-            if (error.response && error.response.data.detail) {
-                console.log("Error: ", error.response.data.detail);
-            } else {
-                console.log("An unknown error occurred while logging out.");
+            try {
+                await axiosAuthInstance.post('/logout/');
+                this.$store.dispatch('logout');
+                this.$router.push('/login');
+            } catch (error) {
+                if (error.response && error.response.data.detail) {
+                    console.log("Error logging out: ", error.response.data.detail);
+                } else {
+                    console.log("An unknown error occurred logging out.");
+                }
             }
         }
-      }
+    },
+    created() {
+        this.getUserProfile();
     }
 };
 </script>
@@ -86,5 +113,12 @@ export default {
 
 .navbar a:hover {
     background-color: rgb(104, 184, 129);
+}
+
+.profile-pic {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
 }
 </style>

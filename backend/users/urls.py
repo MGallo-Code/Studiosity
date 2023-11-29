@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import AllUsersView, GetAuthUserProfileView, CreateUserView, DeleteUserView, UpdateUserView, GetPublicUserView
+from .views import IsAuthorizedView, AllUsersView, GetAuthUserProfileView, CreateUserView, DeleteUserView, UpdateUserView, GetPublicUserView
 
 app_name = 'users'
 
 urlpatterns = [
     path('create/', CreateUserView.as_view(), name='create_user'),
+    path('is_authorized/', IsAuthorizedView.as_view(), name='is_authorized'),
     path('profile/<str:username>/', GetPublicUserView.as_view(), name='public_profile'),
     path('profile/', GetAuthUserProfileView.as_view(), name='authenticated_user_profile'),
     path('update/<int:pk>/', UpdateUserView.as_view(), name='update_user'),
