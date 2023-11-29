@@ -13,7 +13,7 @@ export default createStore({
     actions: {
         async checkAuthState({ commit }) {
             try {
-                await axiosAuthInstance.get("/users/is_authorized/", {});
+                await axiosAuthInstance.get("/users/is_authorized/");
                 commit("setAuthentication", true);
             } catch (error) {
                 commit("setAuthentication", false);

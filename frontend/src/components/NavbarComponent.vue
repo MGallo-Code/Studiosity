@@ -24,7 +24,7 @@
 import { axiosAuthInstance } from '../utils/axios-config';
 import { mapState, mapActions } from 'vuex';
 
-import DefaultProfile from '@/assets/default-profile.png';
+import DefaultProfile from '@/assets/default-profile-picture.png';
 
 export default {
     name: "NavbarComponent",
