@@ -23,7 +23,7 @@ import { axiosDefaultInstance } from '../utils/axios-config';
 export default {
   data() {
     return {
-      signupForm: {
+      signup_form: {
         username: '',
         email: '',
         email2: '',
@@ -39,17 +39,17 @@ export default {
       this.error = null;
 
       // Check if passwords and emails match
-      if (this.signupForm.password !== this.signupForm.password2) {
+      if (this.signup_form.password !== this.signup_form.password2) {
         this.error = "Passwords do not match.";
         return;
       }
-      if (this.signupForm.email !== this.signupForm.email2) {
+      if (this.signup_form.email !== this.signup_form.email2) {
         this.error = "Email addresses do not match.";
         return;
       }
 
       try {
-        await axiosDefaultInstance.post('users/create/', this.signupForm);
+        await axiosDefaultInstance.post('users/create/', this.signup_form);
         this.$router.push('/login');
       } catch (error) {
         if (error.response.data.username) {
