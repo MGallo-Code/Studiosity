@@ -2,6 +2,7 @@
     <div class="modal" v-if="showModal">
         <div class="modal-content">
             <span class="close" @click="closeModal">&times;</span>
+            <div v-if="modalError" class="error-message">{{ modalError }}</div>
             <slot></slot> <!-- This slot will be used to inject custom content -->
         </div>
     </div>
@@ -13,6 +14,10 @@ export default {
         showModal: {
             type: Boolean,
             required: true
+        },
+        modalError: {
+            type: String,
+            default: ''
         }
     },
     methods: {
@@ -47,6 +52,12 @@ export default {
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     animation-name: modalopen;
     animation-duration: 0.4s;
+}
+
+.error-message {
+    color: #f44336;
+    text-align: center;
+    margin: 10px 0;
 }
 
 .close {

@@ -38,7 +38,12 @@ export default {
                 const termsResponse = await axiosAuthInstance.get(`study_sets/terms_in_set/${setId}/`);
                 this.studyTerms = termsResponse.data;
             } catch (error) {
-                this.error = error.response ? error.response.data.detail : 'An error occurred';
+                // If set not found (no permission)
+                if (error.response && error.response.data.detail === "Not found.") {
+                    this.$router.push({ path: '/public-study-sets/' })
+                } else {
+                    this.error = error.response ? error.response.data.detail : 'An error occurred';
+                }
             }
         }
     }

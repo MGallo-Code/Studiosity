@@ -140,7 +140,7 @@ class StudyTermsInSetView(generics.ListAPIView):
         study_set_id = self.kwargs['pk']
         study_set = get_object_or_404(StudySet, id=study_set_id)
 
-        if study_set.private and not (self.request.user.is_authenticated and (study_set.uploader == request.user or request.user.is_superuser)):
+        if study_set.private and not (self.request.user.is_authenticated and (study_set.uploader == self.request.user or self.request.user.is_superuser)):
             raise PermissionDenied(detail="You do not have permission to view these study terms.")
         
         return StudyTerm.objects.filter(study_set=study_set)

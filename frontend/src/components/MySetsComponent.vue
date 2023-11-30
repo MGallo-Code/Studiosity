@@ -5,7 +5,7 @@
         <button @click="toggleModal">Create New Set</button>
         <div class="sets-list" v-if="public_sets">
             <div class="set-item" v-for="set in public_sets" :key="set.id">
-                <router-link class="info-panel" :to="`/study-set/${set.id}`">
+                <router-link class="info-panel" :to="`/my-study-set/${set.id}`">
                     <h3>{{ set.title }}</h3>
                     <p>{{ set.description || "No description provided." }}</p>
                 </router-link>

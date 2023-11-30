@@ -3,6 +3,7 @@ import store from "@/utils/store";
 import HomeComponent from "@/components/HomeComponent.vue";
 import LoginComponent from "@/components/LoginComponent.vue";
 import SignupComponent from "@/components/SignupComponent.vue";
+import MySetDetailComponent from "@/components/MySetDetailComponent.vue";
 import MySetsComponent from "@/components/MySetsComponent.vue";
 import PublicSetsComponent from "@/components/PublicSetsComponent.vue";
 import SetDetailComponent from "@/components/SetDetailComponent.vue";
@@ -14,6 +15,11 @@ const routes = [
     {
         path: "/my-study-sets/:page?",
         component: MySetsComponent,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: "/my-study-set/:id/:page?",
+        component: MySetDetailComponent,
         meta: { requiresAuth: true },
     },
     { path: "/public-study-sets/:page?", component: PublicSetsComponent },
