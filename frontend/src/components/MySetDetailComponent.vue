@@ -1,5 +1,8 @@
 <template>
+    <!-- Container for the study set detail view -->
     <div class="set-detail-container">
+
+        <!-- Error message display -->
         <div v-if="error" class="error-message">{{ error }}</div>
         
         <!-- Editable Study Set Details -->
@@ -7,51 +10,56 @@
             <input type="text" v-model="setDetail.title" />
             <textarea v-model="setDetail.description"></textarea>
             <button @click="updateSetDetails">✔</button>
-            <button @click="confirmDeleteSet">Delete Set</button>
+            <button @click="confirmDeleteSet"><font-awesome-icon icon="trash-alt" /></button>
         </div>
         <div class="set-banner" v-else>
             <h1>{{ setDetail.title }}</h1>
             <p>{{ setDetail.description || 'No description provided.' }}</p>
-            <button @click="editSetDetails">✏️</button>
+            <button @click="editSetDetails"><font-awesome-icon icon="edit" /></button>
         </div>
 
         <!-- Study Terms List -->
         <div class="study-terms">
             <h2>Study Terms</h2>
-            <!-- Inline form to create a new term -->
+
+            <!-- Inline form for creating a new term -->
             <div class="term-item new-term-form" v-if="creatingNewTerm">
                 <input type="text" placeholder="Front text" v-model="newTerm.front_text" />
                 <input type="text" placeholder="Back text" v-model="newTerm.back_text" />
                 <button @click="createTerm">Create</button>
             </div>
 
+            <!-- Button to toggle new term creation form -->
             <button @click="toggleCreateNewTerm">Create New Term</button>
 
+            <!-- Iterating over each term to display -->
             <div v-for="term in studyTerms" :key="term.id" class="term-item">
+                <!-- Editable term form -->
                 <div v-if="editingTerm && editingTerm.id === term.id">
-                    <!-- Edit form for the term -->
                     <input type="text" v-model="termForm.front_text" />
                     <input type="text" v-model="termForm.back_text" />
                     <button @click="updateTerm">✔️ Save</button>
-                    <button @click="confirmDeleteTerm(term.id)">Delete</button>
+                    <button @click="confirmDeleteTerm(term.id)"><font-awesome-icon icon="trash-alt" /></button>
                 </div>
+                <!-- Display term details -->
                 <div v-else>
-                    <!-- Display term details -->
                     <div><strong>Front:</strong> {{ term.front_text }}</div>
                     <div><strong>Back:</strong> {{ term.back_text }}</div>
-                    <button @click="editTerm(term)">Edit</button>
-                    <!-- Delete button is not shown here -->
+                    <button @click="duplicateTerm(term)"><font-awesome-icon icon="clone" /></button>
+                    <button @click="editTerm(term)"><font-awesome-icon icon="edit" /></button>
                 </div>
             </div>
         </div>
     </div>
 </template>
 
+
 <script>
 import { axiosAuthInstance } from '../utils/axios-config';
 
 export default {
     data() {
+        // Initializing data properties
         return {
             setDetail: {},
             studyTerms: [],
@@ -59,7 +67,6 @@ export default {
             editingSet: false,
             editingTerm: null,
             editingTermId: null,
-            showModal: false,
             termForm: {
                 front_text: '',
                 back_text: '',
@@ -70,13 +77,15 @@ export default {
         };
     },
     created() {
+        // Fetching initial data when component is created
         this.fetchSetDetail();
     },
     methods: {
+        // Fetches details of the study set and its terms
         async fetchSetDetail() {
             try {
                 const setId = this.$route.params.id;
-                this.termForm.study_set = setId; // Linking the term to the set
+                this.termForm.study_set = setId;
                 const setResponse = await axiosAuthInstance.get(`study_sets/study_sets/${setId}/`);
                 this.setDetail = setResponse.data;
 
@@ -87,45 +96,51 @@ export default {
             }
         },
 
+        // Toggles edit mode for the study set
         editSetDetails() {
             this.editingSet = true;
         },
 
+        // Updates study set details
         async updateSetDetails() {
             try {
                 await axiosAuthInstance.put(`/study_sets/study_sets/${this.setDetail.id}/`, this.setDetail);
                 this.editingSet = false;
-                // Refresh set details
                 this.fetchSetDetail();
             } catch (error) {
                 this.error = error.response ? error.response.data.detail : 'Error updating set details';
             }
         },
 
+        // Confirms and deletes the study set
         confirmDeleteSet() {
             if (confirm("Are you sure you want to delete this set?")) {
                 this.deleteSet();
             }
         },
+
+        // Deletes the study set and redirects
         async deleteSet() {
             try {
                 await axiosAuthInstance.delete(`study_sets/study_sets/${this.setDetail.id}/`);
-                this.$router.push('/my-study-sets/'); // Redirect after deletion
+                this.$router.push('/my-study-sets/');
             } catch (error) {
                 this.error = error.response ? error.response.data.detail : 'Error deleting set';
             }
         },
 
+        // Toggles the form for creating a new term
         toggleCreateNewTerm() {
             this.creatingNewTerm = !this.creatingNewTerm;
             this.resetNewTermForm();
-            if (this.creatingNewTerm) {
-                this.newTerm.study_set = this.setDetail.id;
-            }
         },
+
+        // Resets the form for creating a new term
         resetNewTermForm() {
             this.newTerm = { front_text: '', back_text: '', study_set: this.setDetail.id };
         },
+
+        // Creates a new term
         createTerm() {
             axiosAuthInstance.post('/study_sets/study_terms/', this.newTerm)
                 .then(() => {
@@ -137,57 +152,33 @@ export default {
                 });
         },
 
-        createNewTerm() {
-            this.editingTermId = null;
-            this.termForm = { front_text: '', back_text: '', study_set: this.setDetail.id };
-            this.showModal = true;
-        },
-
+        // Enters edit mode for a specific term
         editTerm(term) {
-            // Check if we are already in editing mode for this term
-            if (this.editingTerm && this.editingTerm.id === term.id) {
-                // If we are, turn off editing mode
-                this.editingTerm = null;
-            } else {
-                // Otherwise, enter editing mode for this term
-                this.editingTerm = term;
-                this.termForm = { ...term };
-            }
+            this.editingTerm = this.editingTerm && this.editingTerm.id === term.id ? null : term;
+            this.termForm = { ...term };
         },
 
+        // Updates the term
         async updateTerm() {
-            try {
-                if (this.editingTerm) {
+            if (this.editingTerm) {
+                try {
                     await axiosAuthInstance.put(`/study_sets/study_terms/${this.editingTerm.id}/`, this.termForm);
-                    // Turn off editing mode
                     this.editingTerm = null;
                     this.fetchSetDetail();
+                } catch (error) {
+                    this.error = error.response ? error.response.data.detail : "An error occurred while updating the term.";
                 }
-            } catch (error) {
-                this.error = error.response ? error.response.data.detail : "An error occurred while updating the term.";
             }
         },
 
-        async submitTermForm() {
-            try {
-                if (this.editingTermId) {
-                    await axiosAuthInstance.put(`/study_sets/study_terms/${this.editingTermId}/`, this.termForm);
-                } else {
-                    await axiosAuthInstance.post(`/study_sets/study_terms/`, this.termForm);
-                }
-                this.showModal = false;
-                this.fetchSetDetail();
-            } catch (error) {
-                this.error = error.response ? error.response.data.detail : "An error occurred while processing the term.";
-            }
-        },
-
+        // Confirms and deletes a term
         async confirmDeleteTerm(termId) {
             if (confirm("Are you sure you want to delete this term?")) {
                 await this.deleteTerm(termId);
             }
         },
 
+        // Deletes a term
         async deleteTerm(termId) {
             try {
                 await axiosAuthInstance.delete(`study_sets/study_terms/${termId}/`);
@@ -197,8 +188,9 @@ export default {
             }
         },
 
+        // Duplicates a term
         async duplicateTerm(term) {
-            const newTerm = { ...term, id: undefined, study_set: this.termForm.study_set };
+            const newTerm = { ...term, id: undefined };
             try {
                 await axiosAuthInstance.post(`study_sets/study_terms/`, newTerm);
                 this.fetchSetDetail();
@@ -223,10 +215,27 @@ export default {
     padding: 15px;
     border-radius: 5px;
     margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.set-banner h1 {
+    margin-bottom: 10px;
+}
+
+.set-banner input, .set-banner textarea {
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
 }
 
 .study-terms {
     margin-bottom: 20px;
+}
+
+.study-terms h2 {
+    margin-bottom: 15px;
 }
 
 .term-item {
@@ -246,6 +255,12 @@ export default {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.term-item button i {
+    margin-right: 5px;
 }
 
 .term-item .edit-button {
@@ -270,6 +285,13 @@ export default {
     border-radius: 5px;
     font-size: 1em;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.create-button i {
+    margin-right: 5px;
 }
 
 .create-button:hover {
@@ -280,5 +302,27 @@ export default {
     color: #f44336;
     text-align: center;
     margin-top: 10px;
+}
+
+/* Input and textarea styles for new term form */
+.new-term-form input, .new-term-form textarea {
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    width: 100%;
+}
+
+.new-term-form button {
+    background-color: #2196F3;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.new-term-form button:hover {
+    opacity: 0.9;
 }
 </style>
