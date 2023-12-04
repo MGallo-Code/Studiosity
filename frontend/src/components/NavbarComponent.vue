@@ -10,11 +10,16 @@
             <li v-if="!isAuthenticated">
                 <router-link to="/login">Login</router-link>
             </li>
-            <li v-else class="profile-picture">
+            <li v-if="isAuthenticated" class="profile-picture" @mouseenter="toggleSubMenu(true)" @mouseleave="toggleSubMenu(false)">
+                <router-link to="/profile">
+                <span>{{ this.username }}</span>
                 <img :src="profileImage" alt="Profile" class="profile-pic">
-            </li>
-            <li v-if="isAuthenticated">
-                <a href="#" @click="handleLogout">Logout</a>
+                </router-link>
+                <div class="profile-submenu" v-show="showSubMenu">
+                    <a href="#" @click="handleLogout">
+                        <span>Logout</span>
+                    </a>
+                </div>
             </li>
         </ul>
     </nav>
@@ -30,6 +35,7 @@ export default {
     name: "NavbarComponent",
     data() {
         return {
+            showSubMenu: false,
             menuItems: [
                 { text: "Public Study Sets", link: "/public-study-sets" },
                 { text: "My Study Sets", link: "/my-study-sets" },
@@ -42,9 +48,12 @@ export default {
         ...mapState(['isAuthenticated'])
     },
     methods: {
+        toggleSubMenu(state) {
+            this.showSubMenu = state;
+        },
         ...mapActions(['logout']),
         async getUserProfile() {
-            if (this.$store.isAuthenticated) {
+            if (this.$store.state.isAuthenticated) {
                 try {
                     const response = await axiosAuthInstance.get('/users/profile/');
                     if (response.data.profile_image) {
@@ -119,6 +128,37 @@ export default {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.profile-picture {
+    position: relative; /* Make the profile picture container relative for sub-menu positioning */
+}
+
+.profile-submenu {
+    display: inline-block;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+    box-sizing: border-box;
+    z-index: 100;
+}
+
+.profile-submenu a {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    color: black;
+    text-decoration: none;
+}
+
+.profile-submenu a:hover {
+    background-color: #f0f0f0;
 }
 </style>

@@ -42,7 +42,12 @@ export default {
                 if (error.response && error.response.data.detail === "Not found.") {
                     this.$router.push({ path: '/public-study-sets/' })
                 } else {
-                    this.error = error.response ? error.response.data.detail : 'An error occurred';
+                    // If set not found (no permission)
+                    if (error.response && error.response.data.detail === "Not found.") {
+                        this.$router.push({ path: '/my-study-sets/' })
+                    } else {
+                        this.error = error.response ? error.response.data.detail : 'An error occurred';
+                    }
                 }
             }
         }
