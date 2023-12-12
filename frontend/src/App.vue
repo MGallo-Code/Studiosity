@@ -23,9 +23,17 @@ export default {
   color: #2c3e50;
 }
 
+@font-face {
+    font-family: 'BreeSerif';
+    src: url('~@/assets/fonts/BreeSerif-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 body {

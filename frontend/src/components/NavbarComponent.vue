@@ -1,7 +1,7 @@
 <template>
     <nav class="navbar">
         <div class="navbar-brand">
-            <a href="/">LifeLocker</a>
+            <router-link to="/">LifeLocker</router-link>
         </div>
         <ul class="navbar-menu">
             <li v-for="item in menuItems" :key="item.text" class="navbar-link">
@@ -37,8 +37,8 @@ export default {
         return {
             showSubMenu: false,
             menuItems: [
-                { text: "Public Study Sets", link: "/public-study-sets" },
-                { text: "My Study Sets", link: "/my-study-sets" },
+                { text: "Public Sets", link: "/public-study-sets" },
+                { text: "My Sets", link: "/my-study-sets" },
             ],
             profileImage: DefaultProfile,
             username: "",
@@ -95,8 +95,10 @@ export default {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    height: 4rem;
-    background-color: rgb(63, 152, 91);
+    height: 5rem;
+    font-size: 1.3rem;
+    font-family: 'BreeSerif', serif;
+    background-color: rgb(50, 129, 75);
 }
 .navbar-brand {
     margin: 0 1.5rem;
@@ -116,12 +118,12 @@ export default {
     justify-content: center;
     width: 100%;
     height: 100%;
-    color: black;
     text-decoration: none;
+    color: white;
 }
 
 .navbar a:hover {
-    background-color: rgb(104, 184, 129);
+    background-color: rgb(81, 160, 106);
 }
 
 .profile-pic {

@@ -8,7 +8,12 @@
         <div class="set-item new-set-form" v-if="creatingNewSet">
             <input type="text" placeholder="Set Title" v-model="newSet.title" />
             <textarea placeholder="Set Description" v-model="newSet.description"></textarea>
+            <select v-model="newSet.private">
+                <option value="false">Public</option>
+                <option value="true">Private</option>
+            </select>
             <button @click="createSet">Create</button>
+            <button @click="toggleCreateNewSet">Cancel</button> <!-- Cancel Button -->
         </div>
     
         <button @click="toggleCreateNewSet">Create New Set</button>
@@ -67,7 +72,7 @@ export default {
         toggleCreateNewSet() {
             this.creatingNewSet = !this.creatingNewSet;
             if (!this.creatingNewSet) {
-            this.resetNewSetForm();
+                this.resetNewSetForm();
             }
         },
         // Reset form fields for new set creation

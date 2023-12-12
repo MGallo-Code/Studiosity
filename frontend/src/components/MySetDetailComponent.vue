@@ -9,6 +9,10 @@
         <div class="set-banner" v-if="editingSet">
             <input type="text" v-model="setDetail.title" />
             <textarea v-model="setDetail.description"></textarea>
+            <select v-model="setDetail.private">
+                <option value="false">Public</option>
+                <option value="true">Private</option>
+            </select>
             <button @click="updateSetDetails">✔</button>
             <button @click="confirmDeleteSet"><font-awesome-icon icon="trash-alt" /></button>
         </div>
@@ -45,6 +49,7 @@
                 <div v-else>
                     <div><strong>Front:</strong> {{ term.front_text }}</div>
                     <div><strong>Back:</strong> {{ term.back_text }}</div>
+                    <button @click="speak(term.front_text)"><font-awesome-icon icon="volume-up" /> Speak</button>
                     <button @click="duplicateTerm(term)"><font-awesome-icon icon="clone" /></button>
                     <button @click="editTerm(term)"><font-awesome-icon icon="edit" /></button>
                 </div>
@@ -202,6 +207,18 @@ export default {
             } catch (error) {
                 this.error = error.response ? error.response.data.detail : 'An error occurred while duplicating the term';
             }
+        },
+        speak(text) {
+            if (!window.speechSynthesis) {
+                alert("Text-to-speech not supported in this browser.");
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.8;
+            utterance.pitch = 1;
+            utterance.lang = 'ja-JP'; //TODO make variable
+            window.speechSynthesis.speak(utterance);
         },
     }
 };
