@@ -28,7 +28,6 @@
 <script>
 import { axiosAuthInstance } from '../utils/axios-config';
 import { mapState, mapActions } from 'vuex';
-
 import DefaultProfile from '@/assets/default-profile-picture.png';
 
 export default {
@@ -80,6 +79,13 @@ export default {
                 } else {
                     console.log("An unknown error occurred logging out.");
                 }
+            }
+        }
+    },
+    watch: {
+        isAuthenticated(newValue) {
+            if (newValue) {
+                this.getUserProfile();
             }
         }
     },

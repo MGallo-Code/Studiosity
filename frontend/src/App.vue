@@ -92,4 +92,34 @@ body {
     background-color: var(--clr-error) !important;
 }
 
+/* Pagination */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--clr-base-primary);
+    color: white;
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* font-awesome */
+
+.font-awesome-icon {
+    font-size: 1.2em;
+}
 </style>
