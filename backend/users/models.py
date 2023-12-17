@@ -1,8 +1,14 @@
+import re
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.core.exceptions import ValidationError
 
 from uploads.models import ImageFile
+
+
+def validate_no_whitespace(value):
+    if re.search(r'\s', value):
+        raise ValidationError('No whitespace allowed in username.')
 
 
 class UserModelManager(BaseUserManager):
@@ -46,7 +52,7 @@ class UserModel(AbstractBaseUser):
     """
     Custom user model that uses email instead of username for authentication.
     """
-    username = models.CharField(max_length=25, unique=True)
+    username = models.CharField(max_length=25, unique=True, validators=[validate_no_whitespace])
     email = models.EmailField(max_length=64, unique=True)
     validated_account = models.BooleanField(default=False)
     profile_image = models.OneToOneField(
