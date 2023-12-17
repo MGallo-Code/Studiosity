@@ -43,6 +43,7 @@
             </div>
             <div class="btn-stack">
                 <button @click="updateSet(set)" class="square-btn green-btn">✔</button>
+                <button @click="editSet(null)" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button> 
                 <button @click="confirmDeleteSet(set.id)" class="square-btn red-btn"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
             </div>
         </div>
@@ -111,7 +112,7 @@ export default {
         },
         // Set the current set to be edited
         editSet(set) {
-            this.editingSetId = set.id;
+            this.editingSetId = set ? set.id : null;
             this.editSetError = null;
         },
         // API call to update the study set
@@ -227,6 +228,10 @@ export default {
 
 /* div with set edit inputs */
 
+.edit-inputs {
+    flex-grow: 1;
+}
+
 .set-edit input {
     width: 100%;
     height: 2rem;
@@ -236,7 +241,7 @@ export default {
 .set-edit textarea {
     padding: 0.05rem;
     width: 100%;
-    height: 2.8rem;
+    height: 5.6rem;
     font-size: 1rem;
 }
 
