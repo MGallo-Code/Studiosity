@@ -70,5 +70,4 @@ export default {
 </script>
 
 <style>
-@import "@/assets/container-list-style.css";
 </style>

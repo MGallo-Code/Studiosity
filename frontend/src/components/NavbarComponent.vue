@@ -98,7 +98,7 @@ export default {
     height: 5rem;
     font-size: 1.3rem;
     font-family: 'BreeSerif', serif;
-    background-color: rgb(50, 129, 75);
+    background-color: var(--clr-base-primary);
 }
 .navbar-brand {
     margin: 0 1.5rem;
@@ -134,7 +134,7 @@ export default {
 }
 
 .profile-picture {
-    position: relative; /* Make the profile picture container relative for sub-menu positioning */
+    position: relative;
 }
 
 .profile-submenu {

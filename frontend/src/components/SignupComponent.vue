@@ -65,7 +65,6 @@ export default {
 }
 </script>
   
-  <!-- Add styles as needed -->
 <style>
 form {
   display: grid;
@@ -90,7 +89,6 @@ button {
   grid-column: 1 / 3
 }
 .error-message {
-  color: red;
   grid-column: 1 / 3;
   text-align: center;
 }

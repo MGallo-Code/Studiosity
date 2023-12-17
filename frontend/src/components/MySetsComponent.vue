@@ -1,63 +1,80 @@
 <template>
-    <!-- Set Container for My Study Sets Page -->
-    <div class="set-container">
-        <h1>My Study Sets</h1>
-        <div v-if="error" class="error-message">{{ error }}</div>
-    
-        <!-- Inline Form for Creating a New Study Set -->
-        <div class="set-item new-set-form" v-if="creatingNewSet">
+    <h1>My Study Sets</h1>
+    <div v-if="error" class="error-message">{{ error }}</div>
+
+    <!-- Inline Form for Creating a New Study Set -->
+    <div class="set-container set-edit" v-if="creatingNewSet">
+        <div class="edit-inputs">
+            <p v-if="createSetError" class="error-message">{{ createSetError }}</p>
             <input type="text" placeholder="Set Title" v-model="newSet.title" />
             <textarea placeholder="Set Description" v-model="newSet.description"></textarea>
-            <select v-model="newSet.private">
-                <option value="false">Public</option>
-                <option value="true">Private</option>
-            </select>
-            <button @click="createSet">Create</button>
-            <button @click="toggleCreateNewSet">Cancel</button> <!-- Cancel Button -->
+            <span>
+                Visibility:
+                <select v-model="newSet.private">
+                    <option value="false">Public</option>
+                    <option value="true">Private</option>
+                </select>
+            </span>
         </div>
-    
-        <button @click="toggleCreateNewSet">Create New Set</button>
-    
-        <!-- List of Study Sets -->
-        <div class="sets-list">
-            <div class="set-item" v-for="set in public_sets" :key="set.id">
-            <div v-if="editingSetId === set.id">
-                <!-- Editable Fields for a Study Set -->
+        <div class="btn-stack">
+            <button @click="createSet" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'plus']" /></button>
+            <button @click="toggleCreateNewSet" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button> 
+        </div>
+    </div>
+
+    <button @click="toggleCreateNewSet" :disabled="creatingNewSet">Create New Set</button>
+
+    <!-- List of Study Sets -->
+    <div v-for="set in public_sets" :key="set.id">
+        <div v-if="editingSetId === set.id" class="set-container set-edit">
+            <!-- Editable Fields for a Study Set -->
+            <button @click.prevent="" class="favorite-btn square-btn"><font-awesome-icon :icon="['fas', 'star']" /></button>
+            <div class="edit-inputs">
+                <p v-if="editSetError" class="error-message">{{ editSetError }}</p>
                 <input type="text" v-model="set.title" />
                 <textarea v-model="set.description"></textarea>
-                <select v-model="set.private">
-                <option value="false">Public</option>
-                <option value="true">Private</option>
-                </select>
-                <button @click="updateSet(set)">✔</button>
-                <button @click="deleteSet(set.id)"><font-awesome-icon icon="trash-alt" /></button>
+                <span>
+                    Visibility:
+                    <select v-model="set.private">
+                        <option value="false">Public</option>
+                        <option value="true">Private</option>
+                    </select>
+                </span>
             </div>
-            <div v-else>
-                <!-- Displaying Study Set Details -->
-                <router-link :to="`/my-study-set/${set.id}`">{{ set.title }}</router-link>
+            <div class="btn-stack">
+                <button @click="updateSet(set)" class="square-btn green-btn">✔</button>
+                <button @click="confirmDeleteSet(set.id)" class="square-btn red-btn"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
+            </div>
+        </div>
+        <router-link v-else :to="`/my-study-set/${set.id}`" class="set-container set-display">
+            <!-- Displaying Study Set Details -->
+            <button @click.prevent="" class="favorite-btn square-btn"><font-awesome-icon :icon="['fas', 'star']" /></button>
+            <div>
+                <h2>{{ set.title }}</h2>
                 <p>{{ set.description }}</p>
-                <button @click="editSet(set)"><font-awesome-icon icon="edit" /></button>
             </div>
-            </div>
-        </div>
-    
-        <!-- Pagination Controls -->
-        <div class="pagination">
-            <button @click="navigatePage('previous')" :disabled="!pagination_links.previous">Previous</button>
-            <span>Page {{ current_page }} of {{ total_pages }}</span>
-            <button @click="navigatePage('next')" :disabled="!pagination_links.next">Next</button>
-        </div>
+            <button @click.prevent="editSet(set)" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
+        </router-link>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        <button @click="navigatePage('previous')" :disabled="!pagination_links.previous">Previous</button>
+        <span>Page {{ current_page }} of {{ total_pages }}</span>
+        <button @click="navigatePage('next')" :disabled="!pagination_links.next">Next</button>
     </div>
 </template>
   
 <script>
 import { axiosAuthInstance } from '../utils/axios-config';
+import { extractFirstErrorMessage } from '@/utils/errorHandler';
 
 export default {
     data() {
         return {
             // Initialize component state
-            error: null,
+            createSetError: null,
+            editSetError: null,
             public_sets: [],
             pagination_links: {},
             current_page: 1,
@@ -73,6 +90,7 @@ export default {
             this.creatingNewSet = !this.creatingNewSet;
             if (!this.creatingNewSet) {
                 this.resetNewSetForm();
+                this.createSetError = null;
             }
         },
         // Reset form fields for new set creation
@@ -85,24 +103,33 @@ export default {
             .then(response => {
                 this.public_sets.push(response.data);
                 this.toggleCreateNewSet();
+                this.createSetError = null;
             })
             .catch(error => {
-                this.error = error.response ? error.response.data.message : 'Error creating set';
+                this.createSetError = extractFirstErrorMessage(error);
             });
         },
         // Set the current set to be edited
         editSet(set) {
             this.editingSetId = set.id;
+            this.editSetError = null;
         },
         // API call to update the study set
         updateSet(set) {
             axiosAuthInstance.put(`/study_sets/study_sets/${set.id}/`, set)
             .then(() => {
                 this.editingSetId = null;
+                this.editSetError = null;
             })
             .catch(error => {
-                this.error = error.response ? error.response.data.message : 'Error updating set';
+                this.editSetError = extractFirstErrorMessage(error);
             });
+        },
+        // Confirms and deletes a set
+        async confirmDeleteSet(termId) {
+            if (confirm("Are you sure you want to delete this set?")) {
+                await this.deleteSet(termId);
+            }
         },
         // API call to delete the study set
         deleteSet(setId) {
@@ -111,7 +138,7 @@ export default {
                 this.public_sets = this.public_sets.filter(set => set.id !== setId);
             })
             .catch(error => {
-                this.error = error.response ? error.response.data.message : 'Error deleting set';
+                this.editSetError = extractFirstErrorMessage(error);
             });
         },
         // Navigate through paginated study sets
@@ -129,7 +156,7 @@ export default {
                 this.total_pages = response.data.total_pages;
             })
             .catch(error => {
-                this.error = error.response ? error.response.data.message : 'Error fetching sets';
+                console.log(error.response ? error.response.data.message : 'Error fetching sets');
             });
         },
     },
@@ -142,55 +169,86 @@ export default {
 
 <style scoped>
 .set-container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
-    background-color: #fff;
+    width: calc(100% - 2rem);
+    height: calc(100% - 2rem);
+    margin: 0 1rem 0.8rem 1rem;
+    padding: 0;
+    border-radius: 0.35rem;
+    border: 1px solid #ddd;
+    background-color: #f0f0f0;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-.sets-list, .new-set-form {
-    margin-top: 20px;
+.set-container:hover {
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
 }
 
-.set-item {
-    background-color: #f8f8f8;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 5px;
+/* SET VIEW (a block) */
+
+.favorite-btn {
+    margin-right: 1rem;
+    font-size: 1.2rem;
+    color: var(--clr-base-primary) !important;
+    background-color: inherit !important;
+}
+
+.favorite-btn:hover {
+    background-color: #e0e0e0 !important;
+}
+
+.set-display {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    padding: 1rem;
 }
 
-.set-item input, .set-item textarea {
-    width: 70%;
-    margin-right: 10px;
+.set-display div {
+    flex-grow: 1;
+    text-align: left;
 }
 
-.set-item select {
-    margin-right: 10px;
+.set-display h2 {
+    color: var(--clr-base-primary);
 }
 
-.set-item button {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: #4CAF50;
-    color: white;
-    margin-right: 5px;
+.set-display p {
+    overflow: hidden;
+    max-height: 3rem;
+    padding-left: 0.2rem;
+    color: black;
 }
 
-.set-item button:hover {
-    opacity: 0.9;
+/* SET EDIT */
+
+.set-edit {
+    display: flex;
+    padding: 1rem;
 }
 
-.error-message {
-    color: #f44336;
-    text-align: center;
-    margin-top: 10px;
+/* div with set edit inputs */
+
+.set-edit input {
+    width: 100%;
+    height: 2rem;
+    font-size: 1.4rem;
 }
+
+.set-edit textarea {
+    padding: 0.05rem;
+    width: 100%;
+    height: 2.8rem;
+    font-size: 1rem;
+}
+
+.set-edit span {
+    display: block;
+    padding: 0.4rem;
+    width: 100%;
+    text-align: left;
+    font-weight: 800;
+}
+
+/* Pagination */
 
 .pagination {
     display: flex;
@@ -205,7 +263,7 @@ export default {
     font-size: 1em;
     border: none;
     border-radius: 5px;
-    background-color: #4CAF50;
+    background-color: var(--clr-base-primary);
     color: white;
     cursor: pointer;
 }
@@ -215,20 +273,9 @@ export default {
     cursor: not-allowed;
 }
 
+/* font-awesome */
+
 .font-awesome-icon {
     font-size: 1.2em;
-}
-
-.new-set-form {
-    display: flex;
-    flex-direction: column;
-}
-
-.new-set-form input, .new-set-form textarea {
-    margin-bottom: 10px;
-}
-
-.new-set-form button {
-    align-self: flex-start;
 }
 </style>

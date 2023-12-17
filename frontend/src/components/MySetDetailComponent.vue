@@ -1,58 +1,59 @@
 <template>
-    <!-- Container for the study set detail view -->
-    <div class="set-detail-container">
-
-        <!-- Error message display -->
-        <div v-if="error" class="error-message">{{ error }}</div>
-        
-        <!-- Editable Study Set Details -->
-        <div class="set-banner" v-if="editingSet">
-            <input type="text" v-model="setDetail.title" />
-            <textarea v-model="setDetail.description"></textarea>
-            <select v-model="setDetail.private">
+    <!-- Editable Study Set Details -->
+    <div class="set-banner set-banner-edit" v-if="editingSet">
+        <div>
+            <p v-if="editSetError" class="error-message">{{ editSetError }}</p>
+            <input type="text" v-model="setEditForm.title" />
+            <textarea v-model="setEditForm.description"></textarea>
+            <select v-model="setEditForm.private">
                 <option value="false">Public</option>
                 <option value="true">Private</option>
             </select>
-            <button @click="updateSetDetails">✔</button>
-            <button @click="confirmDeleteSet"><font-awesome-icon icon="trash-alt" /></button>
         </div>
-        <div class="set-banner" v-else>
-            <h1>{{ setDetail.title }}</h1>
-            <p>{{ setDetail.description || 'No description provided.' }}</p>
-            <button @click="editSetDetails"><font-awesome-icon icon="edit" /></button>
+        <div class="btn-stack">
+            <button @click="updateSetDetails" class="square-btn green-btn">✔</button>
+            <button @click="toggleEditSetDetails" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button>
+            <button @click="confirmDeleteSet" class="square-btn red-btn"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
+        </div>
+    </div>
+    <div class="set-banner" v-else>
+        <button @click="toggleEditSetDetails" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
+        <h1>{{ setDetail.title }}</h1>
+        <p>{{ setDetail.description || 'No description provided.' }}</p>
+    </div>
+
+    <!-- Study Terms List -->
+    <div class="terms-list">
+        <!-- Inline form for creating a new term -->
+        <div class="term-item new-term-form" v-if="creatingNewTerm">
+            <p v-if="createTermError" class="error-message">{{ createTermError }}</p>
+            <input type="text" placeholder="Front text" v-model="newTerm.front_text" />
+            <input type="text" placeholder="Back text" v-model="newTerm.back_text" />
+            <button @click="createTerm"><font-awesome-icon :icon="['fas', 'plus']" /></button>
         </div>
 
-        <!-- Study Terms List -->
-        <div class="study-terms">
-            <h2>Study Terms</h2>
+        <!-- Button to toggle new term creation form -->
+        <button @click="toggleCreateNewTerm">Create New Term</button>
 
-            <!-- Inline form for creating a new term -->
-            <div class="term-item new-term-form" v-if="creatingNewTerm">
-                <input type="text" placeholder="Front text" v-model="newTerm.front_text" />
-                <input type="text" placeholder="Back text" v-model="newTerm.back_text" />
-                <button @click="createTerm">Create</button>
-            </div>
-
-            <!-- Button to toggle new term creation form -->
-            <button @click="toggleCreateNewTerm">Create New Term</button>
-
-            <!-- Iterating over each term to display -->
-            <div v-for="term in studyTerms" :key="term.id" class="term-item">
-                <!-- Editable term form -->
-                <div v-if="editingTerm && editingTerm.id === term.id">
-                    <input type="text" v-model="termForm.front_text" />
-                    <input type="text" v-model="termForm.back_text" />
+        <!-- Iterating over each term to display -->
+        <div v-for="term in studyTerms" :key="term.id" class="term-item">
+            <!-- Editable term form -->
+            <div v-if="editingTerm && editingTerm.id === term.id" class="term-edit">
+                <p v-if="editTermError" class="error-message">{{ editTermError }}</p>
+                <input type="text" v-model="termForm.front_text" />
+                <input type="text" v-model="termForm.back_text" />
+                <div class="btn-stack">
                     <button @click="updateTerm">✔️ Save</button>
-                    <button @click="confirmDeleteTerm(term.id)"><font-awesome-icon icon="trash-alt" /></button>
+                    <button @click="duplicateTerm(term)"><font-awesome-icon :icon="['fas', 'clone']" /></button>
+                    <button @click="confirmDeleteTerm(term.id)"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
                 </div>
-                <!-- Display term details -->
-                <div v-else>
-                    <div><strong>Front:</strong> {{ term.front_text }}</div>
-                    <div><strong>Back:</strong> {{ term.back_text }}</div>
-                    <button @click="speak(term.front_text)"><font-awesome-icon icon="volume-up" /> Speak</button>
-                    <button @click="duplicateTerm(term)"><font-awesome-icon icon="clone" /></button>
-                    <button @click="editTerm(term)"><font-awesome-icon icon="edit" /></button>
-                </div>
+            </div>
+            <!-- Display term details -->
+            <div v-else class="term-display">
+                <strong>{{ term.front_text }}</strong>
+                <div><strong>Back:</strong> {{ term.back_text }}</div>
+                <button @click="speak(term.front_text)"><font-awesome-icon icon="volume-up" /></button>
+                <button @click="editTerm(term)"><font-awesome-icon :icon="['fas', 'edit']" /></button>
             </div>
         </div>
     </div>
@@ -61,14 +62,18 @@
 
 <script>
 import { axiosAuthInstance } from '../utils/axios-config';
+import { extractFirstErrorMessage } from '@/utils/errorHandler';
 
 export default {
     data() {
         // Initializing data properties
         return {
             setDetail: {},
+            setEditForm: {},
             studyTerms: [],
-            error: null,
+            editSetError: null,
+            createTermError: null,
+            editTermError: null,
             editingSet: false,
             editingTerm: null,
             editingTermId: null,
@@ -101,26 +106,31 @@ export default {
                 if (error.response && error.response.data.detail === "Not found.") {
                     this.$router.push({ path: '/my-study-sets/' })
                 } else {
-                    this.error = error.response ? error.response.data.detail : 'An error occurred';
+                    console.log(error.response ? error.response.data.message : 'Error fetching sets');
                 }
             }
         },
 
-        // Toggles edit mode for the study set
-        editSetDetails() {
-            this.editingSet = true;
+        toggleEditSetDetails() {
+            if (!this.editingSet) {
+                // Entering edit mode, make a copy of setDetail
+                this.setEditForm = { ...this.setDetail };
+            }
+            this.editingSet = !this.editingSet;
+            this.editSetError = null;
         },
 
         // Updates study set details
         async updateSetDetails() {
-            try {
-                await axiosAuthInstance.put(`/study_sets/study_sets/${this.setDetail.id}/`, this.setDetail);
-                this.editingSet = false;
-                this.fetchSetDetail();
-            } catch (error) {
-                this.error = error.response ? error.response.data.detail : 'Error updating set details';
-            }
-        },
+    try {
+        await axiosAuthInstance.put(`/study_sets/study_sets/${this.setDetail.id}/`, this.setEditForm);
+        this.setDetail = { ...this.setEditForm };
+        this.editingSet = false;
+        this.fetchSetDetail();
+    } catch (error) {
+        this.editSetError = extractFirstErrorMessage(error);
+    }
+},
 
         // Confirms and deletes the study set
         confirmDeleteSet() {
@@ -135,13 +145,14 @@ export default {
                 await axiosAuthInstance.delete(`study_sets/study_sets/${this.setDetail.id}/`);
                 this.$router.push('/my-study-sets/');
             } catch (error) {
-                this.error = error.response ? error.response.data.detail : 'Error deleting set';
+                this.editSetError = extractFirstErrorMessage(error);
             }
         },
 
         // Toggles the form for creating a new term
         toggleCreateNewTerm() {
             this.creatingNewTerm = !this.creatingNewTerm;
+            this.createTermError = null;
             this.resetNewTermForm();
         },
 
@@ -155,10 +166,11 @@ export default {
             axiosAuthInstance.post('/study_sets/study_terms/', this.newTerm)
                 .then(() => {
                     this.creatingNewTerm = false;
+                    this.createTermError = null;
                     this.fetchSetDetail();
                 })
                 .catch(error => {
-                    this.error = error.response ? error.response.data.detail : 'Error creating term';
+                    console.log(error.response ? error.response.data.message : 'Error fetching sets');
                 });
         },
 
@@ -166,6 +178,7 @@ export default {
         editTerm(term) {
             this.editingTerm = this.editingTerm && this.editingTerm.id === term.id ? null : term;
             this.termForm = { ...term };
+            this.editTermError = null;
         },
 
         // Updates the term
@@ -174,9 +187,10 @@ export default {
                 try {
                     await axiosAuthInstance.put(`/study_sets/study_terms/${this.editingTerm.id}/`, this.termForm);
                     this.editingTerm = null;
+                    this.editTermError = null;
                     this.fetchSetDetail();
                 } catch (error) {
-                    this.error = error.response ? error.response.data.detail : "An error occurred while updating the term.";
+                    this.editTermError = extractFirstErrorMessage(error);
                 }
             }
         },
@@ -194,7 +208,7 @@ export default {
                 await axiosAuthInstance.delete(`study_sets/study_terms/${termId}/`);
                 this.fetchSetDetail();
             } catch (error) {
-                this.error = error.response ? error.response.data.detail : 'An error occurred while deleting the term';
+                this.editTermError = extractFirstErrorMessage(error);
             }
         },
 
@@ -205,7 +219,7 @@ export default {
                 await axiosAuthInstance.post(`study_sets/study_terms/`, newTerm);
                 this.fetchSetDetail();
             } catch (error) {
-                this.error = error.response ? error.response.data.detail : 'An error occurred while duplicating the term';
+                console.log(error.response ? error.response.data.message : 'Error fetching sets');
             }
         },
         speak(text) {
@@ -226,23 +240,54 @@ export default {
 
 
 <style scoped>
-.set-detail-container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
+.set-banner {
+    position: relative;
+    background-color: #f0f0f0;
+    padding: 1rem;
+    border-radius: 0.4rem;
+    margin-bottom: 20px;
 }
 
-.set-banner {
-    background-color: #f0f0f0;
-    padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
+.set-banner > button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
 }
 
 .set-banner h1 {
-    margin-bottom: 10px;
+    padding: 1rem 4rem 0 4rem;
+}
+
+.set-banner p {
+    padding: 0.4rem 3rem 1rem 3rem;
+}
+
+.set-banner-edit {
+    display: flex;
+    flex-direction: row;
+}
+
+.set-banner-edit div:nth-child(1) {
+    flex-grow: 1;
+}
+
+.set-banner input {
+    padding-right: 4rem;
+    height: 3rem;
+    width: 100%;
+}
+
+.set-banner textarea {
+    padding-right: 4rem;
+    height: 6rem;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+}
+
+.set-banner select {
+    padding-right: 4rem;
+    width: 100%;
 }
 
 .set-banner input, .set-banner textarea {
@@ -320,11 +365,6 @@ export default {
     opacity: 0.9;
 }
 
-.error-message {
-    color: #f44336;
-    text-align: center;
-    margin-top: 10px;
-}
 
 /* Input and textarea styles for new term form */
 .new-term-form input, .new-term-form textarea {
