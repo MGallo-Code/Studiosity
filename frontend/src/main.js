@@ -10,6 +10,7 @@ import {
     faPlus,
     faBan,
     faVolumeUp,
+    faCheck,
     faStar as fasStar,
 } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
@@ -22,6 +23,7 @@ library.add(
     faPlus,
     faBan,
     faVolumeUp,
+    faCheck,
     fasStar,
     farStar
 );

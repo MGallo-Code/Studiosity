@@ -19,6 +19,8 @@ export default {
     --clr-base-primary: rgb(50, 129, 75);
     --clr-btn-green: #4CAF50;
     --clr-btn-yellow: #cdae30;
+    --clr-btn-gray: #969696;
+    --clr-btn-blue: #6db0d2;
     --clr-error: #f44336;
 }
 
@@ -80,12 +82,24 @@ body {
     color: white;
 }
 
+.square-btn:hover {
+    opacity: 0.8;
+}
+
 .green-btn {
     background-color: var(--clr-btn-green) !important;
 }
 
+.blue-btn {
+    background-color: var(--clr-btn-blue) !important;
+}
+
+.gray-btn {
+    background-color: var(--clr-btn-gray) !important;
+}
+
 .yellow-btn {
-    background-color: var(--clr-btn-yellow)
+    background-color: var(--clr-btn-yellow) !important;
 }
 
 .red-btn {

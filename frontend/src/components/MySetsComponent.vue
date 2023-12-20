@@ -1,7 +1,5 @@
 <template>
     <h1>My Study Sets</h1>
-    <div v-if="error" class="error-message">{{ error }}</div>
-
     <!-- Inline Form for Creating a New Study Set -->
     <div class="set-container set-edit" v-if="creatingNewSet">
         <div class="edit-inputs">
@@ -54,7 +52,7 @@
                 <h2>{{ set.title }}</h2>
                 <p>{{ set.description }}</p>
             </div>
-            <button @click.prevent="editSet(set)" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
+            <button @click.prevent="editSet(set)" class="square-btn blue-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
         </router-link>
     </div>
 

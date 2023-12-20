@@ -11,13 +11,13 @@
             </select>
         </div>
         <div class="btn-stack">
-            <button @click="updateSetDetails" class="square-btn green-btn">✔</button>
+            <button @click="updateSetDetails" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'check']" /></button>
             <button @click="toggleEditSetDetails" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button>
             <button @click="confirmDeleteSet" class="square-btn red-btn"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
         </div>
     </div>
     <div class="set-banner" v-else>
-        <button @click="toggleEditSetDetails" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
+        <button @click="toggleEditSetDetails" class="square-btn blue-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
         <h1>{{ setDetail.title }}</h1>
         <p>{{ setDetail.description || 'No description provided.' }}</p>
     </div>
@@ -25,35 +25,55 @@
     <!-- Study Terms List -->
     <div class="terms-list">
         <!-- Inline form for creating a new term -->
-        <div class="term-item new-term-form" v-if="creatingNewTerm">
+        <div class="term-container new-term-form" v-if="creatingNewTerm">
             <p v-if="createTermError" class="error-message">{{ createTermError }}</p>
             <input type="text" placeholder="Front text" v-model="newTerm.front_text" />
             <input type="text" placeholder="Back text" v-model="newTerm.back_text" />
-            <button @click="createTerm"><font-awesome-icon :icon="['fas', 'plus']" /></button>
+            <div class="btn-stack">
+                <button @click="createTerm" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'plus']" /></button>
+                <button @click="toggleCreateNewTerm" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button> 
+            </div>
         </div>
 
         <!-- Button to toggle new term creation form -->
-        <button @click="toggleCreateNewTerm">Create New Term</button>
+        <button @click="toggleCreateNewTerm" :disabled="creatingNewTerm">Create New Term</button>
 
         <!-- Iterating over each term to display -->
-        <div v-for="term in studyTerms" :key="term.id" class="term-item">
+        <div v-for="term in studyTerms" :key="term.id" class="term-container">
             <!-- Editable term form -->
-            <div v-if="editingTerm && editingTerm.id === term.id" class="term-edit">
+            <div class="term-display" v-if="editingTerm && editingTerm.id === term.id">
                 <p v-if="editTermError" class="error-message">{{ editTermError }}</p>
-                <input type="text" v-model="termForm.front_text" />
-                <input type="text" v-model="termForm.back_text" />
+                <div class="front-back-display">
+                    <span>
+                        <textarea v-model="termForm.front_text" />
+                        <p @click="speak(termForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
+                    </span>
+                    <div class="spacer"></div>
+                    <span>
+                        <textarea v-model="termForm.back_text" />
+                        <p @click="speak(termForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
+                    </span>
+                </div>
                 <div class="btn-stack">
-                    <button @click="updateTerm">✔️ Save</button>
-                    <button @click="duplicateTerm(term)"><font-awesome-icon :icon="['fas', 'clone']" /></button>
-                    <button @click="confirmDeleteTerm(term.id)"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
+                    <button @click="updateTerm" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'check']" /></button>
+                    <button @click="editTerm(null)" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button>
+                    <button @click="confirmDeleteTerm(term.id)" class="square-btn red-btn"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
                 </div>
             </div>
             <!-- Display term details -->
             <div v-else class="term-display">
-                <strong>{{ term.front_text }}</strong>
-                <div><strong>Back:</strong> {{ term.back_text }}</div>
-                <button @click="speak(term.front_text)"><font-awesome-icon icon="volume-up" /></button>
-                <button @click="editTerm(term)"><font-awesome-icon :icon="['fas', 'edit']" /></button>
+                <div class="front-back-display">
+                    <span @click="speak(term.front_text)">
+                        {{ term.front_text }}
+                        <p><font-awesome-icon icon="volume-up" /></p>
+                    </span>
+                    <div class="spacer"></div>
+                    <span @click="speak(term.back_text)">
+                        {{ term.back_text }}
+                        <p><font-awesome-icon icon="volume-up" /></p>
+                    </span>
+                </div>
+                <button @click="editTerm(term)" class="square-btn blue-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
             </div>
         </div>
     </div>
@@ -76,7 +96,6 @@ export default {
             editTermError: null,
             editingSet: false,
             editingTerm: null,
-            editingTermId: null,
             termForm: {
                 front_text: '',
                 back_text: '',
@@ -122,15 +141,15 @@ export default {
 
         // Updates study set details
         async updateSetDetails() {
-    try {
-        await axiosAuthInstance.put(`/study_sets/study_sets/${this.setDetail.id}/`, this.setEditForm);
-        this.setDetail = { ...this.setEditForm };
-        this.editingSet = false;
-        this.fetchSetDetail();
-    } catch (error) {
-        this.editSetError = extractFirstErrorMessage(error);
-    }
-},
+            try {
+                await axiosAuthInstance.put(`/study_sets/study_sets/${this.setDetail.id}/`, this.setEditForm);
+                this.setDetail = { ...this.setEditForm };
+                this.editingSet = false;
+                this.fetchSetDetail();
+            } catch (error) {
+                this.editSetError = extractFirstErrorMessage(error);
+            }
+        },
 
         // Confirms and deletes the study set
         confirmDeleteSet() {
@@ -176,8 +195,8 @@ export default {
 
         // Enters edit mode for a specific term
         editTerm(term) {
-            this.editingTerm = this.editingTerm && this.editingTerm.id === term.id ? null : term;
-            this.termForm = { ...term };
+            this.termForm = term && term.id ? { ...term } : null;
+            this.editingTerm = term;
             this.editTermError = null;
         },
 
@@ -213,15 +232,15 @@ export default {
         },
 
         // Duplicates a term
-        async duplicateTerm(term) {
-            const newTerm = { ...term, id: undefined };
-            try {
-                await axiosAuthInstance.post(`study_sets/study_terms/`, newTerm);
-                this.fetchSetDetail();
-            } catch (error) {
-                console.log(error.response ? error.response.data.message : 'Error fetching sets');
-            }
-        },
+        // async duplicateTerm(term) {
+        //     const newTerm = { ...term, id: undefined };
+        //     try {
+        //         await axiosAuthInstance.post(`study_sets/study_terms/`, newTerm);
+        //         this.fetchSetDetail();
+        //     } catch (error) {
+        //         console.log(error.response ? error.response.data.message : 'Error fetching sets');
+        //     }
+        // },
         speak(text) {
             if (!window.speechSynthesis) {
                 alert("Text-to-speech not supported in this browser.");
@@ -245,7 +264,6 @@ export default {
     background-color: #f0f0f0;
     padding: 1rem;
     border-radius: 0.4rem;
-    margin-bottom: 20px;
 }
 
 .set-banner > button {
@@ -297,6 +315,12 @@ export default {
     border: 1px solid #ddd;
 }
 
+/* Terms Display */
+
+.terms-list {
+    margin: 0 1rem 0 1rem;
+}
+
 .study-terms {
     margin-bottom: 20px;
 }
@@ -305,8 +329,9 @@ export default {
     margin-bottom: 15px;
 }
 
-.term-item {
+.term-container {
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     background-color: #f8f8f8;
@@ -315,76 +340,55 @@ export default {
     border-radius: 5px;
 }
 
-.term-item button {
-    margin-left: 10px;
-    padding: 5px 10px;
-    font-size: 0.9em;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+.term-display {
     display: flex;
-    align-items: center;
-}
-
-.term-item button i {
-    margin-right: 5px;
-}
-
-.term-item .edit-button {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.term-item .delete-button {
-    background-color: #f44336;
-    color: white;
-}
-
-.term-item .duplicate-button {
-    background-color: #2196F3;
-    color: white;
-}
-
-.create-button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 1em;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    margin-top: 15px;
-}
-
-.create-button i {
-    margin-right: 5px;
-}
-
-.create-button:hover {
-    opacity: 0.9;
-}
-
-
-/* Input and textarea styles for new term form */
-.new-term-form input, .new-term-form textarea {
-    margin-bottom: 10px;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
+    flex-direction: row;
+    justify-content: center;
     width: 100%;
 }
 
-.new-term-form button {
-    background-color: #2196F3;
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+.front-back-display {
+    display: flex;
+    justify-content: center;
+    width: 100%;
 }
 
-.new-term-form button:hover {
-    opacity: 0.9;
+.front-back-display span {
+    display: flex;
+    cursor: pointer;
+    padding: 0.6rem 1rem 0.6rem 1rem;
+    font-size: 1.2rem;
+    gap: 0.5rem;
 }
+
+.front-back-display span:first-child {
+    text-align: right;
+}
+
+.front-back-display span:last-child {
+    text-align: left;
+}
+
+.spacer {
+    flex-grow: 0;
+    width: 0.2rem;
+    border-radius: 0.33rem;
+    background-color: gray;
+}
+
+/* Input and textarea styles for term inputs */
+
+.new-term-form input {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.front-back-display textarea {
+    height: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
 </style>
