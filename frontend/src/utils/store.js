@@ -1,5 +1,5 @@
 import { createStore } from "vuex";
-import { axiosAuthInstance } from "@/utils/axios-config";
+import { axiosAuthInstance } from "@/utils/axiosConfig";
 
 export default createStore({
     state: {

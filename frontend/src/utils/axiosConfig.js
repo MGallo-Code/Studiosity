@@ -32,20 +32,20 @@ axiosAuthInstance.interceptors.response.use(
         const originalRequest = error.config;
 
         // Handling 401 errors
-        if (error.response && error.response.status === 401) {
-            // Avoid intercepting for token refresh or if a retry has already been attempted
-            if (
-                !originalRequest._retry &&
-                !originalRequest._ignoreInterceptor
-            ) {
-                originalRequest._retry = true;
-                const tokenRefreshed = await refreshToken();
-                if (tokenRefreshed) {
-                    return axiosAuthInstance(originalRequest);
-                } else {
-                    // Resolve to suppress further errors, if token wasn't refreshed it was handled.
-                    return Promise.reject(new Error("Session ended"));
-                }
+        // Avoid intercepting if _ignoreInterceptor is set
+        if (
+            error.response &&
+            error.response.status === 401 &&
+            !error.config._ignoreInterceptor
+        ) {
+            originalRequest._ignoreInterceptor = true;
+            const tokenRefreshed = await refreshToken();
+            if (tokenRefreshed) {
+                console.log("Token refreshed!");
+                return axiosAuthInstance(originalRequest);
+            } else {
+                // Resolve to suppress further errors, if token wasn't refreshed it was handled.
+                return Promise.resolve("Session ended");
             }
         }
 

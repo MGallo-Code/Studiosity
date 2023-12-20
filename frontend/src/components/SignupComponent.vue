@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { axiosDefaultInstance } from '../utils/axios-config';
+import { axiosDefaultInstance } from '../utils/axiosConfig';
 import { extractFirstErrorMessage } from '@/utils/errorHandler';
 
 export default {

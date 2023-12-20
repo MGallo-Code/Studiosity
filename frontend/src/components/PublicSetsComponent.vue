@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { axiosDefaultInstance } from '../utils/axios-config';
+import { axiosDefaultInstance } from '../utils/axiosConfig';
 
 export default {
   data() {

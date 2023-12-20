@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { axiosAuthInstance } from '../utils/axios-config';
+import { axiosAuthInstance } from '../utils/axiosConfig';
 import { mapState, mapActions } from 'vuex';
 import DefaultProfile from '@/assets/default-profile-picture.png';
 

@@ -82,7 +82,7 @@
 
 
 <script>
-import { axiosAuthInstance } from '../utils/axios-config';
+import { axiosAuthInstance } from '../utils/axiosConfig';
 import { extractFirstErrorMessage } from '@/utils/errorHandler';
 
 export default {

@@ -10,7 +10,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         if response.status_code == 200:
             access_token = response.data['access']
             refresh_token = response.data['refresh']
-            #TODO add , secure=True for https only
+#TODO add , secure=True for https only
             response.set_cookie(
                 key='lifelocker_access_token',
                 value=access_token,
@@ -28,7 +28,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         return response
 
 
-import logging
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get('lifelocker_refresh_token')
@@ -47,7 +46,8 @@ class CustomTokenRefreshView(TokenRefreshView):
                 value=access_token,
                 httponly=True,
                 samesite='Strict',
-                secure=False  # Set to True in production
+#TODO add , secure=True for https only
+                secure=False
             )
         return response
 

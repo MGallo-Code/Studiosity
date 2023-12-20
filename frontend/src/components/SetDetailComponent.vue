@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { axiosAuthInstance } from '../utils/axios-config';
+import { axiosAuthInstance } from '../utils/axiosConfig';
 
 
 export default {

@@ -17,7 +17,7 @@
   </template>
   
   <script>
-import { axiosAuthInstance } from '../utils/axios-config';
+import { axiosAuthInstance } from '../utils/axiosConfig';
 import { mapActions } from 'vuex';
   
   export default {
