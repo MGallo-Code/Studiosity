@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 
+from users.models import UserModel
 from uploads.models import AudioFile, ImageFile
 
 
@@ -81,3 +82,13 @@ class StudyTerm(models.Model):
 
     def __str__(self):
         return f"Term {self.id}: {self.front_text} | {self.back_text}"
+
+class Favorite(models.Model):
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='favorites')
+    study_set = models.ForeignKey(StudySet, on_delete=models.CASCADE, related_name='favorited_by')
+
+    class Meta:
+        unique_together = ('user', 'study_set')
+
+    def __str__(self):
+        return f"{self.user.username} favorited {self.study_set.title}"

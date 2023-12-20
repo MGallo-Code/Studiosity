@@ -2,13 +2,14 @@ from math import ceil
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.views import APIView
 
-from .models import StudySet, StudyTerm, Tag
+from .models import StudySet, StudyTerm, Tag, Favorite
 from .serializers import StudySetSerializer, StudyTermSerializer, TagSerializer
 
 
@@ -215,3 +216,17 @@ class TagViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'destroy']:
             return [IsAuthenticated()]
         return [AllowAny()]
+
+class FavoriteStudySetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        study_set = get_object_or_404(StudySet, pk=pk)
+        user = request.user
+        favorite, created = Favorite.objects.get_or_create(user=user, study_set=study_set)
+
+        if not created:
+            favorite.delete()
+            return Response({'status': 'unfavorited'}, status=status.HTTP_204_NO_CONTENT)
+
+        return Response({'status': 'favorited'}, status=status.HTTP_201_CREATED)

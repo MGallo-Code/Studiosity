@@ -5,10 +5,18 @@ from .models import StudySet, Tag, StudyTerm
 
 
 class StudySetSerializer(serializers.ModelSerializer):
+    favorited = serializers.SerializerMethodField()
+
     class Meta:
         model = StudySet
-        fields = ['id', 'title', 'description', 'uploader', 'private', 'created_at']
-        read_only_fields = ['uploader', 'created_at']
+        fields = ['id', 'title', 'description', 'uploader', 'private', 'created_at', 'favorited']
+        read_only_fields = ['uploader', 'created_at', 'favorited']
+
+    def get_favorited(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return obj.favorited_by.filter(user=user).exists()
+        return False
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:

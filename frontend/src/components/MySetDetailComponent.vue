@@ -17,6 +17,7 @@
         </div>
     </div>
     <div class="set-banner" v-else>
+        <button @click="toggleFavorite(setDetail)" class="favorite-btn square-btn"><font-awesome-icon :icon="[setDetail.favorited ? 'fas' : 'far', 'star']" /></button>
         <button @click="toggleEditSetDetails" class="square-btn blue-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
         <h1>{{ setDetail.title }}</h1>
         <p>{{ setDetail.description || 'No description provided.' }}</p>
@@ -230,17 +231,16 @@ export default {
                 this.editTermError = extractFirstErrorMessage(error);
             }
         },
-
-        // Duplicates a term
-        // async duplicateTerm(term) {
-        //     const newTerm = { ...term, id: undefined };
-        //     try {
-        //         await axiosAuthInstance.post(`study_sets/study_terms/`, newTerm);
-        //         this.fetchSetDetail();
-        //     } catch (error) {
-        //         console.log(error.response ? error.response.data.message : 'Error fetching sets');
-        //     }
-        // },
+        // Toggle favorite/unfavorite for a study set
+        toggleFavorite(set) {
+            axiosAuthInstance.post(`/study_sets/favorite/${set.id}/`)
+            .then(response => {
+                set.favorited = response.data.status === 'favorited';
+            })
+            .catch(error => {
+                console.error("Error toggling favorite status:", error.response ? error.response.data : error);
+            });
+        },
         speak(text) {
             if (!window.speechSynthesis) {
                 alert("Text-to-speech not supported in this browser.");
@@ -270,6 +270,14 @@ export default {
     position: absolute;
     top: 1rem;
     right: 1rem;
+}
+
+.set-banner .favorite-btn {
+    left: 1rem !important;
+    margin-right: 1rem;
+    font-size: 1.2rem;
+    color: var(--clr-btn-yellow) !important;
+    background-color: inherit !important;
 }
 
 .set-banner h1 {

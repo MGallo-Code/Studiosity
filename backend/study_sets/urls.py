@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .views import (
-    MyStudySetsView, StudyTermViewSet, StudySetViewSet,
+    FavoriteStudySetView, MyStudySetsView, StudyTermViewSet, StudySetViewSet,
     StudyTermsInSetView, TagViewSet
 )
 
@@ -15,5 +15,6 @@ router.register(r'tags', TagViewSet, basename='tag')
 urlpatterns = [
     path('my_sets/', MyStudySetsView.as_view(), name='my_study_sets'),
     path('terms_in_set/<int:pk>/', StudyTermsInSetView.as_view(), name='terms_in_set'),
+    path('favorite/<int:pk>/', FavoriteStudySetView.as_view(), name='favorite_study_set'),
     path('', include(router.urls)),
 ]

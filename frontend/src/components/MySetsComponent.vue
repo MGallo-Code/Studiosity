@@ -26,7 +26,7 @@
     <div v-for="set in public_sets" :key="set.id">
         <div v-if="editingSetId === set.id" class="set-container set-edit">
             <!-- Editable Fields for a Study Set -->
-            <button @click.prevent="" class="favorite-btn square-btn"><font-awesome-icon :icon="['fas', 'star']" /></button>
+            <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
             <div class="edit-inputs">
                 <p v-if="editSetError" class="error-message">{{ editSetError }}</p>
                 <input type="text" v-model="set.title" />
@@ -47,7 +47,7 @@
         </div>
         <router-link v-else :to="`/my-study-set/${set.id}`" class="set-container set-display">
             <!-- Displaying Study Set Details -->
-            <button @click.prevent="" class="favorite-btn square-btn"><font-awesome-icon :icon="['fas', 'star']" /></button>
+            <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
             <div>
                 <h2>{{ set.title }}</h2>
                 <p>{{ set.description }}</p>
@@ -158,6 +158,16 @@ export default {
                 console.log(error.response ? error.response.data.message : 'Error fetching sets');
             });
         },
+        // Toggle favorite/unfavorite for a study set
+        toggleFavorite(set) {
+            axiosAuthInstance.post(`/study_sets/favorite/${set.id}/`)
+            .then(response => {
+                set.favorited = response.data.status === 'favorited';
+            })
+            .catch(error => {
+                console.error("Error toggling favorite status:", error.response ? error.response.data : error);
+            });
+        },
     },
     mounted() {
         // Initial data fetch when the component is mounted
@@ -187,7 +197,7 @@ export default {
 .favorite-btn {
     margin-right: 1rem;
     font-size: 1.2rem;
-    color: var(--clr-base-primary) !important;
+    color: var(--clr-btn-yellow) !important;
     background-color: inherit !important;
 }
 
