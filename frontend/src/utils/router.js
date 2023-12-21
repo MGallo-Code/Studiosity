@@ -7,6 +7,7 @@ import MySetDetailComponent from "@/components/MySetDetailComponent.vue";
 import MySetsComponent from "@/components/MySetsComponent.vue";
 import PublicSetsComponent from "@/components/PublicSetsComponent.vue";
 import SetDetailComponent from "@/components/SetDetailComponent.vue";
+import MyProfileComponent from "@/components/MyProfileComponent.vue";
 
 const routes = [
     { path: "/", component: HomeComponent },
@@ -24,6 +25,11 @@ const routes = [
     },
     { path: "/public-study-sets/:page?", component: PublicSetsComponent },
     { path: "/study-set/:id", component: SetDetailComponent },
+    {
+        path: "/my-profile",
+        component: MyProfileComponent,
+        meta: { requiresAuth: true },
+    },
 ];
 
 const router = createRouter({

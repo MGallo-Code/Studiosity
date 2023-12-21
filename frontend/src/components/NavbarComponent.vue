@@ -11,7 +11,7 @@
                 <router-link to="/login">Login</router-link>
             </li>
             <li v-if="isAuthenticated" class="profile-picture" @mouseenter="toggleSubMenu(true)" @mouseleave="toggleSubMenu(false)">
-                <router-link to="/profile">
+                <router-link to="/my-profile">
                 <span>{{ this.username }}</span>
                 <img :src="profileImage" alt="Profile" class="profile-pic">
                 </router-link>
