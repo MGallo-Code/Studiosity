@@ -42,7 +42,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class UserPublicProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
-        fields = ('username', 'profile_image')  # Publicly accessible fields
+        fields = ('username', 'profile_image', 'bio')  # Publicly accessible fields
     
     def to_representation(self, instance):
         """

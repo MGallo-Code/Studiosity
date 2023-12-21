@@ -214,6 +214,7 @@ export default {
 .set-display div {
     flex-grow: 1;
     text-align: left;
+    padding-right: 1rem;
 }
 
 .set-display h2 {

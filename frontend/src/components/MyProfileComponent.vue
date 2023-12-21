@@ -3,9 +3,7 @@
     <div v-else class="my-profile-container">
         <img class="profile-picture" :src="profileImage" alt="Profile Picture" />
         <h1>{{ this.profile.username }}</h1>
-
-
-        <!-- <p>{{ profile.bio || 'No description provided.' }}</p> -->
+        <p>{{ this.profile.bio || 'No user bio provided.' }}</p>
     </div>
 </template>
 
@@ -13,6 +11,7 @@
 import { axiosAuthInstance } from '../utils/axiosConfig';
 import { mapState } from 'vuex';
 import DefaultProfile from '@/assets/default-profile-picture.png';
+import { extractFirstErrorMessage } from '@/utils/errorHandler';
 
 export default {
     data() {

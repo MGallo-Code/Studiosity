@@ -28,7 +28,7 @@ class UserModelManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
-        user.full_clean()  # Validate the model
+        user.full_clean()
         user.save(using=self._db)
         return user
 
@@ -54,6 +54,7 @@ class UserModel(AbstractBaseUser):
     """
     username = models.CharField(max_length=25, unique=True, validators=[validate_no_whitespace])
     email = models.EmailField(max_length=64, unique=True)
+    bio = models.TextField(max_length=500, default="")
     validated_account = models.BooleanField(default=False)
     profile_image = models.OneToOneField(
         ImageFile,
