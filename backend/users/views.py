@@ -91,8 +91,8 @@ class UpdateUserView(generics.UpdateAPIView):
             if new_profile_image and user.profile_image and user.profile_image.id != new_profile_image:
                 user.profile_image.delete()
 
-            # Call save on the serializer for other updates (like username)
-            serializer.save()
+        # Call save on the serializer for other updates (like username)
+        serializer.save()
 
 class GetPublicUserView(generics.RetrieveAPIView):
     """
