@@ -26,17 +26,19 @@ class UserCreationSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
-        fields = ('username', 'profile_image')  # Fields to be included in the serializer
-        extra_kwargs = {'username': {'required': False}}  # Make username not required for updates
+        fields = ('username', 'bio', 'profile_image')
+        extra_kwargs = {'username': {'required': False}, 'bio': {'required': False}}
 
     def update(self, instance, validated_data):
         """
         Overrides the update method to update an existing UserModel instance.
-        Only the specified fields (username, profile_image) are updated.
+        Only the specified fields (username, bio, profile_image) are updated.
         """
         instance.username = validated_data.get('username', instance.username)
-        instance.profile_image = validated_data.get('profile_image', instance.profile_image)
-        instance.save()  # Save the updated instance to the database
+        instance.bio = validated_data.get('bio', instance.bio)
+        if 'profile_image' in validated_data:
+            instance.profile_image = validated_data.get('profile_image')
+        instance.save()
         return instance
 
 class UserPublicProfileSerializer(serializers.ModelSerializer):

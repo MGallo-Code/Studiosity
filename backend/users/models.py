@@ -54,7 +54,7 @@ class UserModel(AbstractBaseUser):
     """
     username = models.CharField(max_length=25, unique=True, validators=[validate_no_whitespace])
     email = models.EmailField(max_length=64, unique=True)
-    bio = models.TextField(max_length=500, default="")
+    bio = models.TextField(blank=True, null=True)
     validated_account = models.BooleanField(default=False)
     profile_image = models.OneToOneField(
         ImageFile,

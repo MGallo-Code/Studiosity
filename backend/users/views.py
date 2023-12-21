@@ -75,20 +75,24 @@ class UpdateUserView(generics.UpdateAPIView):
         return [IsAuthenticated(), IsOwnerOrSuperuser()]
 
     def perform_update(self, serializer):
-        """
-        Override perform_update to check the uploader of the profile image.
-        """
-        profile_image_id = self.request.data.get('profile_image')
-        if profile_image_id:
+        user = self.get_object()
+        new_profile_image_id = self.request.data.get('profile_image')
+
+        if new_profile_image_id:
             try:
-                profile_image = ImageFile.objects.get(pk=profile_image_id)
+                new_profile_image = ImageFile.objects.get(pk=new_profile_image_id)
             except ImageFile.DoesNotExist:
                 raise PermissionDenied(detail="Profile image not found.")
 
-            if profile_image.uploader != self.request.user:
+            if new_profile_image.uploader != self.request.user:
                 raise PermissionDenied(detail="You do not have permission to use this image.")
 
-        serializer.save()
+            # Check and delete the old profile image if necessary
+            if new_profile_image and user.profile_image and user.profile_image.id != new_profile_image:
+                user.profile_image.delete()
+
+            # Call save on the serializer for other updates (like username)
+            serializer.save()
 
 class GetPublicUserView(generics.RetrieveAPIView):
     """

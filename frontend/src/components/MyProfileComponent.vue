@@ -58,8 +58,12 @@ export default {
             this.editableProfile.file = event.target.files[0];
         },
         async submitProfileUpdate() {
+            this.error = null;
             try {
-                let profileImageId = this.profile.profile_image;
+                const profileUpdateBody = {
+                    username: this.editableProfile.username,
+                    bio: this.editableProfile.bio,
+                }
 
                 // If a new file was selected, upload it first
                 if (this.editableProfile.file) {
@@ -71,16 +75,13 @@ export default {
                             'Content-Type': 'multipart/form-data',
                         },
                     });
-
-                    profileImageId = uploadImgResponse.data.id;
+                    
+                    // Only add profile_image to the update body if a new file was uploaded
+                    profileUpdateBody.profile_image = uploadImgResponse.data.id;
                 }
 
                 // Update user profile
-                await axiosAuthInstance.patch(`/users/update/${this.profile.id}/`, {
-                    username: this.editableProfile.username,
-                    bio: this.editableProfile.bio,
-                    profile_image: profileImageId,
-                });
+                await axiosAuthInstance.patch(`/users/update/${this.profile.id}/`, profileUpdateBody);
 
                 this.getUserProfile(); // Refresh the profile
             } catch (error) {
