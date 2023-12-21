@@ -1,9 +1,17 @@
 <template>
-    <p v-if="!this.profile" class="error-message"></p>
-    <div v-else class="my-profile-container">
+    <div v-if="profile" class="my-profile-container">
         <img class="profile-picture" :src="profileImage" alt="Profile Picture" />
-        <h1>{{ this.profile.username }}</h1>
-        <p>{{ this.profile.bio || 'No user bio provided.' }}</p>
+        <h1>{{ profile.username }}</h1>
+        <p>{{ profile.bio || 'No user bio provided.' }}</p>
+    </div>
+
+    <!-- Editing Form -->
+    <div class="profile-edit-form">
+        <p class="error-message">{{ error }}</p>
+        <input type="file" @change="onFileSelected" />
+        <input type="text" v-model="editableProfile.username" placeholder="Username" />
+        <textarea v-model="editableProfile.bio" placeholder="Bio"></textarea>
+        <button @click="submitProfileUpdate">Submit Changes</button>
     </div>
 </template>
 
@@ -17,6 +25,11 @@ export default {
     data() {
         return {
             profile: null,
+            editableProfile: {
+                username: '',
+                bio: '',
+                profileImage: '',
+            },
             profileImage: DefaultProfile,
             error: null,
         };
@@ -40,6 +53,51 @@ export default {
                     this.error = extractFirstErrorMessage(error);
                 }
             }
+        },
+        onFileSelected(event) {
+            this.editableProfile.file = event.target.files[0];
+        },
+        async submitProfileUpdate() {
+            try {
+                let profileImageId = this.profile.profile_image;
+
+                // If a new file was selected, upload it first
+                if (this.editableProfile.file) {
+                    const formData = new FormData();
+                    formData.append('file_path', this.editableProfile.file);
+
+                    const uploadImgResponse = await axiosAuthInstance.post('/uploads/images/', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+
+                    profileImageId = uploadImgResponse.data.id;
+                }
+
+                // Update user profile
+                await axiosAuthInstance.patch(`/users/update/${this.profile.id}/`, {
+                    username: this.editableProfile.username,
+                    bio: this.editableProfile.bio,
+                    profile_image: profileImageId,
+                });
+
+                this.getUserProfile(); // Refresh the profile
+            } catch (error) {
+                this.error = extractFirstErrorMessage(error);
+            }
+        },
+    },
+    watch: {
+        profile: {
+            handler(newProfile) {
+                if (newProfile) {
+                    this.editableProfile.username = newProfile.username;
+                    this.editableProfile.bio = newProfile.bio;
+                    this.editableProfile.profileImage = newProfile.profile_image || DefaultProfile;
+                }
+            },
+            deep: true,
         },
     },
 };
