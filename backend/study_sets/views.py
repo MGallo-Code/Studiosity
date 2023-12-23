@@ -9,6 +9,7 @@ from rest_framework.permissions import BasePermission, IsAuthenticated, IsAuthen
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 
+from uploads.models import ImageFile
 from .models import StudySet, StudyTerm, Tag, Favorite
 from .serializers import StudySetSerializer, StudyTermSerializer, TagSerializer
 
@@ -197,7 +198,27 @@ class StudyTermViewSet(viewsets.ModelViewSet):
         for field in ['front_image', 'back_image', 'front_audio', 'back_audio']:
             file_object = data.get(field)
             if file_object and file_object.uploader != user:
-                raise PermissionDenied(detail=f"You do not have permission to use this {field.split('_')[0]}.")
+                raise PermissionDenied(detail=f"You do not have permission to use this {field.split('_')[1]}.")
+
+        serializer.save()
+    
+    def perform_update(self, serializer):
+        user = self.request.user
+        data = serializer.validated_data
+
+        instance = self.get_object()
+
+        for field in ['front_image', 'back_image', 'front_audio', 'back_audio']:
+            file_object = data.get(field)
+
+            # Check if a new file is being set and if the user has permission
+            if file_object and file_object.uploader != user:
+                raise PermissionDenied(detail=f"You do not have permission to use this {field.split('_')[1]}.")
+
+            # Check and delete the old file if necessary
+            old_file = getattr(instance, field)
+            if file_object and old_file and old_file.id != file_object.id:
+                old_file.delete()
 
         serializer.save()
 

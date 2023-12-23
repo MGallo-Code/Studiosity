@@ -80,6 +80,23 @@ class StudyTerm(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def delete(self, *args, **kwargs):
+        """
+        Overridden delete method to remove the associated images
+        from the filesystem and database upon deletion of the study term.
+        """
+        if hasattr(self, 'front_image') and self.front_image:
+            self.front_image.delete()
+        if hasattr(self, 'back_image') and self.back_image:
+            self.back_image.delete()
+
+        if hasattr(self, 'front_audio') and self.front_audio:
+            self.front_audio.delete()
+        if hasattr(self, 'back_audio') and self.back_audio:
+            self.back_audio.delete()
+
+        super().delete(*args, **kwargs)
+
     def __str__(self):
         return f"Term {self.id}: {self.front_text} | {self.back_text}"
 

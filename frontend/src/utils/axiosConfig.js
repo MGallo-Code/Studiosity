@@ -18,10 +18,8 @@ const refreshToken = async () => {
         });
         return true;
     } catch (error) {
-        if (error.response && error.response.data.code === "token_not_valid") {
-            store.dispatch("logout");
-            router.push({ path: "/login" });
-        }
+        store.dispatch("logout");
+        router.push({ path: "/login" });
         return false;
     }
 };
