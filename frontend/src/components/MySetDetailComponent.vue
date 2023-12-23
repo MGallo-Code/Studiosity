@@ -57,15 +57,21 @@
                 <form v-if="termEditForm && termEditForm.id === term.id" class="term-display" @submit.prevent="updateTerm">
                     <p v-if="editTermError" class="error-message">{{ editTermError }}</p>
                     <div class="front-back-display">
-                        <span>
-                            <textarea v-model="termEditForm.front_text" />
-                            <p @click="speak(termEditForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
-                        </span>
+                        <div class="img-info-flow">
+                            <input type="file" @change="onFrontImageSelected" />
+                            <span>
+                                <textarea v-model="termEditForm.front_text" />
+                                <p @click="speak(termEditForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
+                            </span>
+                        </div>
                         <div class="spacer"></div>
-                        <span>
-                            <textarea v-model="termEditForm.back_text" />
-                            <p @click="speak(termEditForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
-                        </span>
+                        <div class="img-info-flow">
+                            <input type="file" @change="onBackImageSelected" />
+                            <span>
+                                <textarea v-model="termEditForm.back_text" />
+                                <p @click="speak(termEditForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
+                            </span>
+                        </div>
                     </div>
                     <div class="btn-stack">
                         <button type="submit" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'check']" /></button>
@@ -76,15 +82,21 @@
                 <!-- Display term details -->
                 <div v-else class="term-display">
                     <div class="front-back-display">
-                        <span @click="speak(term.front_text)">
-                            {{ term.front_text }}
-                            <p><font-awesome-icon icon="volume-up" /></p>
-                        </span>
+                        <div class="img-info-flow">
+                            <img v-if="term.front_image" :src="term.front_image.file_path" />
+                            <span @click="speak(term.front_text)">
+                                <p>{{ term.front_text }}</p>
+                                <p><font-awesome-icon icon="volume-up" /></p>
+                            </span>
+                        </div>
                         <div class="spacer"></div>
-                        <span @click="speak(term.back_text)">
-                            {{ term.back_text }}
-                            <p><font-awesome-icon icon="volume-up" /></p>
-                        </span>
+                        <div class="img-info-flow">
+                            <img v-if="term.back_image" :src="term.back_image.file_path" />
+                            <span @click="speak(term.back_text)">
+                                <p>{{ term.back_text }}</p>
+                                <p><font-awesome-icon icon="volume-up" /></p>
+                            </span>
+                        </div>
                     </div>
                     <button @click="toggleEditingTerm(term)" class="square-btn blue-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
                 </div>
@@ -214,13 +226,57 @@ export default {
 
         // Enters edit mode for a specific term (or exits if null provided as the term)
         toggleEditingTerm(term) {
-            this.termEditForm = term ? { ...term } : null;
+            if (term) {
+                this.termEditForm = { ...term };
+                this.termEditForm.front_image = null;
+                this.termEditForm.back_image = null;
+            } else {
+                this.termEditForm = null;
+            }
             this.editTermError = null;
+        },
+        // Update selected image files
+        onFrontImageSelected(event) {
+            this.termEditForm.front_image = event.target.files[0];
+        },
+        onBackImageSelected(event) {
+            this.termEditForm.back_image = event.target.files[0];
         },
         // Updates the term
         async updateTerm() {
             try {
-                await axiosAuthInstance.put(`/study_sets/study_terms/${this.termEditForm.id}/`, this.termEditForm);
+                const termUpdateBody = {
+                    front_text: this.termEditForm.front_text,
+                    back_text: this.termEditForm.back_text,
+                    study_set: this.setDetail.id
+                }
+                // If new image files were selected, upload them first
+                if (this.termEditForm.front_image) {
+                    const formData = new FormData();
+                    formData.append('file_path', this.termEditForm.front_image);
+
+                    const uploadImgResponse = await axiosAuthInstance.post('/uploads/images/', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+                    console.log(uploadImgResponse);
+                    termUpdateBody.front_image_id = uploadImgResponse.data.id;
+                }
+                if (this.termEditForm.back_image) {
+                    const formData = new FormData();
+                    formData.append('file_path', this.termEditForm.back_image);
+
+                    const uploadImgResponse = await axiosAuthInstance.post('/uploads/images/', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+                    console.log(uploadImgResponse);
+                    termUpdateBody.back_image_id = uploadImgResponse.data.id;
+                }
+
+                console.log(await axiosAuthInstance.patch(`/study_sets/study_terms/${this.termEditForm.id}/`, termUpdateBody));
                 this.toggleEditingTerm(null);
                 this.fetchSetDetail();
             } catch (error) {
@@ -390,19 +446,33 @@ form.set-banner .set-edit-fields {
     flex-direction: row;
 }
 
-/* Level 4 term container, organizes front/back info displays */
-.front-back-display span {
+/* Level 4 term container, separates text from image */
+.img-info-flow {
     flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Level 5 term container, organizes front/back info displays */
+.front-back-display span {
     display: flex;
     gap: 0.4rem;
     justify-content: center;
     cursor: pointer;
 }
 
-/* Level 4 term container, ONLY in display format */
+/* Level 5 term container, ONLY in display format */
 :not(form) > .front-back-display span {
     padding-top: 0.8rem;
     padding-bottom: 0.8rem;
+}
+
+/* Term images */
+.front-back-display img {
+    width: 100%;
+    height: 100%;
+    max-height: 12rem;
+    aspect-ratio: 1;
 }
 
 /* Term front/back textarea input */

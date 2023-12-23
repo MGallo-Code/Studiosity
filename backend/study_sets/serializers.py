@@ -69,6 +69,25 @@ class StudyTermSerializer(serializers.ModelSerializer):
                   'created_at',
                   'updated_at']
         read_only_fields = ['front_image', 'back_image', 'front_audio', 'back_audio']
+    
+    def to_representation(self, instance):
+        """
+        Override the to_representation method to customize the representation of the image and audio fields.
+        """
+        representation = super().to_representation(instance)
+
+        # Process each field and add URL to representation if the object exists
+        for field_name in ['front_image', 'back_image', 'front_audio', 'back_audio']:
+            field_instance = getattr(instance, field_name)
+            if field_instance:
+                representation[field_name] = {
+                    'id': field_instance.id,
+                    'file_path': field_instance.file_path.url
+                }
+            else:
+                representation[field_name] = None
+
+        return representation
 
     def update(self, instance, validated_data):
         # Handle the update of ImageFile and AudioFile references
