@@ -62,7 +62,6 @@ body {
 .btn-stack {
     display: flex;
     padding: 0;
-    margin-left: 1rem;
     width: min-content;
     flex-direction: column;
 }

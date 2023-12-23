@@ -27,9 +27,9 @@
         <!-- Study Terms List -->
         <div class="terms-list">
             <!-- Inline form for creating a new term -->
-            <form v-if="creatingNewTerm" class="term-container" @submit.prevent="createNewTerm">
+            <div v-if="creatingNewTerm" class="term-container">
                 <p v-if="createTermError" class="error-message">{{ createTermError }}</p>
-                <div class="term-display">
+                <form class="term-display" @submit.prevent="createNewTerm">
                     <div class="front-back-display">
                         <span>
                             <textarea v-model="createNewTermForm.front_text" />
@@ -45,8 +45,8 @@
                         <button type="submit" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'plus']" /></button>
                         <button type="button" @click="toggleCreatingTerm" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button> 
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
 
             <!-- Button to toggle new term creation form -->
             <button @click="toggleCreatingTerm" :disabled="creatingNewTerm">Create New Term</button>
@@ -261,20 +261,22 @@ export default {
 
 
 <style scoped>
+/* Main div holding set information/edit sections */
 .set-banner {
     position: relative;
     width: 100%;
     background-color: #f0f0f0;
     padding: 1rem;
-    border-radius: 0.4rem;
+    border-radius: 8px;
 }
 
-/* Targets the edit button in set-banner display */
+/* Targets edit button in set-banner display */
 .set-banner > button {
     position: absolute;
     top: 1rem;
     right: 1rem;
 }
+/* Targets favorite button in set-banner display, overrides rules above */
 .set-banner .favorite-btn {
     left: 1rem !important;
     margin-right: 1rem;
@@ -282,117 +284,138 @@ export default {
     color: var(--clr-btn-yellow) !important;
     background-color: inherit !important;
 }
+.set-banner .btn-stack {
+    margin-left: 1rem;
+}
 
+/* Set title */
 .set-banner h1 {
     padding: 1rem 4rem 0 4rem;
 }
 
+/* Set description */
 .set-banner p {
     padding: 0.4rem 3rem 1rem 3rem;
 }
 
+/* Set banner edit form, contains:
+    - div : .set-edit-fields
+    - div : .btn-stack
+*/
 form.set-banner {
     display: flex;
     flex-direction: row;
     align-items: normal;
 }
 
+/* Div containing inputs for set updates */
 form.set-banner .set-edit-fields {
     flex-grow: 1;
 }
 
+/* Set title input */
 .set-banner input {
     margin-bottom: 0.6rem;
     padding: 0.5rem 4rem 0.5rem 0.5rem;
     height: 3rem;
     width: 100%;
-    border-radius: 0.4rem;
+    border-radius: 8px;
     border: 1px solid #ddd;
 }
 
+/* Set description input */
 .set-banner textarea {
     margin-bottom: 0.6rem;
     padding: 0.5rem 4rem 0.5rem 0.5rem;
     height: 6rem;
     width: 100%;
     resize: none;
-    border-radius: 0.4rem;
+    border-radius: 8px;
     border: 1px solid #ddd;
 }
 
+/* Set privacy input */
 .set-banner select {
     padding-right: 4rem;
     width: 100%;
 }
 
-/* Terms Display */
 
+/* TERMS CSS OPTIONS */
+
+
+/* Outermost Terms list container */
 .terms-list {
     margin: 0 1rem 0 1rem;
 }
 
+/* Level 1 term container, contains:
+    - div/form : .term-display
+    - div : .btn-stack
+*/
 .term-container {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0;
-    padding: 1rem;
+    gap: 1rem;
+    flex-direction: column;
     width: 100%;
-    border-radius: 0.4rem;
+    border-radius: 8px;
     border: 1px solid #ddd;
     background-color: #f8f8f8;
 }
 
+/* Level 2 term container, sets basic padding and contains:
+    - div/form : .front-back-display
+    - div : .btn-stack
+*/
 .term-display {
     display: flex;
+    gap: 1rem;
     flex-direction: row;
-    justify-content: center;
+    padding: 1rem;
     width: 100%;
 }
 
+/* Level 3 term container, the non-btn-stack half with display/inputs.
+    Contains:
+        - span : .front-back-display span
+            (display front card info)
+        - div : .spacer
+        - span : .front-back-display span
+            (display back card info)
+*/
 .front-back-display {
+    flex: 1 1 auto;
     display: flex;
-    justify-content: center;
-    width: 100%;
+    gap: 0.6rem;
+    flex-direction: row;
 }
 
+/* Level 4 term container, organizes front/back info displays */
 .front-back-display span {
+    flex: 1 1 auto;
     display: flex;
+    gap: 0.4rem;
+    justify-content: center;
     cursor: pointer;
-    padding: 0.6rem 1rem 0.6rem 1rem;
-    font-size: 1.2rem;
-    gap: 0.5rem;
 }
 
-.front-back-display span:first-child {
-    text-align: right;
+/* Level 4 term container, ONLY in display format */
+:not(form) > .front-back-display span {
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
 }
 
-.front-back-display span:last-child {
-    text-align: left;
+/* Term front/back textarea input */
+.front-back-display textarea {
+    width: 100%;
+    resize: vertical;
 }
 
+/* Small spacer between front/back term information */
 .spacer {
-    flex-grow: 0;
+    flex: 0 0 auto;
     width: 0.2rem;
-    border-radius: 0.33rem;
-    background-color: gray;
+    border-radius: 8px;
+    background-color: var(--clr-base-primary);
 }
-
-/* Input and textarea styles for term inputs */
-
-form.term-container input {
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
-
-form.term-container textarea {
-    height: 100%;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
-
 </style>
