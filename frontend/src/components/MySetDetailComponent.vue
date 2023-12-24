@@ -31,15 +31,21 @@
                 <p v-if="createTermError" class="error-message">{{ createTermError }}</p>
                 <form class="term-display" @submit.prevent="createNewTerm">
                     <div class="front-back-display">
-                        <span>
-                            <textarea v-model="createNewTermForm.front_text" />
-                            <p @click="speak(createNewTermForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
-                        </span>
+                        <div class="img-info-flow">
+                            <input type="file" @change="onCreateFrontImageSelected" />
+                            <span>
+                                <textarea v-model="createNewTermForm.front_text" />
+                                <p @click="speak(createNewTermForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
+                            </span>
+                        </div>
                         <div class="spacer"></div>
-                        <span>
-                            <textarea v-model="createNewTermForm.back_text" />
-                            <p @click="speak(createNewTermForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
-                        </span> 
+                        <div class="img-info-flow">
+                            <input type="file" @change="onCreateBackImageSelected" />
+                            <span>
+                                <textarea v-model="createNewTermForm.back_text" />
+                                <p @click="speak(createNewTermForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
+                            </span>
+                        </div>
                     </div>
                     <div class="btn-stack">
                         <button type="submit" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'plus']" /></button>
@@ -58,7 +64,8 @@
                     <p v-if="editTermError" class="error-message">{{ editTermError }}</p>
                     <div class="front-back-display">
                         <div class="img-info-flow">
-                            <input type="file" @change="onFrontImageSelected" />
+                            <img v-if="term.front_image" :src="term.front_image.file_path" />
+                            <input type="file" @change="onUpdateFrontImageSelected" />
                             <span>
                                 <textarea v-model="termEditForm.front_text" />
                                 <p @click="speak(termEditForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
@@ -66,7 +73,8 @@
                         </div>
                         <div class="spacer"></div>
                         <div class="img-info-flow">
-                            <input type="file" @change="onBackImageSelected" />
+                            <img v-if="term.back_image" :src="term.back_image.file_path" />
+                            <input type="file" @change="onUpdateBackImageSelected" />
                             <span>
                                 <textarea v-model="termEditForm.back_text" />
                                 <p @click="speak(termEditForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
@@ -213,17 +221,39 @@ export default {
             this.createTermError = null;
         },
         // Creates a new term
-        createNewTerm() {
-            axiosAuthInstance.post('/study_sets/study_terms/', this.createNewTermForm)
-                .then(() => {
-                    this.toggleCreatingTerm()
-                    this.fetchSetDetail();
-                })
-                .catch(error => {
-                    console.log(error.response ? error.response.data.message : 'Error creating new term');
+        async createNewTerm() {
+            // Create new term
+            this.createTermError = null;
+            try {
+                const createTermResponse = await axiosAuthInstance.post('/study_sets/study_terms/', {
+                    front_text: this.createNewTermForm.front_text,
+                    back_text: this.createNewTermForm.back_text,
+                    study_set: this.setDetail.id,
                 });
-        },
+                console.log(createTermResponse);
 
+                console.log('1');
+
+                const imgUploadError = await this.updateTermImages(createTermResponse.data.id, this.createNewTermForm);
+                console.log('2');
+
+                // Toggle creation view
+                this.toggleCreatingTerm();
+                console.log('3');
+                // Enter set edit mode if image upload(s) fail
+                if (imgUploadError) {
+                    console.log('4');
+                    this.fetchSetDetail();
+                    this.toggleEditingTerm(createTermResponse.data)
+                    this.editTermError = imgUploadError;
+                    return;
+                }
+                console.log('5');
+                this.fetchSetDetail();
+            } catch (error) {
+                this.createTermError = extractFirstErrorMessage(error);
+            }
+        },
         // Enters edit mode for a specific term (or exits if null provided as the term)
         toggleEditingTerm(term) {
             if (term) {
@@ -236,11 +266,17 @@ export default {
             this.editTermError = null;
         },
         // Update selected image files
-        onFrontImageSelected(event) {
+        onUpdateFrontImageSelected(event) {
             this.termEditForm.front_image = event.target.files[0];
         },
-        onBackImageSelected(event) {
+        onUpdateBackImageSelected(event) {
             this.termEditForm.back_image = event.target.files[0];
+        },
+        onCreateFrontImageSelected(event) {
+            this.createNewTermForm.front_image = event.target.files[0];
+        },
+        onCreateBackImageSelected(event) {
+            this.createNewTermForm.back_image = event.target.files[0];
         },
         // Updates the term
         async updateTerm() {
@@ -248,39 +284,59 @@ export default {
                 const termUpdateBody = {
                     front_text: this.termEditForm.front_text,
                     back_text: this.termEditForm.back_text,
-                    study_set: this.setDetail.id
-                }
-                // If new image files were selected, upload them first
-                if (this.termEditForm.front_image) {
-                    const formData = new FormData();
-                    formData.append('file_path', this.termEditForm.front_image);
-
-                    const uploadImgResponse = await axiosAuthInstance.post('/uploads/images/', formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        },
-                    });
-                    console.log(uploadImgResponse);
-                    termUpdateBody.front_image_id = uploadImgResponse.data.id;
-                }
-                if (this.termEditForm.back_image) {
-                    const formData = new FormData();
-                    formData.append('file_path', this.termEditForm.back_image);
-
-                    const uploadImgResponse = await axiosAuthInstance.post('/uploads/images/', formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        },
-                    });
-                    console.log(uploadImgResponse);
-                    termUpdateBody.back_image_id = uploadImgResponse.data.id;
                 }
 
-                console.log(await axiosAuthInstance.patch(`/study_sets/study_terms/${this.termEditForm.id}/`, termUpdateBody));
+                // Return early if image upload(s) fail
+                const imgUploadError = await this.updateTermImages(this.termEditForm.id, this.termEditForm);
+                if (imgUploadError) {
+                    this.editTermError = imgUploadError;
+                    return;
+                }
+
+                await axiosAuthInstance.patch(`/study_sets/study_terms/${this.termEditForm.id}/`, termUpdateBody);
                 this.toggleEditingTerm(null);
                 this.fetchSetDetail();
             } catch (error) {
                 this.editTermError = extractFirstErrorMessage(error);
+            }
+        },
+        async updateTermImages(studyTermId, imageForm) {
+            try {
+                const imageUploadForm = {
+                    study_set: this.setDetail.id
+                };
+                // If new image files are selected, upload them
+                if (imageForm.front_image) {
+                    const formData = new FormData();
+                    formData.append('file_path', imageForm.front_image);
+
+                    const uploadImgResponse = await axiosAuthInstance.post('/uploads/images/', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+                    imageUploadForm.front_image_id = uploadImgResponse.data.id;
+                }
+                if (imageForm.back_image) {
+                    const formData = new FormData();
+                    formData.append('file_path', imageForm.back_image);
+
+                    const uploadImgResponse = await axiosAuthInstance.post('/uploads/images/', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+                    imageUploadForm.back_image_id = uploadImgResponse.data.id;
+                }
+                if (!imageUploadForm.front_image_id && !imageUploadForm.back_image_id) {
+                    return null;
+                }
+                await axiosAuthInstance.patch(`/study_sets/study_terms/${studyTermId}/`, imageUploadForm);
+                // Return error status
+                return null;
+            } catch (error) {
+                // Return error
+                return extractFirstErrorMessage(error);
             }
         },
         // Confirms and deletes a term
@@ -444,6 +500,8 @@ form.set-banner .set-edit-fields {
     display: flex;
     gap: 0.6rem;
     flex-direction: row;
+    /* Ensure maximum width stays below .btn-stack's position */
+    max-width: calc(100%-5rem);
 }
 
 /* Level 4 term container, separates text from image */
@@ -451,6 +509,8 @@ form.set-banner .set-edit-fields {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
+    max-width: 100%;
+    overflow:hidden;
 }
 
 /* Level 5 term container, organizes front/back info displays */
@@ -465,6 +525,12 @@ form.set-banner .set-edit-fields {
 :not(form) > .front-back-display span {
     padding-top: 0.8rem;
     padding-bottom: 0.8rem;
+}
+
+/* Term image selectors */
+.front-back-display > input, .front-back-display img {
+    max-width: 100%;
+    overflow: hidden;
 }
 
 /* Term images */
