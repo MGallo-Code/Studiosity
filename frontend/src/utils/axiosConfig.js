@@ -3,11 +3,11 @@ import router from "@/utils/router";
 import store from "@/utils/store";
 
 export const axiosDefaultInstance = axios.create({
-    baseURL: "http://localhost:8000/api/",
+    baseURL: "https://studiosity.io/api/",
 });
 
 export const axiosAuthInstance = axios.create({
-    baseURL: "http://localhost:8000/api/",
+    baseURL: "https://studiosity.io/api/",
     withCredentials: true,
 });
 

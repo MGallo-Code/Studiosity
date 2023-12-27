@@ -55,20 +55,25 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 #TODO SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+SERVER_ADDRESS = os.getenv('SERVER_ADDRESS')
 
-CORS_ALLOW_CREDENTIALS = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost",
-    "http://localhost:80",
-    "http://localhost:8080",
+ALLOWED_HOSTS = [
+    SERVER_ADDRESS,
+    f"www.{SERVER_ADDRESS}",
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    f"https://{SERVER_ADDRESS}",
+    f"https://www.{SERVER_ADDRESS}",
+]
+
+CSRF_COOKIE_SECURE = True
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost',
-    'http://localhost/80',
-    'http://localhost:8080',
+    f"https://{SERVER_ADDRESS}",
+    f"https://www.{SERVER_ADDRESS}",
 ]
 
 AUTH_PROFILE_MODULE = 'users.UserModel'
@@ -76,7 +81,7 @@ AUTH_USER_MODEL = 'users.UserModel'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = True
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
