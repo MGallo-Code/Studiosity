@@ -13,13 +13,17 @@
             </div>
             <div class="btn-stack">
                 <button type="submit" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'check']" /></button>
-                <button type="button" @click="toggleEditingSet" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button>
-                <button type="button" @click="confirmDeleteSet" class="square-btn red-btn"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
+                <button type="button" @click="toggleEditingSet" class="square-btn yellow-btn"><font-awesome-icon
+                        :icon="['fas', 'ban']" /></button>
+                <button type="button" @click="confirmDeleteSet" class="square-btn red-btn"><font-awesome-icon
+                        :icon="['fas', 'trash-alt']" /></button>
             </div>
         </form>
         <div class="set-banner" v-else>
-            <button @click="toggleFavorite" class="favorite-btn square-btn"><font-awesome-icon :icon="[setDetail.favorited ? 'fas' : 'far', 'star']" /></button>
-            <button @click="toggleEditingSet" class="square-btn blue-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
+            <button @click="toggleFavorite" class="favorite-btn square-btn"><font-awesome-icon
+                    :icon="[setDetail.favorited ? 'fas' : 'far', 'star']" /></button>
+            <button @click="toggleEditingSet" class="square-btn blue-btn"><font-awesome-icon
+                    :icon="['fas', 'edit']" /></button>
             <h1>{{ setDetail.title }}</h1>
             <p>{{ setDetail.description || 'No description provided.' }}</p>
         </div>
@@ -48,8 +52,10 @@
                         </div>
                     </div>
                     <div class="btn-stack">
-                        <button type="submit" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'plus']" /></button>
-                        <button type="button" @click="toggleCreatingTerm" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button> 
+                        <button type="submit" class="square-btn green-btn"><font-awesome-icon
+                                :icon="['fas', 'plus']" /></button>
+                        <button type="button" @click="toggleCreatingTerm" class="square-btn yellow-btn"><font-awesome-icon
+                                :icon="['fas', 'ban']" /></button>
                     </div>
                 </form>
             </div>
@@ -60,12 +66,17 @@
             <!-- Iterating over each term to display -->
             <div v-for="term in studyTerms" :key="term.id" class="term-container">
                 <!-- Editable term form -->
+                <p v-if="editTermError && termEditForm && termEditForm.id === term.id" class="error-message">{{
+                    editTermError }}</p>
                 <form v-if="termEditForm && termEditForm.id === term.id" class="term-display" @submit.prevent="updateTerm">
-                    <p v-if="editTermError" class="error-message">{{ editTermError }}</p>
                     <div class="front-back-display">
                         <div class="img-info-flow">
-                            <img v-if="term.front_image" :src="term.front_image.file_path" />
-                            <input type="file" @change="onUpdateFrontImageSelected" />
+                            <picture v-if="term.front_image">
+                                <img :src="term.front_image.file_path" />
+                                <button type="button" @click="confirmDeleteTermImage('front_image')"
+                                    class="square-btn red-btn">X</button>
+                            </picture>
+                            <input v-if="!term.front_image" type="file" @change="onUpdateFrontImageSelected" />
                             <span>
                                 <textarea v-model="termEditForm.front_text" />
                                 <p @click="speak(termEditForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
@@ -73,8 +84,12 @@
                         </div>
                         <div class="spacer"></div>
                         <div class="img-info-flow">
-                            <img v-if="term.back_image" :src="term.back_image.file_path" />
-                            <input type="file" @change="onUpdateBackImageSelected" />
+                            <picture v-if="term.back_image">
+                                <img :src="term.back_image.file_path" />
+                                <button type="button" @click="confirmDeleteTermImage('back_image')"
+                                    class="square-btn red-btn">X</button>
+                            </picture>
+                            <input v-if="!term.back_image" type="file" @change="onUpdateBackImageSelected" />
                             <span>
                                 <textarea v-model="termEditForm.back_text" />
                                 <p @click="speak(termEditForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
@@ -82,31 +97,39 @@
                         </div>
                     </div>
                     <div class="btn-stack">
-                        <button type="submit" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'check']" /></button>
-                        <button type="button" @click="toggleEditingTerm(null)" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button>
-                        <button type="button" @click="confirmDeleteTerm(term.id)" class="square-btn red-btn"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
+                        <button type="submit" class="square-btn green-btn"><font-awesome-icon
+                                :icon="['fas', 'check']" /></button>
+                        <button type="button" @click="toggleEditingTerm(null)"
+                            class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button>
+                        <button type="button" @click="confirmDeleteTerm(term.id)"
+                            class="square-btn red-btn"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
                     </div>
                 </form>
                 <!-- Display term details -->
                 <div v-else class="term-display">
                     <div class="front-back-display">
                         <div class="img-info-flow">
-                            <img v-if="term.front_image" :src="term.front_image.file_path" />
+                            <picture v-if="term.front_image">
+                                <img :src="term.front_image.file_path" />
+                            </picture>
                             <span @click="speak(term.front_text)">
                                 <p>{{ term.front_text }}</p>
-                                <p><font-awesome-icon icon="volume-up" /></p>
+                                <p v-if="term.front_text != ''"><font-awesome-icon icon="volume-up" /></p>
                             </span>
                         </div>
                         <div class="spacer"></div>
                         <div class="img-info-flow">
-                            <img v-if="term.back_image" :src="term.back_image.file_path" />
+                            <picture v-if="term.back_image">
+                                <img :src="term.back_image.file_path" />
+                            </picture>
                             <span @click="speak(term.back_text)">
                                 <p>{{ term.back_text }}</p>
-                                <p><font-awesome-icon icon="volume-up" /></p>
+                                <p v-if="term.back_text != ''"><font-awesome-icon icon="volume-up" /></p>
                             </span>
                         </div>
                     </div>
-                    <button @click="toggleEditingTerm(term)" class="square-btn blue-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
+                    <button @click="toggleEditingTerm(term)" class="square-btn blue-btn"><font-awesome-icon
+                            :icon="['fas', 'edit']" /></button>
                 </div>
             </div>
         </div>
@@ -144,7 +167,7 @@ export default {
     methods: {
         // Fetches details of the study set and its terms
         async fetchSetDetail() {
-            try { 
+            try {
                 const setId = this.$route.params.id;
                 const setResponse = await axiosAuthInstance.get(`study_sets/study_sets/${setId}/`);
                 this.setDetail = setResponse.data;
@@ -198,12 +221,12 @@ export default {
         // Toggle favorite/unfavorite for study set
         toggleFavorite() {
             axiosAuthInstance.post(`/study_sets/favorite/${this.setDetail.id}/`)
-            .then(response => {
-                this.setDetail.favorited = response.data.status === 'favorited';
-            })
-            .catch(error => {
-                console.error("Error toggling favorite status:", error.response ? error.response.data : error);
-            });
+                .then(response => {
+                    this.setDetail.favorited = response.data.status === 'favorited';
+                })
+                .catch(error => {
+                    console.error("Error toggling favorite status:", error.response ? error.response.data : error);
+                });
         },
 
         // Toggles the form for creating a new term
@@ -215,7 +238,8 @@ export default {
                     back_text: '',
                     front_image: null,
                     back_image: null,
-                    study_set: this.setDetail.id};
+                    study_set: this.setDetail.id
+                };
             }
             this.creatingNewTerm = !this.creatingNewTerm;
             this.createTermError = null;
@@ -230,25 +254,18 @@ export default {
                     back_text: this.createNewTermForm.back_text,
                     study_set: this.setDetail.id,
                 });
-                console.log(createTermResponse);
-
-                console.log('1');
 
                 const imgUploadError = await this.updateTermImages(createTermResponse.data.id, this.createNewTermForm);
-                console.log('2');
 
                 // Toggle creation view
                 this.toggleCreatingTerm();
-                console.log('3');
                 // Enter set edit mode if image upload(s) fail
                 if (imgUploadError) {
-                    console.log('4');
                     this.fetchSetDetail();
                     this.toggleEditingTerm(createTermResponse.data)
                     this.editTermError = imgUploadError;
                     return;
                 }
-                console.log('5');
                 this.fetchSetDetail();
             } catch (error) {
                 this.createTermError = extractFirstErrorMessage(error);
@@ -339,6 +356,19 @@ export default {
                 return extractFirstErrorMessage(error);
             }
         },
+        // Confirms and deletes an image
+        async confirmDeleteTermImage(imageField) {
+            if (confirm("Are you sure you want to remove this image?")) {
+                try {
+                    const removeImageRequestBody = {}
+                    removeImageRequestBody[imageField + '_id'] = null;
+
+                    await axiosAuthInstance.patch(`/study_sets/study_terms/${this.termEditForm.id}/`, removeImageRequestBody);
+                } catch (error) {
+                    this.editTermError = extractFirstErrorMessage(error);
+                }
+            }
+        },
         // Confirms and deletes a term
         async confirmDeleteTerm(termId) {
             if (confirm("Are you sure you want to delete this term?")) {
@@ -383,11 +413,12 @@ export default {
 }
 
 /* Targets edit button in set-banner display */
-.set-banner > button {
+.set-banner>button {
     position: absolute;
     top: 1rem;
     right: 1rem;
 }
+
 /* Targets favorite button in set-banner display, overrides rules above */
 .set-banner .favorite-btn {
     left: 1rem !important;
@@ -396,6 +427,7 @@ export default {
     color: var(--clr-btn-yellow) !important;
     background-color: inherit !important;
 }
+
 .set-banner .btn-stack {
     margin-left: 1rem;
 }
@@ -510,7 +542,8 @@ form.set-banner .set-edit-fields {
     display: flex;
     flex-direction: column;
     max-width: 100%;
-    overflow:hidden;
+    overflow: hidden;
+    align-items: center;
 }
 
 /* Level 5 term container, organizes front/back info displays */
@@ -522,23 +555,44 @@ form.set-banner .set-edit-fields {
 }
 
 /* Level 5 term container, ONLY in display format */
-:not(form) > .front-back-display span {
+:not(form)>.front-back-display span {
     padding-top: 0.8rem;
     padding-bottom: 0.8rem;
 }
 
 /* Term image selectors */
-.front-back-display > input, .front-back-display img {
-    max-width: 100%;
-    overflow: hidden;
-}
+.front-back-display>input,
 
 /* Term images */
+.front-back-display picture {
+    position: relative;
+    max-width: 100%;
+    width: 12rem;
+    height: 12rem;
+}
+
 .front-back-display img {
     width: 100%;
     height: 100%;
-    max-height: 12rem;
-    aspect-ratio: 1;
+    overflow: hidden;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid var(--clr-base-primary);
+}
+
+/* Button to remove images */
+.front-back-display picture button {
+    position: absolute;
+    left: 0.5rem;
+    top: 0.5rem;
+    border-radius: 12px !important;
+    border: 2px solid white;
+}
+
+.front-back-display picture button:hover {
+    opacity: 1 !important;
+    background-color: rgb(248, 84, 84);
+    border: 2px solid rgb(250, 100, 100);
 }
 
 /* Term front/back textarea input */

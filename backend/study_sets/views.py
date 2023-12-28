@@ -189,9 +189,6 @@ class StudyTermViewSet(viewsets.ModelViewSet):
         serializer.save(study_set=study_set)
     
     def perform_update(self, serializer):
-        """
-        Override perform_update to check the uploader of the image and audio files.
-        """
         user = self.request.user
         data = serializer.validated_data
 

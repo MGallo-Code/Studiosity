@@ -29,25 +29,29 @@ class StudyTermSerializer(serializers.ModelSerializer):
         queryset=ImageFile.objects.all(), 
         source='front_image', 
         write_only=True, 
-        required=False
+        required=False,
+        allow_null=True
     )
     back_image_id = serializers.PrimaryKeyRelatedField(
         queryset=ImageFile.objects.all(), 
         source='back_image', 
         write_only=True, 
-        required=False
+        required=False,
+        allow_null=True
     )
     front_audio_id = serializers.PrimaryKeyRelatedField(
         queryset=AudioFile.objects.all(), 
         source='front_audio', 
         write_only=True, 
-        required=False
+        required=False,
+        allow_null=True
     )
     back_audio_id = serializers.PrimaryKeyRelatedField(
         queryset=AudioFile.objects.all(), 
         source='back_audio', 
         write_only=True, 
-        required=False
+        required=False,
+        allow_null=True
     )
     tags = TagSerializer(many=True, read_only=True)
 

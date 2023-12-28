@@ -23,7 +23,7 @@ services:
 
   django:
     build: ./backend
-    command: gunicorn lifelocker.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn lifelocker.wsgi:application --bind 0.0.0.0:8000 --access-logfile -
     volumes:
       - ./backend:/usr/src/app
       - .env:/usr/src/.env

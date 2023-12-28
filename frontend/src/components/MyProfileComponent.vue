@@ -1,6 +1,6 @@
 <template>
     <div v-if="profile" class="my-profile-container">
-        <img class="profile-picture" :src="profileImage" alt="Profile Picture" />
+        <img :src="profileImage" alt="Profile Picture" />
         <h1>{{ profile.username }}</h1>
         <p>{{ profile.bio || 'No user bio provided.' }}</p>
     </div>
@@ -75,7 +75,7 @@ export default {
                             'Content-Type': 'multipart/form-data',
                         },
                     });
-                    
+
                     // Only add profile_image to the update body if a new file was uploaded
                     profileUpdateBody.profile_image = uploadImgResponse.data.id;
                 }
@@ -105,9 +105,11 @@ export default {
 </script>
 
 <style>
-.my-profile-container .profile-picture {
-    max-width: 20%;
-    border-radius: 0.6rem;
+.my-profile-container img {
+    object-fit: cover;
+    width: 20rem;
+    height: 20rem;
+    border-radius: 100%;
     border: 2px solid var(--clr-base-primary);
 }
 </style>
