@@ -184,14 +184,15 @@ export default {
         // Fetches study terms for set
         async fetchSetTerms() {
             try {
-                const termsResponse = await axiosAuthInstance.get(`study_sets/terms_in_set/${this.setDetail.id}/`);
+                const setId = this.$route.params.id;
+                const termsResponse = await axiosAuthInstance.get(`study_sets/terms_in_set/${setId}/`);
                 this.studyTerms = termsResponse.data;
             } catch (error) {
                 // If set not found (no permission)
                 if (error.response && error.response.data.detail === "Not found.") {
                     this.$router.push({ path: '/my-study-sets/' })
                 } else {
-                    console.log(error.response ? error.response.data.message : 'Error fetching sets');
+                    console.log(error.response ? error.response.data.message : 'Error fetching terms');
                 }
             }
         },
