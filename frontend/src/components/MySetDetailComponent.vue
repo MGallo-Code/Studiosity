@@ -161,18 +161,30 @@ export default {
         };
     },
     created() {
-        // Fetching initial data when component is created
+        // Fetch initial data when component is created
         this.fetchSetDetail();
+        this.fetchSetTerms();
     },
     methods: {
-        // Fetches details of the study set and its terms
+        // Fetches details of the study set
         async fetchSetDetail() {
             try {
                 const setId = this.$route.params.id;
                 const setResponse = await axiosAuthInstance.get(`study_sets/study_sets/${setId}/`);
                 this.setDetail = setResponse.data;
-
-                const termsResponse = await axiosAuthInstance.get(`study_sets/terms_in_set/${setId}/`);
+            } catch (error) {
+                // If set not found (no permission)
+                if (error.response && error.response.data.detail === "Not found.") {
+                    this.$router.push({ path: '/my-study-sets/' })
+                } else {
+                    console.log(error.response ? error.response.data.message : 'Error fetching sets');
+                }
+            }
+        },
+        // Fetches study terms for set
+        async fetchSetTerms() {
+            try {
+                const termsResponse = await axiosAuthInstance.get(`study_sets/terms_in_set/${this.setDetail.id}/`);
                 this.studyTerms = termsResponse.data;
             } catch (error) {
                 // If set not found (no permission)
@@ -261,12 +273,12 @@ export default {
                 this.toggleCreatingTerm();
                 // Enter set edit mode if image upload(s) fail
                 if (imgUploadError) {
-                    this.fetchSetDetail();
+                    this.this.fetchSetTerms();
                     this.toggleEditingTerm(createTermResponse.data)
                     this.editTermError = imgUploadError;
                     return;
                 }
-                this.fetchSetDetail();
+                this.fetchSetTerms();
             } catch (error) {
                 this.createTermError = extractFirstErrorMessage(error);
             }
@@ -312,7 +324,7 @@ export default {
 
                 await axiosAuthInstance.patch(`/study_sets/study_terms/${this.termEditForm.id}/`, termUpdateBody);
                 this.toggleEditingTerm(null);
-                this.fetchSetDetail();
+                this.fetchSetTerms();
             } catch (error) {
                 this.editTermError = extractFirstErrorMessage(error);
             }
@@ -364,6 +376,7 @@ export default {
                     removeImageRequestBody[imageField + '_id'] = null;
 
                     await axiosAuthInstance.patch(`/study_sets/study_terms/${this.termEditForm.id}/`, removeImageRequestBody);
+                    this.fetchSetTerms();
                 } catch (error) {
                     this.editTermError = extractFirstErrorMessage(error);
                 }
@@ -379,7 +392,7 @@ export default {
         async deleteTerm(termId) {
             try {
                 await axiosAuthInstance.delete(`study_sets/study_terms/${termId}/`);
-                this.fetchSetDetail();
+                this.fetchSetTerms()
             } catch (error) {
                 this.editTermError = extractFirstErrorMessage(error);
             }
