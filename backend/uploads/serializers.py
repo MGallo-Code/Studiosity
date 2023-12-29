@@ -8,7 +8,7 @@ MAX_IMG_SIZE = 20971520
 MAX_AUDIO_SIZE = 20971520
 
 class TextToSpeechAudioSerializer(serializers.ModelSerializer):
-    audio_file = serializers.FileField(required=False)
+    file = serializers.FileField(required=False)
     
     class Meta:
         model = TextToSpeechAudio
@@ -24,7 +24,7 @@ class AudioFileSerializer(serializers.ModelSerializer):
         return value
     class Meta:
         model = AudioFile
-        fields = ['id', 'file_path', 'uploaded_at', 'uploader']
+        fields = ['id', 'file', 'uploaded_at', 'uploader']
         read_only_fields = ['uploaded_at', 'uploader']
 
 class ImageFileSerializer(serializers.ModelSerializer):
@@ -37,5 +37,5 @@ class ImageFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ImageFile
-        fields = ['id', 'file_path', 'uploaded_at', 'uploader']
+        fields = ['id', 'file', 'uploaded_at', 'uploader']
         read_only_fields = ['uploaded_at', 'uploader']

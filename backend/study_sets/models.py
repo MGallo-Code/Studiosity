@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 
 from users.models import UserModel
-from uploads.models import AudioFile, ImageFile
+from uploads.models import AudioFile, ImageFile, TextToSpeechAudio
 
 
 # StudySet Model
@@ -75,6 +75,24 @@ class StudyTerm(models.Model):
         null=True, 
         blank=True, 
         related_name='back_audio_study_term'
+    )
+    # AWS Polly Voice ID
+    front_voice_id = models.CharField(default="Joanna", max_length=100, blank=False, null=False)
+    back_voice_id = models.CharField(default="Joanna", max_length=100, blank=False, null=False)
+    # TTS Audio Files
+    front_tts_audio = models.OneToOneField(
+        TextToSpeechAudio, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='front_tts_study_term'
+    )
+    back_tts_audio = models.OneToOneField(
+        TextToSpeechAudio, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='back_tts_study_term'
     )
     tags = models.ManyToManyField(Tag, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

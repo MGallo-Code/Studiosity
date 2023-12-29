@@ -34,7 +34,7 @@ class TextToSpeechAudio(models.Model):
     """
     TextToSpeechAudio Model: Represents an audio file generated from text.
     """
-    audio_file = models.FileField(upload_to=get_tts_audio_path)
+    file = models.FileField(upload_to=get_tts_audio_path)
     uploader = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -46,7 +46,7 @@ class TextToSpeechAudio(models.Model):
         return f"TextToSpeechAudio {self.id} - Uploaded by {self.uploader}"
 
 class AudioFile(models.Model):
-    file_path = models.FileField(upload_to=get_audio_path, max_length=200)
+    file = models.FileField(upload_to=get_audio_path, max_length=200)
     uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='uploaded_audio_files')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
@@ -54,21 +54,21 @@ class AudioFile(models.Model):
         """
         Overridden delete method to remove the file from the filesystem upon deletion of the database record.
         """
-        if self.file_path and os.path.isfile(self.file_path.path):
-            os.remove(self.file_path.path)
+        if self.file and os.path.isfile(self.file.path):
+            os.remove(self.file.path)
         super().delete(*args, **kwargs)
 
     def __str__(self):
-        return f"AudioFile {self.id}: {self.file_path.name}"
+        return f"AudioFile {self.id}: {self.file.name}"
 
 class ImageFile(models.Model):
     """
     ImageFile Model: Represents an image file.
-    - file_path: Stores the path to the image file. The path is generated using get_image_path.
+    - file: Stores the image file. The path is generated using get_image_path.
     - uploader: ForeignKey to the User model, represents the user who uploaded the file.
     - uploaded_at: The date and time when the file was uploaded.
     """
-    file_path = models.ImageField(upload_to=get_image_path, max_length=200)
+    file = models.ImageField(upload_to=get_image_path, max_length=200)
     uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='uploaded_image_files')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
@@ -76,9 +76,9 @@ class ImageFile(models.Model):
         """
         Overridden delete method to remove the file from the filesystem upon deletion of the database record.
         """
-        if self.file_path and os.path.isfile(self.file_path.path):
-            os.remove(self.file_path.path)
+        if self.file and os.path.isfile(self.file.path):
+            os.remove(self.file.path)
         super().delete(*args, **kwargs)
 
     def __str__(self):
-        return f"ImageFile {self.id}: {self.file_path.name}"
+        return f"ImageFile {self.id}: {self.file.name}"

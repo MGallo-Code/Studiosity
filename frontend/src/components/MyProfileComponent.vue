@@ -68,7 +68,7 @@ export default {
                 // If a new file was selected, upload it first
                 if (this.editableProfile.file) {
                     const formData = new FormData();
-                    formData.append('file_path', this.editableProfile.file);
+                    formData.append('file', this.editableProfile.file);
 
                     const uploadImgResponse = await axiosAuthInstance.post('/uploads/images/', formData, {
                         headers: {

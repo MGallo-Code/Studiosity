@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from uploads.models import AudioFile, ImageFile
+from uploads.models import AudioFile, ImageFile, TextToSpeechAudio
 from .models import StudySet, Tag, StudyTerm
 
 
@@ -53,6 +53,20 @@ class StudyTermSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
+    front_tts_audio_id = serializers.PrimaryKeyRelatedField(
+        queryset=TextToSpeechAudio.objects.all(),
+        source='front_tts_audio',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
+    back_tts_audio_id = serializers.PrimaryKeyRelatedField(
+        queryset=TextToSpeechAudio.objects.all(),
+        source='back_tts_audio',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
     tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
@@ -70,6 +84,12 @@ class StudyTermSerializer(serializers.ModelSerializer):
                   'back_image_id',
                   'front_audio_id',
                   'back_audio_id',
+                  'front_voice_id',
+                  'back_voice_id',
+                  'front_tts_audio',
+                  'back_tts_audio',
+                  'front_tts_audio_id',
+                  'back_tts_audio_id',
                   'created_at',
                   'updated_at']
         read_only_fields = ['front_image', 'back_image', 'front_audio', 'back_audio']
@@ -81,12 +101,12 @@ class StudyTermSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
 
         # Process each field and add URL to representation if the object exists
-        for field_name in ['front_image', 'back_image', 'front_audio', 'back_audio']:
+        for field_name in ['front_image', 'back_image', 'front_audio', 'back_audio', 'front_tts_audio', 'back_tts_audio']:
             field_instance = getattr(instance, field_name)
             if field_instance:
                 representation[field_name] = {
                     'id': field_instance.id,
-                    'file_path': field_instance.file_path.url
+                    'file_path': field_instance.file.url
                 }
             else:
                 representation[field_name] = None

@@ -79,7 +79,7 @@
                             <input v-if="!term.front_image" type="file" @change="onUpdateFrontImageSelected" />
                             <span>
                                 <textarea v-model="termEditForm.front_text" />
-                                <p @click="speak(termEditForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
+                                <p @click="speak('front', term)"><font-awesome-icon icon="volume-up" /></p>
                             </span>
                         </div>
                         <div class="spacer"></div>
@@ -92,7 +92,7 @@
                             <input v-if="!term.back_image" type="file" @change="onUpdateBackImageSelected" />
                             <span>
                                 <textarea v-model="termEditForm.back_text" />
-                                <p @click="speak(termEditForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
+                                <p @click="speak('front', term)"><font-awesome-icon icon="volume-up" /></p>
                             </span>
                         </div>
                     </div>
@@ -112,7 +112,7 @@
                             <picture v-if="term.front_image">
                                 <img :src="term.front_image.file_path" />
                             </picture>
-                            <span @click="speak(term.front_text)">
+                            <span @click="speak('front', term)">
                                 <p>{{ term.front_text }}</p>
                                 <p v-if="term.front_text != ''"><font-awesome-icon icon="volume-up" /></p>
                             </span>
@@ -122,7 +122,7 @@
                             <picture v-if="term.back_image">
                                 <img :src="term.back_image.file_path" />
                             </picture>
-                            <span @click="speak(term.back_text)">
+                            <span @click="speak('back', term)">
                                 <p>{{ term.back_text }}</p>
                                 <p v-if="term.back_text != ''"><font-awesome-icon icon="volume-up" /></p>
                             </span>
@@ -187,6 +187,7 @@ export default {
                 const setId = this.$route.params.id;
                 const termsResponse = await axiosAuthInstance.get(`study_sets/terms_in_set/${setId}/`);
                 this.studyTerms = termsResponse.data;
+                console.log(this.studyTerms);
             } catch (error) {
                 // If set not found (no permission)
                 if (error.response && error.response.data.detail === "Not found.") {
@@ -338,7 +339,7 @@ export default {
                 // If new image files are selected, upload them
                 if (imageForm.front_image) {
                     const formData = new FormData();
-                    formData.append('file_path', imageForm.front_image);
+                    formData.append('file', imageForm.front_image);
 
                     const uploadImgResponse = await axiosAuthInstance.post('/uploads/images/', formData, {
                         headers: {
@@ -349,7 +350,7 @@ export default {
                 }
                 if (imageForm.back_image) {
                     const formData = new FormData();
-                    formData.append('file_path', imageForm.back_image);
+                    formData.append('file', imageForm.back_image);
 
                     const uploadImgResponse = await axiosAuthInstance.post('/uploads/images/', formData, {
                         headers: {
@@ -399,17 +400,20 @@ export default {
             }
         },
 
-        speak(text) {
-            if (!window.speechSynthesis) {
-                alert("Text-to-speech not supported in this browser.");
-                return;
+        speak(side, term) {
+            let audioPath = '';
+            if (side === 'front' && term.front_tts_audio) {
+                audioPath = term.front_tts_audio.file_path;
+            } else if (side === 'back' && term.back_tts_audio) {
+                audioPath = term.back_tts_audio.file_path;
             }
 
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.8;
-            utterance.pitch = 1;
-            utterance.lang = 'ja-JP'; //TODO make variable
-            window.speechSynthesis.speak(utterance);
+            if (audioPath) {
+                const audio = new Audio(audioPath);
+                audio.play().catch(e => console.error("Error playing audio:", e));
+            } else {
+                alert("No TTS audio available for this term.");
+            }
         },
     }
 };

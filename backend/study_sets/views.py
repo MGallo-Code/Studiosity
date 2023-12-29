@@ -1,6 +1,9 @@
 from math import ceil
+import uuid
+from boto3 import Session
 
 from django.db.models import Q
+from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
@@ -9,7 +12,7 @@ from rest_framework.permissions import BasePermission, IsAuthenticated, IsAuthen
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 
-from uploads.models import ImageFile
+from uploads.models import ImageFile, TextToSpeechAudio
 from .models import StudySet, StudyTerm, Tag, Favorite
 from .serializers import StudySetSerializer, StudyTermSerializer, TagSerializer
 
@@ -186,18 +189,9 @@ class StudyTermViewSet(viewsets.ModelViewSet):
         if study_set.uploader != user:
             raise PermissionDenied(detail="You do not have permission to add terms to this study set.")
 
-        serializer.save(study_set=study_set)
-    
-    def perform_update(self, serializer):
-        user = self.request.user
-        data = serializer.validated_data
-
-        for field in ['front_image', 'back_image', 'front_audio', 'back_audio']:
-            file_object = data.get(field)
-            if file_object and file_object.uploader != user:
-                raise PermissionDenied(detail=f"You do not have permission to use this {field.split('_')[1]}.")
-
-        serializer.save()
+        instance = serializer.save(study_set=study_set)
+        instance = self.handle_tts_update(instance)
+        instance.save()
     
     def perform_update(self, serializer):
         user = self.request.user
@@ -205,6 +199,7 @@ class StudyTermViewSet(viewsets.ModelViewSet):
 
         instance = self.get_object()
 
+        # If images or audio are being updated, delete previous images/audio
         for field in ['front_image', 'back_image', 'front_audio', 'back_audio']:
             file_object = data.get(field)
 
@@ -216,8 +211,69 @@ class StudyTermViewSet(viewsets.ModelViewSet):
             old_file = getattr(instance, field)
             if file_object and old_file and old_file.id != file_object.id:
                 old_file.delete()
+            
+        # Note fields where text is changing or new voice_id selected
+        changed_fields = []
+        for field in ['front_text', 'back_text', 'front_voice_id', 'back_voice_id']:
+            field_value = data.get(field)
+            if getattr(instance, field) and field_value != getattr(instance, field):
+                changed_fields.append(field)
+        
+        # Update study_term
+        instance = serializer.save()
 
-        serializer.save()
+        # If text changed or new voice_id selected, delete old TTS audio
+        for field in changed_fields:
+            # Get 'front' or 'back' to decide which tts to delete
+            side = field.split('_')[0]
+            # delete old tts audio
+            old_file = getattr(instance, side + '_tts_audio')
+            if old_file:
+                old_file.delete()
+                setattr(instance, side + '_tts_audio', None)
+            
+        # Generate new tts edits if necessary
+        instance = self.handle_tts_update(instance)
+        # Save tts edits
+        instance.save()
+    
+    def handle_tts_update(self, instance):
+        # If missing front TTS audio
+        if not instance.front_tts_audio:
+            instance = self.generate_tts_audio('front', instance)
+            
+        # If missing back TTS audio
+        if not instance.back_tts_audio:
+            instance = self.generate_tts_audio('back', instance)
+        
+        return instance
+
+    def generate_tts_audio(self, side, instance):
+        text = getattr(instance, side + '_text')
+        voice_id = getattr(instance, side + '_voice_id')
+
+        # Generate new TTS audio if text has changed
+        if text and text.strip() != '':
+            # Initialize AWS Polly client
+            polly = Session(region_name='us-east-2').client('polly')
+
+            # Generate TTS audio
+            response = polly.synthesize_speech(Text=text, OutputFormat='mp3', VoiceId=voice_id)
+            if "AudioStream" in response:
+                audio_content = ContentFile(response['AudioStream'].read())
+                filename = f"{uuid.uuid4()}.mp3"
+
+                # Create a new TextToSpeechAudio instance
+                tts_audio_instance = TextToSpeechAudio(uploader=self.request.user)
+                tts_audio_instance.file.save(filename, audio_content)
+
+                tts_audio_instance.save()
+
+                # Set the new TTS instance to the study term
+                setattr(instance, side + '_tts_audio', tts_audio_instance)
+        
+        return instance
+
 
 class TagViewSet(viewsets.ModelViewSet):
     """
