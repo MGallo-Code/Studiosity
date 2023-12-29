@@ -1,9 +1,14 @@
-from rest_framework import viewsets, mixins
+import uuid
+from boto3 import Session
+from django.core.files.base import ContentFile
+from rest_framework import viewsets, status, mixins
+from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated, BasePermission, SAFE_METHODS
+from rest_framework.response import Response
 
-from .models import AudioFile, ImageFile
-from .serializers import AudioFileSerializer, ImageFileSerializer
+from .models import AudioFile, ImageFile, TextToSpeechAudio
+from .serializers import AudioFileSerializer, ImageFileSerializer, TextToSpeechAudioSerializer
 
 
 class IsUploaderOrSuperuser(BasePermission):
@@ -18,6 +23,35 @@ class IsUploaderOrSuperuser(BasePermission):
 
         # Write permissions are only allowed to the uploader of the file or a superuser.
         return obj.uploader == request.user or request.user.is_superuser
+
+class TextToSpeechAudioViewSet(viewsets.ModelViewSet):
+    queryset = TextToSpeechAudio.objects.all()
+    serializer_class = TextToSpeechAudioSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        text = request.data.get('text')
+        if not text:
+            return Response({"error": "Field 'text' is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Initialize AWS Polly client and synthesize speech
+        polly = Session(region_name='us-east-2').client('polly')
+        response = polly.synthesize_speech(Text=text, OutputFormat='mp3', VoiceId='Joanna')
+
+        if "AudioStream" in response:
+            audio_content = ContentFile(response['AudioStream'].read())
+            filename = f"{uuid.uuid4()}.mp3"
+
+            # Create and save the TextToSpeechAudio instance
+            tts_audio_instance = TextToSpeechAudio(uploader=request.user)
+            tts_audio_instance.audio_file.save(filename, audio_content)
+
+            # Serialize and return the new instance
+            serializer = self.get_serializer(tts_audio_instance)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"error": "AWS Polly did not return an audio stream."}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AudioFileViewSet(mixins.RetrieveModelMixin,
                        mixins.CreateModelMixin,

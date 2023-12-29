@@ -1,11 +1,19 @@
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 
-from .models import AudioFile, ImageFile
+from .models import AudioFile, ImageFile, TextToSpeechAudio
 
 
 MAX_IMG_SIZE = 20971520
 MAX_AUDIO_SIZE = 20971520
+
+class TextToSpeechAudioSerializer(serializers.ModelSerializer):
+    audio_file = serializers.FileField(required=False)
+    
+    class Meta:
+        model = TextToSpeechAudio
+        fields = ['id', 'audio_file', 'uploader', 'created_at']
+        read_only_fields = ['id', 'created_at', 'uploader']
 
 class AudioFileSerializer(serializers.ModelSerializer):
     def validate_file_path(self, value):
