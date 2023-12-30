@@ -1,7 +1,7 @@
 <template>
     <nav class="navbar">
         <div class="navbar-brand">
-            <router-link to="/">LifeLocker</router-link>
+            <router-link to="/">Studiosity</router-link>
         </div>
         <ul class="navbar-menu">
             <li v-for="item in menuItems" :key="item.text" class="navbar-link">
@@ -10,10 +10,11 @@
             <li v-if="!isAuthenticated">
                 <router-link to="/login">Login</router-link>
             </li>
-            <li v-if="isAuthenticated" class="profile-picture" @mouseenter="toggleSubMenu(true)" @mouseleave="toggleSubMenu(false)">
+            <li v-if="isAuthenticated" class="profile-picture" @mouseenter="toggleSubMenu(true)"
+                @mouseleave="toggleSubMenu(false)">
                 <router-link to="/my-profile">
-                <span>{{ this.username }}</span>
-                <img :src="profileImage" alt="Profile" class="profile-pic">
+                    <span>{{ this.username }}</span>
+                    <img :src="profileImage" alt="Profile" class="profile-pic">
                 </router-link>
                 <div class="profile-submenu" v-show="showSubMenu">
                     <a href="#" @click="handleLogout">
@@ -106,18 +107,22 @@ export default {
     font-family: 'BreeSerif', serif;
     background-color: var(--clr-base-primary);
 }
+
 .navbar-brand {
     margin: 0 1.5rem;
 }
+
 .navbar-menu {
     display: inline-block;
     height: 100%;
 }
+
 .navbar-menu li {
     display: inline-block;
     height: 100%;
     width: 10rem;
 }
+
 .navbar a {
     display: flex;
     align-items: center;
@@ -153,7 +158,7 @@ export default {
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 5px;
-    box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
     box-sizing: border-box;
     z-index: 100;
 }
