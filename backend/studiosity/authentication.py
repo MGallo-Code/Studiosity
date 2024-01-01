@@ -11,14 +11,14 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             access_token = response.data['access']
             refresh_token = response.data['refresh']
             response.set_cookie(
-                key='lifelocker_access_token',
+                key='studiosity_access_token',
                 value=access_token,
                 httponly=True,
                 samesite='Strict',
                 secure=True
             )
             response.set_cookie(
-                key='lifelocker_refresh_token',
+                key='studiosity_refresh_token',
                 value=refresh_token,
                 httponly=True,
                 samesite='Strict',
@@ -29,7 +29,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
-        refresh_token = request.COOKIES.get('lifelocker_refresh_token')
+        refresh_token = request.COOKIES.get('studiosity_refresh_token')
         if not refresh_token:
             raise ValidationError('No refresh token provided')
         
@@ -41,7 +41,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         if response.status_code == 200:
             access_token = response.data['access']
             response.set_cookie(
-                key='lifelocker_access_token',
+                key='studiosity_access_token',
                 value=access_token,
                 httponly=True,
                 samesite='Strict',
@@ -52,6 +52,6 @@ class CustomTokenRefreshView(TokenRefreshView):
 @api_view(['POST'])
 def logout_view(request):
     response = JsonResponse({ "detail": "Logged out successfully." })
-    response.delete_cookie('lifelocker_access_token')
-    response.delete_cookie('lifelocker_refresh_token')
+    response.delete_cookie('studiosity_access_token')
+    response.delete_cookie('studiosity_refresh_token')
     return response

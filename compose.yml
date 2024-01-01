@@ -23,7 +23,7 @@ services:
 
   django:
     build: ./backend
-    command: gunicorn lifelocker.wsgi:application --bind 0.0.0.0:8000 --access-logfile -
+    command: gunicorn studiosity.wsgi:application --bind 0.0.0.0:8000 --access-logfile -
     volumes:
       - ./backend:/usr/src/app
       - .env:/usr/src/.env
@@ -36,7 +36,7 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: lifelocker
+      POSTGRES_DB: studiosity
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
