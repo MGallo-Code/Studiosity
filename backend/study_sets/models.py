@@ -46,6 +46,7 @@ class StudyTerm(models.Model):
     and a set of tags for categorization. Also tracks creation and update times.
     """
     study_set = models.ForeignKey(StudySet, on_delete=models.CASCADE, related_name='study_terms')
+    sort_order = models.IntegerField(default=0)
     front_text = models.TextField(blank=True, default='Front')
     back_text = models.TextField(blank=True, default='Back')
     front_image = models.OneToOneField(
@@ -98,6 +99,17 @@ class StudyTerm(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        # Ensure a unique sort_order within the same study_set
+        unique_together = [['study_set', 'sort_order']]
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            # Assign the next sort_order value
+            last_term = StudyTerm.objects.filter(study_set=self.study_set).order_by('-sort_order').first()
+            self.sort_order = (last_term.sort_order + 1) if last_term else 0
+        super().save(*args, **kwargs)
+
     def delete(self, *args, **kwargs):
         """
         Overridden delete method to remove the associated images
@@ -112,6 +124,11 @@ class StudyTerm(models.Model):
             self.front_audio.delete()
         if hasattr(self, 'back_audio') and self.back_audio:
             self.back_audio.delete()
+        
+        if hasattr(self, 'front_tts_audio') and self.front_tts_audio:
+            self.front_tts_audio.delete()
+        if hasattr(self, 'back_tts_audio') and self.back_tts_audio:
+            self.back_tts_audio.delete()
 
         super().delete(*args, **kwargs)
 

@@ -2,7 +2,7 @@ from math import ceil
 import uuid
 from boto3 import Session, client
 
-from django.db.models import Q
+from django.db.models import Max, Q
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, viewsets
@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 
 from uploads.models import ImageFile, TextToSpeechAudio
 from .models import StudySet, StudyTerm, Tag, Favorite
-from .serializers import StudySetSerializer, StudyTermSerializer, TagSerializer
+from .serializers import StudySetSerializer, ReorderStudyTermSerializer, StudyTermSerializer, TagSerializer
 
 
 class CustomPagination(PageNumberPagination):
@@ -150,6 +150,18 @@ class StudyTermsInSetView(generics.ListAPIView):
         
         return StudyTerm.objects.filter(study_set=study_set)
 
+
+class ReorderStudyTermsView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = ReorderStudyTermSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            # Apply the new ordering
+            for item in serializer.validated_data:
+                StudyTerm.objects.filter(id=item['id']).update(sort_order=item['sort_order'])
+            return Response({'status': 'ordering updated'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class StudyTermViewSet(viewsets.ModelViewSet):
     serializer_class = StudyTermSerializer
     pagination_class = CustomPagination
@@ -189,7 +201,9 @@ class StudyTermViewSet(viewsets.ModelViewSet):
         if study_set.uploader != user:
             raise PermissionDenied(detail="You do not have permission to add terms to this study set.")
 
-        instance = serializer.save(study_set=study_set)
+        last_sort_order = StudyTerm.objects.aggregate(Max('sort_order'))['sort_order__max'] or 0
+
+        instance = serializer.save(study_set=study_set, sort_order=last_sort_order + 1)
         instance = self.handle_tts_update(instance)
         instance.save()
     

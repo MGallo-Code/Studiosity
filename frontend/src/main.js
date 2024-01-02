@@ -15,6 +15,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import VueSortable from "vue3-sortablejs";
 
 library.add(
     faEdit,
@@ -33,5 +34,6 @@ store.dispatch("checkAuthState").then(() => {
     app.component("font-awesome-icon", FontAwesomeIcon);
     app.use(store);
     app.use(router);
+    app.use(VueSortable);
     app.mount("#app");
 });

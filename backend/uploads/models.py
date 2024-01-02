@@ -41,6 +41,14 @@ class TextToSpeechAudio(models.Model):
         related_name='text_to_speech_audios'
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def delete(self, *args, **kwargs):
+        """
+        Overridden delete method to remove the file from the filesystem upon deletion of the database record.
+        """
+        if self.file and os.path.isfile(self.file.path):
+            os.remove(self.file.path)
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return f"TextToSpeechAudio {self.id} - Uploaded by {self.uploader}"

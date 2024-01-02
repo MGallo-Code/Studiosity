@@ -28,73 +28,74 @@
             <p>{{ setDetail.description || 'No description provided.' }}</p>
         </div>
 
-        <!-- Study Terms List -->
+
+        <!-- Inline form for creating a new term -->
+        <div v-if="creatingNewTerm" class="term-container">
+            <p v-if="createTermError" class="error-message">{{ createTermError }}</p>
+            <form class="term-display" @submit.prevent="createNewTerm">
+                <div class="front-back-display">
+                    <div class="img-info-flow">
+                        <input type="file" @change="onCreateFrontImageSelected" />
+                        <span>
+                            <textarea v-model="termCreateForm.front_text" />
+                            <p @click="speak(termCreateForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
+                        </span>
+                        <span>
+                            <!-- Front Language Selection -->
+                            <select v-model="termCreateForm.selectedFrontLanguage"
+                                @change="() => updateVoiceOptions(termCreateForm, 'Front')">
+                                <option v-for="language in availableLanguages" :key="language" :value="language">
+                                    {{ language }}
+                                </option>
+                            </select>
+                            <!-- Front Voice ID Selection -->
+                            <select v-model="termCreateForm.selectedFrontVoiceId">
+                                <option v-for="voice in termCreateForm.filteredFrontVoices" :key="voice.Id"
+                                    :value="voice.Id">
+                                    {{ voice.Name }}
+                                </option>
+                            </select>
+                        </span>
+                    </div>
+                    <div class="spacer"></div>
+                    <div class="img-info-flow">
+                        <input type="file" @change="onCreateBackImageSelected" />
+                        <span>
+                            <textarea v-model="termCreateForm.back_text" />
+                            <p @click="speak(termCreateForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
+                        </span>
+                        <span>
+                            <!-- Back Language Selection -->
+                            <select v-model="termCreateForm.selectedBackLanguage"
+                                @change="() => updateVoiceOptions(termCreateForm, 'Back')">
+                                <option v-for="language in availableLanguages" :key="language" :value="language">
+                                    {{ language }}
+                                </option>
+                            </select>
+                            <!-- Back Voice ID Selection -->
+                            <select v-model="termCreateForm.selectedBackVoiceId">
+                                <option v-for="voice in termCreateForm.filteredBackVoices" :key="voice.Id"
+                                    :value="voice.Id">
+                                    {{ voice.Name }}
+                                </option>
+                            </select>
+                        </span>
+                    </div>
+                </div>
+                <div class="btn-stack">
+                    <button type="submit" class="square-btn green-btn"><font-awesome-icon
+                            :icon="['fas', 'plus']" /></button>
+                    <button type="button" @click="toggleCreatingTerm" class="square-btn yellow-btn"><font-awesome-icon
+                            :icon="['fas', 'ban']" /></button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Button to toggle new term creation form -->
+        <button @click="toggleCreatingTerm" :disabled="creatingNewTerm">Create New Term</button>
+
+        <!-- <div v-sortable @end="onDragEnd" class="terms-list"> -->
         <div class="terms-list">
-            <!-- Inline form for creating a new term -->
-            <div v-if="creatingNewTerm" class="term-container">
-                <p v-if="createTermError" class="error-message">{{ createTermError }}</p>
-                <form class="term-display" @submit.prevent="createNewTerm">
-                    <div class="front-back-display">
-                        <div class="img-info-flow">
-                            <input type="file" @change="onCreateFrontImageSelected" />
-                            <span>
-                                <textarea v-model="termCreateForm.front_text" />
-                                <p @click="speak(termCreateForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
-                            </span>
-                            <span>
-                                <!-- Front Language Selection -->
-                                <select v-model="termCreateForm.selectedFrontLanguage"
-                                    @change="() => updateVoiceOptions(termCreateForm, 'Front')">
-                                    <option v-for="language in availableLanguages" :key="language" :value="language">
-                                        {{ language }}
-                                    </option>
-                                </select>
-                                <!-- Front Voice ID Selection -->
-                                <select v-model="termCreateForm.selectedFrontVoiceId">
-                                    <option v-for="voice in termCreateForm.filteredFrontVoices" :key="voice.Id"
-                                        :value="voice.Id">
-                                        {{ voice.Name }}
-                                    </option>
-                                </select>
-                            </span>
-                        </div>
-                        <div class="spacer"></div>
-                        <div class="img-info-flow">
-                            <input type="file" @change="onCreateBackImageSelected" />
-                            <span>
-                                <textarea v-model="termCreateForm.back_text" />
-                                <p @click="speak(termCreateForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
-                            </span>
-                            <span>
-                                <!-- Back Language Selection -->
-                                <select v-model="termCreateForm.selectedBackLanguage"
-                                    @change="() => updateVoiceOptions(termCreateForm, 'Back')">
-                                    <option v-for="language in availableLanguages" :key="language" :value="language">
-                                        {{ language }}
-                                    </option>
-                                </select>
-                                <!-- Back Voice ID Selection -->
-                                <select v-model="termCreateForm.selectedBackVoiceId">
-                                    <option v-for="voice in termCreateForm.filteredBackVoices" :key="voice.Id"
-                                        :value="voice.Id">
-                                        {{ voice.Name }}
-                                    </option>
-                                </select>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="btn-stack">
-                        <button type="submit" class="square-btn green-btn"><font-awesome-icon
-                                :icon="['fas', 'plus']" /></button>
-                        <button type="button" @click="toggleCreatingTerm" class="square-btn yellow-btn"><font-awesome-icon
-                                :icon="['fas', 'ban']" /></button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Button to toggle new term creation form -->
-            <button @click="toggleCreatingTerm" :disabled="creatingNewTerm">Create New Term</button>
-
             <!-- Iterating over each term to display -->
             <div v-for="term in studyTerms" :key="term.id" class="term-container">
                 <!-- Editable term form -->
@@ -233,6 +234,30 @@ export default {
         this.fetchSetTerms();
     },
     methods: {
+        //================================
+        onDragEnd() {
+            this.studyTerms.forEach((term, index) => {
+                term.sort_order = index + 1;  // Assuming sort_order starts at 1
+            });
+            this.updateSortOrder();
+        },
+        async updateSortOrder() {
+            // Prepare the data for sending
+            const sortOrderData = this.studyTerms.map(term => ({
+                id: term.id,
+                sort_order: term.sort_order
+            }));
+
+            // Send the updated sort order to the backend
+            try {
+                await axiosAuthInstance.post('/study_sets/update_term_order/', sortOrderData);
+                // Optionally, refetch the terms to ensure order consistency
+                this.fetchSetTerms();
+            } catch (error) {
+                console.error("Error updating term order:", error);
+            }
+        },
+        //================================
         // Fetches details of the study set
         async fetchSetDetail() {
             try {
@@ -254,6 +279,7 @@ export default {
                 const setId = this.$route.params.id;
                 const termsResponse = await axiosAuthInstance.get(`study_sets/terms_in_set/${setId}/`);
                 this.studyTerms = termsResponse.data;
+                console.log(this.studyTerms);
             } catch (error) {
                 // If set not found (no permission)
                 if (error.response && error.response.data.detail === "Not found.") {
