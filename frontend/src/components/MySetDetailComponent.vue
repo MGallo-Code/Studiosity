@@ -38,16 +38,48 @@
                         <div class="img-info-flow">
                             <input type="file" @change="onCreateFrontImageSelected" />
                             <span>
-                                <textarea v-model="createNewTermForm.front_text" />
-                                <p @click="speak(createNewTermForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
+                                <textarea v-model="termCreateForm.front_text" />
+                                <p @click="speak(termCreateForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
+                            </span>
+                            <span>
+                                <!-- Front Language Selection -->
+                                <select v-model="termCreateForm.selectedFrontLanguage"
+                                    @change="() => updateVoiceOptions(termCreateForm, 'Front')">
+                                    <option v-for="language in availableLanguages" :key="language" :value="language">
+                                        {{ language }}
+                                    </option>
+                                </select>
+                                <!-- Front Voice ID Selection -->
+                                <select v-model="termCreateForm.selectedFrontVoiceId">
+                                    <option v-for="voice in termCreateForm.filteredFrontVoices" :key="voice.Id"
+                                        :value="voice.Id">
+                                        {{ voice.Name }}
+                                    </option>
+                                </select>
                             </span>
                         </div>
                         <div class="spacer"></div>
                         <div class="img-info-flow">
                             <input type="file" @change="onCreateBackImageSelected" />
                             <span>
-                                <textarea v-model="createNewTermForm.back_text" />
-                                <p @click="speak(createNewTermForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
+                                <textarea v-model="termCreateForm.back_text" />
+                                <p @click="speak(termCreateForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
+                            </span>
+                            <span>
+                                <!-- Back Language Selection -->
+                                <select v-model="termCreateForm.selectedBackLanguage"
+                                    @change="() => updateVoiceOptions(termCreateForm, 'Back')">
+                                    <option v-for="language in availableLanguages" :key="language" :value="language">
+                                        {{ language }}
+                                    </option>
+                                </select>
+                                <!-- Back Voice ID Selection -->
+                                <select v-model="termCreateForm.selectedBackVoiceId">
+                                    <option v-for="voice in termCreateForm.filteredBackVoices" :key="voice.Id"
+                                        :value="voice.Id">
+                                        {{ voice.Name }}
+                                    </option>
+                                </select>
                             </span>
                         </div>
                     </div>
@@ -81,6 +113,22 @@
                                 <textarea v-model="termEditForm.front_text" />
                                 <p @click="speak('front', term)"><font-awesome-icon icon="volume-up" /></p>
                             </span>
+                            <span>
+                                <!-- Front Language Selection -->
+                                <select v-model="termEditForm.selectedFrontLanguage"
+                                    @change="() => updateVoiceOptions(termEditForm, 'Front')">
+                                    <option v-for="language in availableLanguages" :key="language" :value="language">
+                                        {{ language }}
+                                    </option>
+                                </select>
+                                <!-- Front Voice ID Selection -->
+                                <select v-model="termEditForm.selectedFrontVoiceId">
+                                    <option v-for="voice in termEditForm.filteredFrontVoices" :key="voice.Id"
+                                        :value="voice.Id">
+                                        {{ voice.Name }}
+                                    </option>
+                                </select>
+                            </span>
                         </div>
                         <div class="spacer"></div>
                         <div class="img-info-flow">
@@ -93,6 +141,22 @@
                             <span>
                                 <textarea v-model="termEditForm.back_text" />
                                 <p @click="speak('front', term)"><font-awesome-icon icon="volume-up" /></p>
+                            </span>
+                            <span>
+                                <!-- Back Language Selection -->
+                                <select v-model="termEditForm.selectedBackLanguage"
+                                    @change="() => updateVoiceOptions(termEditForm, 'Back')">
+                                    <option v-for="language in availableLanguages" :key="language" :value="language">
+                                        {{ language }}
+                                    </option>
+                                </select>
+                                <!-- Back Voice ID Selection -->
+                                <select v-model="termEditForm.selectedBackVoiceId">
+                                    <option v-for="voice in termEditForm.filteredBackVoices" :key="voice.Id"
+                                        :value="voice.Id">
+                                        {{ voice.Name }}
+                                    </option>
+                                </select>
                             </span>
                         </div>
                     </div>
@@ -147,6 +211,9 @@ export default {
             // Loaded objects
             studyTerms: [],
             setDetail: null,
+            // AWS Polly voices
+            availableVoices: null,
+            availableLanguages: null,
             // Errors
             editSetError: null,
             createTermError: null,
@@ -157,7 +224,7 @@ export default {
             // Forms and errors
             setEditForm: null,
             termEditForm: null,
-            createNewTermForm: null,
+            termCreateForm: null,
         };
     },
     created() {
@@ -195,6 +262,21 @@ export default {
                     console.log(error.response ? error.response.data.message : 'Error fetching terms');
                 }
             }
+        },
+        async fetchPollyVoices() {
+            try {
+                const response = await axiosAuthInstance.get('/study_sets/get_voices/');
+                this.availableVoices = response.data.voices;
+                // Process voices as needed, e.g., extract languages
+                this.processVoices();
+            } catch (error) {
+                console.log(error.response ? error.response.data.message : 'Error fetching polly voices');
+            }
+        },
+        processVoices() {
+            // Extract unique languages from the voices
+            this.availableLanguages = [...new Set(this.availableVoices.map(voice => voice.LanguageName))];
+            this.availableLanguages.sort();
         },
         // Toggle edit state for study set
         toggleEditingSet() {
@@ -242,11 +324,55 @@ export default {
                 });
         },
 
+        // Select the language filter based on selected voice
+        initializeVoiceSelections(form, term) {
+            if (term.front_voice_id) {
+                const frontVoice = this.availableVoices.find(voice => voice.Id === term.front_voice_id);
+                if (frontVoice) {
+                    form.selectedFrontLanguage = frontVoice.LanguageName;
+                    form.selectedFrontVoiceId = term.front_voice_id;
+                    this.updateFilteredVoices(form, 'Front');
+                }
+            }
+
+            if (term.back_voice_id) {
+                const backVoice = this.availableVoices.find(voice => voice.Id === term.back_voice_id);
+                if (backVoice) {
+                    form.selectedBackLanguage = backVoice.LanguageName;
+                    form.selectedBackVoiceId = term.back_voice_id;
+                    this.updateFilteredVoices(form, 'Back');
+                }
+            }
+        },
+        // Call this method when the language is selected/changed in the form
+        updateFilteredVoices(form, side) {
+            const selectedLanguage = form['selected' + side + 'Language'];
+            form['filtered' + side + 'Voices'] = this.availableVoices
+                .filter(voice => voice.LanguageName === selectedLanguage)
+                .sort((a, b) => a.Name.localeCompare(b.Name));
+
+            // If the currently selected voice ID is not in the filtered list, reset it
+            if (!form['filtered' + side + 'Voices'].some(voice => voice.Id === form['selected' + side + 'VoiceId'])) {
+                form['selected' + side + 'VoiceId'] = form['filtered' + side + 'Voices'].length > 0 ? form['filtered' + side + 'Voices'][0].Id : '';
+            }
+        },
+        updateVoiceOptions(termForm, side) {
+            const selectedLanguage = termForm['selected' + side + 'Language'];
+            termForm['filtered' + side + 'Voices'] = this.availableVoices.filter(voice => voice.LanguageName === selectedLanguage);
+            if (termForm['filtered' + side + 'Voices'].length > 0) {
+                termForm['selected' + side + 'VoiceId'] = termForm['filtered' + side + 'Voices'][0].Id;
+            }
+        },
+
         // Toggles the form for creating a new term
-        toggleCreatingTerm() {
+        async toggleCreatingTerm() {
+            // Load available voices if not already loaded
+            if (!this.availableVoices) {
+                await this.fetchPollyVoices();
+            }
             // Resets the form for creating a new term
             if (!this.creatingNewTerm) {
-                this.createNewTermForm = {
+                this.termCreateForm = {
                     front_text: '',
                     back_text: '',
                     front_image: null,
@@ -254,6 +380,10 @@ export default {
                     study_set: this.setDetail.id
                 };
             }
+            this.initializeVoiceSelections(this.termCreateForm, {
+                front_voice_id: 'Joanna',
+                back_voice_id: 'Joanna'
+            })
             this.creatingNewTerm = !this.creatingNewTerm;
             this.createTermError = null;
         },
@@ -263,12 +393,14 @@ export default {
             this.createTermError = null;
             try {
                 const createTermResponse = await axiosAuthInstance.post('/study_sets/study_terms/', {
-                    front_text: this.createNewTermForm.front_text,
-                    back_text: this.createNewTermForm.back_text,
+                    front_text: this.termCreateForm.front_text,
+                    back_text: this.termCreateForm.back_text,
+                    front_voice_id: this.termCreateForm.selectedFrontVoiceId,
+                    back_voice_id: this.termCreateForm.selectedBackVoiceId,
                     study_set: this.setDetail.id,
                 });
 
-                const imgUploadError = await this.updateTermImages(createTermResponse.data.id, this.createNewTermForm);
+                const imgUploadError = await this.updateTermImages(createTermResponse.data.id, this.termCreateForm);
 
                 // Toggle creation view
                 this.toggleCreatingTerm();
@@ -285,12 +417,20 @@ export default {
             }
         },
         // Enters edit mode for a specific term (or exits if null provided as the term)
-        toggleEditingTerm(term) {
+        async toggleEditingTerm(term) {
+            // Load available voices if not already loaded
+            if (!this.availableVoices) {
+                await this.fetchPollyVoices();
+            }
+            // If a term is supplied, set fields
             if (term) {
                 this.termEditForm = { ...term };
                 this.termEditForm.front_image = null;
                 this.termEditForm.back_image = null;
-            } else {
+                this.initializeVoiceSelections(this.termEditForm, term);
+            }
+            // Otherwise, stop editing term
+            else {
                 this.termEditForm = null;
             }
             this.editTermError = null;
@@ -303,10 +443,10 @@ export default {
             this.termEditForm.back_image = event.target.files[0];
         },
         onCreateFrontImageSelected(event) {
-            this.createNewTermForm.front_image = event.target.files[0];
+            this.termCreateForm.front_image = event.target.files[0];
         },
         onCreateBackImageSelected(event) {
-            this.createNewTermForm.back_image = event.target.files[0];
+            this.termCreateForm.back_image = event.target.files[0];
         },
         // Updates the term
         async updateTerm() {
@@ -314,6 +454,8 @@ export default {
                 const termUpdateBody = {
                     front_text: this.termEditForm.front_text,
                     back_text: this.termEditForm.back_text,
+                    front_voice_id: this.termEditForm.selectedFrontVoiceId,
+                    back_voice_id: this.termEditForm.selectedBackVoiceId,
                 }
 
                 // Return early if image upload(s) fail

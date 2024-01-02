@@ -1,6 +1,6 @@
 from math import ceil
 import uuid
-from boto3 import Session
+from boto3 import Session, client
 
 from django.db.models import Q
 from django.core.files.base import ContentFile
@@ -273,6 +273,28 @@ class StudyTermViewSet(viewsets.ModelViewSet):
                 setattr(instance, side + '_tts_audio', tts_audio_instance)
         
         return instance
+
+
+class PollyVoicesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Initialize AWS Polly client
+        polly_client = client('polly', region_name='us-east-1')
+
+        try:
+            # Fetch the available voices
+            response = polly_client.describe_voices()
+            
+            # Extract the voice data
+            voices = response.get('Voices', [])
+            
+            # Return the list of voices
+            return Response({'voices': voices}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            # Handle exceptions
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TagViewSet(viewsets.ModelViewSet):

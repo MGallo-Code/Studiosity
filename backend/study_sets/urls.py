@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     FavoriteStudySetView, MyStudySetsView, StudyTermViewSet, StudySetViewSet,
-    StudyTermsInSetView, TagViewSet
+    StudyTermsInSetView, TagViewSet, PollyVoicesView
 )
 
 
@@ -15,6 +15,7 @@ router.register(r'tags', TagViewSet, basename='tag')
 urlpatterns = [
     path('my_sets/', MyStudySetsView.as_view(), name='my_study_sets'),
     path('terms_in_set/<int:pk>/', StudyTermsInSetView.as_view(), name='terms_in_set'),
+    path('get_voices/', PollyVoicesView.as_view(), name='get_voices'),
     path('favorite/<int:pk>/', FavoriteStudySetView.as_view(), name='favorite_study_set'),
     path('', include(router.urls)),
 ]
