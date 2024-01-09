@@ -31,7 +31,8 @@ class AudioFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = AudioFile
         fields = ['id', 'file', 'uploaded_at', 'uploader']
-        read_only_fields = ['uploaded_at', 'uploader']
+        extra_kwargs = {"file": {"error_messages": {"required": "Request is missing a file."}}}
+        read_only_fields = ['id', 'uploaded_at', 'uploader']
 
 class ImageFileSerializer(serializers.ModelSerializer):
     # Custom validation for the 'file' field.
@@ -45,4 +46,5 @@ class ImageFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageFile
         fields = ['id', 'file', 'uploaded_at', 'uploader']
-        read_only_fields = ['uploaded_at', 'uploader']
+        extra_kwargs = {"file": {"error_messages": {"required": "Request is missing a file."}}}
+        read_only_fields = ['id', 'uploaded_at', 'uploader']
