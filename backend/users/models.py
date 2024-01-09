@@ -94,7 +94,7 @@ class UserModel(AbstractBaseUser):
         """
         # Check if the user has a profile image and delete the ImageFile object
         if hasattr(self, 'profile_image') and self.profile_image:
-            self.profile_image.delete()  # This calls the overridden delete method of ImageFile
+            self.profile_image.delete()  # Calls overridden delete method of ImageFile
 
         super().delete(*args, **kwargs)
 

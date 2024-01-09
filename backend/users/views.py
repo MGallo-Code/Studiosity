@@ -14,7 +14,6 @@ class IsAuthorizedView(APIView):
 
     def get(self, request, format=None):
         # If the request reaches here, the user is authenticated
-        user = request.user
         return Response({
             'message': 'User is authenticated',
         }, status=status.HTTP_200_OK)

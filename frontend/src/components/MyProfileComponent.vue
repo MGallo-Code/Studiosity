@@ -46,7 +46,7 @@ export default {
                 try {
                     const response = await axiosAuthInstance.get('/users/profile/');
                     if (response.data.profile_image) {
-                        this.profileImage = response.data.profile_image;
+                        this.profileImage = response.data.profile_image.file_path;
                     }
                     this.profile = response.data;
                 } catch (error) {

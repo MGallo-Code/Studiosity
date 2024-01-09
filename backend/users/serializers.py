@@ -10,7 +10,7 @@ class UserCreationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
-        fields = ('id', 'username', 'email', 'password')  # Fields to be included in the serializer
+        fields = ['id', 'username', 'email', 'password']
 
     def create(self, validated_data):
         """
@@ -44,7 +44,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class UserPublicProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
-        fields = ('username', 'profile_image', 'bio')  # Publicly accessible fields
+        fields = ('username', 'profile_image', 'bio')
     
     def to_representation(self, instance):
         """
@@ -52,16 +52,12 @@ class UserPublicProfileSerializer(serializers.ModelSerializer):
         This method ensures the correct format and URL of the profile image is returned.
         """
         representation = super().to_representation(instance)
-        # Provide the URL of the profile image if it exists, otherwise set it to None
-        representation['profile_image'] = instance.profile_image.file.url if instance.profile_image else None
-        profile_image = getattr(instance, profile_image)
-        if profile_image:
-            representation['profile_image'] = {
-                'id': profile_image.id,
-                'file_path': profile_image.file.url
-            }
-        else:
-            representation['profile_image'] = None
+        profile_image = getattr(instance, 'profile_image', None)
+        # Provide the URL and ID of the profile image if it exists, otherwise set it to None
+        representation['profile_image'] = {
+            'id': profile_image.id,
+            'file_path': profile_image.file.url
+        } if profile_image else None
         return representation
 
 # Serializer for the full profile of a user, excluding sensitive information like password
@@ -78,6 +74,10 @@ class UserFullProfileSerializer(serializers.ModelSerializer):
         This method ensures the correct format and URL of the profile image is returned.
         """
         representation = super().to_representation(instance)
-        # Provide the URL of the profile image if it exists, otherwise set it to None
-        representation['profile_image'] = instance.profile_image.file.url if instance.profile_image else None
+        profile_image = getattr(instance, 'profile_image', None)
+        # Provide the URL and ID of the profile image if it exists, otherwise set it to None
+        representation['profile_image'] = {
+            'id': profile_image.id,
+            'file_path': profile_image.file.url
+        } if profile_image else None
         return representation

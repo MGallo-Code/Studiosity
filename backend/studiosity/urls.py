@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-from .authentication import CustomTokenObtainPairView, CustomTokenRefreshView, logout_view
+from studiosity.authentication import CustomTokenObtainPairView, CustomTokenRefreshView, logout_view
 
 
 urlpatterns = [
