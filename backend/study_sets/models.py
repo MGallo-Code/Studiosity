@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Max
 from django.conf import settings
 
 from users.models import UserModel
@@ -46,7 +47,7 @@ class StudyTerm(models.Model):
     and a set of tags for categorization. Also tracks creation and update times.
     """
     study_set = models.ForeignKey(StudySet, on_delete=models.CASCADE, related_name='study_terms')
-    sort_order = models.IntegerField(default=0)
+    sort_order = models.IntegerField(null=True, blank=True)
     front_text = models.TextField(blank=True, default='Front')
     back_text = models.TextField(blank=True, default='Back')
     front_image = models.OneToOneField(
@@ -104,10 +105,9 @@ class StudyTerm(models.Model):
         unique_together = [['study_set', 'sort_order']]
 
     def save(self, *args, **kwargs):
-        if self._state.adding:
-            # Assign the next sort_order value
-            last_term = StudyTerm.objects.filter(study_set=self.study_set).order_by('-sort_order').first()
-            self.sort_order = (last_term.sort_order + 1) if last_term else 0
+        if self._state.adding and self.sort_order is None:
+            last_sort_order = StudyTerm.objects.aggregate(Max('sort_order'))['sort_order__max'] or 0
+            self.sort_order = last_sort_order + 1
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):

@@ -54,6 +54,14 @@ class UserPublicProfileSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         # Provide the URL of the profile image if it exists, otherwise set it to None
         representation['profile_image'] = instance.profile_image.file.url if instance.profile_image else None
+        profile_image = getattr(instance, profile_image)
+        if profile_image:
+            representation['profile_image'] = {
+                'id': profile_image.id,
+                'file_path': profile_image.file.url
+            }
+        else:
+            representation['profile_image'] = None
         return representation
 
 # Serializer for the full profile of a user, excluding sensitive information like password

@@ -1,14 +1,11 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-
-from .views import AudioFileViewSet, ImageFileViewSet
+from django.urls import path
+from .views import AudioFileCreateView, AudioFileDeleteView, ImageFileCreateView, ImageFileDeleteView
 
 app_name = 'uploads'
 
-router = DefaultRouter()
-router.register(r'audio', AudioFileViewSet, basename='audio_file')
-router.register(r'images', ImageFileViewSet, basename='image_file')
-
 urlpatterns = [
-    path('', include(router.urls)),
+    path('images/', ImageFileCreateView.as_view(), name='image-file-create'),
+    path('images/<str:pk>/', ImageFileDeleteView.as_view(), name='image-file-delete'),
+    path('audio/', AudioFileCreateView.as_view(), name='audio-file-create'),
+    path('audio/<str:pk>/', AudioFileDeleteView.as_view(), name='audio-file-delete'),
 ]

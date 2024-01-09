@@ -93,7 +93,7 @@ class StudyTermSerializer(serializers.ModelSerializer):
                   'back_tts_audio_id',
                   'created_at',
                   'updated_at']
-        read_only_fields = ['front_image', 'back_image', 'front_audio', 'back_audio']
+        read_only_fields = ['sort_order', 'front_image', 'back_image', 'front_audio', 'back_audio']
     
     def to_representation(self, instance):
         """
