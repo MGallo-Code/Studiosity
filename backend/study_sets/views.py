@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 
 from uploads.models import ImageFile, TextToSpeechAudio
 from .models import StudySet, StudyTerm, Tag, Favorite
-from .serializers import StudySetSerializer, ReorderStudyTermSerializer, StudyTermSerializer, TagSerializer
+from .serializers import StudySetSerializer, StudyTermSerializer, TagSerializer
 
 
 class CustomPagination(PageNumberPagination):
@@ -151,15 +151,24 @@ class StudyTermsInSetView(generics.ListAPIView):
         return StudyTerm.objects.filter(study_set=study_set)
 
 
-class ReorderStudyTermsView(APIView):
+class UpdateSortOrderView(APIView):
     def post(self, request, *args, **kwargs):
-        serializer = ReorderStudyTermSerializer(data=request.data, many=True)
-        if serializer.is_valid():
-            # Apply the new ordering
-            for item in serializer.validated_data:
-                StudyTerm.objects.filter(id=item['id']).update(sort_order=item['sort_order'])
-            return Response({'status': 'ordering updated'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        study_set_id = kwargs.get('study_set_id')
+        term_order = request.data.get('term_order')
+
+        if not term_order:
+            return Response({"error": "No term order provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Step 1: Assign intermediate values
+        for index, term_id in enumerate(term_order):
+            intermediate_sort_order = index + len(term_order)  # Ensure the intermediate value is outside the current range
+            StudyTerm.objects.filter(id=term_id, study_set_id=study_set_id).update(sort_order=intermediate_sort_order)
+
+        # Step 2: Assign final values
+        for index, term_id in enumerate(term_order):
+            StudyTerm.objects.filter(id=term_id, study_set_id=study_set_id).update(sort_order=index)
+
+        return Response({"message": "Sort order updated successfully"}, status=status.HTTP_200_OK)
 
 
 class StudyTermViewSet(viewsets.ModelViewSet):

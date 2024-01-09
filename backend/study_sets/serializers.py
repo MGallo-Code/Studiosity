@@ -24,42 +24,6 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ['id', 'name']
 
-
-class ReorderStudyTermSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StudyTerm
-        fields = ['id', 'sort_order']
-
-    def update_ordering(self, instance, validated_data):
-        # Get the new and old positions
-        new_order = validated_data.get('sort_order')
-        old_order = instance.sort_order
-
-        if new_order > old_order:
-            # Shift terms between the old and new positions back by one
-            StudyTerm.objects.filter(
-                study_set=instance.study_set,
-                sort_order__gt=old_order,
-                sort_order__lte=new_order
-            ).update(sort_order=models.F('sort_order') - 1)
-        else:
-            # Shift terms between the new and old positions forward by one
-            StudyTerm.objects.filter(
-                study_set=instance.study_set,
-                sort_order__lt=old_order,
-                sort_order__gte=new_order
-            ).update(sort_order=models.F('sort_order') + 1)
-
-        # Update the moved term's sort_order
-        instance.sort_order = new_order
-        instance.save()
-
-        return instance
-
-    def update(self, instance, validated_data):
-        return self.update_ordering(instance, validated_data)
-
-
 class StudyTermSerializer(serializers.ModelSerializer):
     # Accept IDs for related objects
     front_image_id = serializers.PrimaryKeyRelatedField(
@@ -129,7 +93,7 @@ class StudyTermSerializer(serializers.ModelSerializer):
                   'back_tts_audio_id',
                   'created_at',
                   'updated_at']
-        read_only_fields = ['sort_order', 'front_image', 'back_image', 'front_audio', 'back_audio']
+        read_only_fields = ['front_image', 'back_image', 'front_audio', 'back_audio']
     
     def to_representation(self, instance):
         """
