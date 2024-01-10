@@ -26,7 +26,7 @@ class IsUserOwnerOrSuperuser(BasePermission):
         # Check if the request user is the owner of the object or a superuser
         return obj == request.user or request.user.is_superuser
 
-class IsAuthorizedView(APIView):
+class IsAuthorizedView(views.APIView):
     """
     API view to check if the user is authenticated.
     """
@@ -81,7 +81,7 @@ class UpdateUserView(generics.UpdateAPIView):
             except ImageFile.DoesNotExist:
                 raise PermissionDenied(detail=f"Referenced ImageFile with ID: {new_profile_image_id} does not exist.")
 
-            if new_profile_image.uploader != self.request.user:
+            if new_profile_image.uploader != self.request.user and not user.is_superuser:
                 raise PermissionDenied(detail="You do not have permission to use this image.")
 
             # Check for and delete the old profile image if necessary

@@ -279,7 +279,6 @@ export default {
                 const setId = this.$route.params.id;
                 const termsResponse = await axiosAuthInstance.get(`study_sets/${setId}/terms/`);
                 this.studyTerms = termsResponse.data;
-                console.log(this.studyTerms);
             } catch (error) {
                 // If set not found (no permission)
                 if (error.response && error.response.data.detail === "Not found.") {

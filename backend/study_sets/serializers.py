@@ -12,6 +12,9 @@ class StudySetSerializer(serializers.ModelSerializer):
         model = StudySet
         fields = ['id', 'title', 'description', 'uploader', 'private', 'created_at', 'favorited']
         read_only_fields = ['uploader', 'created_at', 'favorited']
+        extra_kwargs = {
+            "title": {"error_messages": {"required": "Please provide a set title"}},
+        }
 
     def get_favorited(self, obj):
         user = self.context['request'].user
@@ -25,49 +28,22 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class StudyTermSerializer(serializers.ModelSerializer):
-    # Accept IDs for related objects
-    front_image_id = serializers.PrimaryKeyRelatedField(
-        queryset=ImageFile.objects.all(), 
-        source='front_image', 
-        write_only=True, 
-        required=False,
-        allow_null=True
-    )
-    back_image_id = serializers.PrimaryKeyRelatedField(
-        queryset=ImageFile.objects.all(), 
-        source='back_image', 
-        write_only=True, 
-        required=False,
-        allow_null=True
-    )
-    front_audio_id = serializers.PrimaryKeyRelatedField(
-        queryset=AudioFile.objects.all(), 
-        source='front_audio', 
-        write_only=True, 
-        required=False,
-        allow_null=True
-    )
-    back_audio_id = serializers.PrimaryKeyRelatedField(
-        queryset=AudioFile.objects.all(), 
-        source='back_audio', 
-        write_only=True, 
-        required=False,
-        allow_null=True
-    )
-    front_tts_audio_id = serializers.PrimaryKeyRelatedField(
-        queryset=TextToSpeechAudio.objects.all(),
-        source='front_tts_audio',
-        write_only=True,
-        required=False,
-        allow_null=True
-    )
-    back_tts_audio_id = serializers.PrimaryKeyRelatedField(
-        queryset=TextToSpeechAudio.objects.all(),
-        source='back_tts_audio',
-        write_only=True,
-        required=False,
-        allow_null=True
-    )
+    # Helper method to create PrimaryKeyRelatedField for file fields
+    def create_file_related_field(model, source):
+        return serializers.PrimaryKeyRelatedField(
+            queryset=model.objects.all(), 
+            source=source, 
+            write_only=True, 
+            required=False, 
+            allow_null=True
+        )
+    front_image_id = create_file_related_field(ImageFile, 'front_image')
+    back_image_id = create_file_related_field(ImageFile, 'back_image')
+    front_audio_id = create_file_related_field(AudioFile, 'front_audio')
+    back_audio_id = create_file_related_field(AudioFile, 'back_audio')
+    front_tts_audio_id = create_file_related_field(TextToSpeechAudio, 'front_tts_audio')
+    back_tts_audio_id = create_file_related_field(TextToSpeechAudio, 'back_tts_audio')
+
     tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
@@ -93,31 +69,26 @@ class StudyTermSerializer(serializers.ModelSerializer):
                   'back_tts_audio_id',
                   'created_at',
                   'updated_at']
-        read_only_fields = ['sort_order', 'front_image', 'back_image', 'front_audio', 'back_audio']
+        read_only_fields = ['sort_order']
     
     def to_representation(self, instance):
         """
         Override the to_representation method to customize the representation of the image and audio fields.
         """
         representation = super().to_representation(instance)
-
-        # Process each field and add URL to representation if the object exists
+        # Process each file field and add URL to representation if the object exists
         for field_name in ['front_image', 'back_image', 'front_audio', 'back_audio', 'front_tts_audio', 'back_tts_audio']:
-            field_instance = getattr(instance, field_name)
-            if field_instance:
-                representation[field_name] = {
-                    'id': field_instance.id,
-                    'file_path': field_instance.file.url
-                }
-            else:
-                representation[field_name] = None
-
+            file_obj = getattr(instance, field_name)
+            representation[field_name] = {
+                'id': file_obj.id,
+                'file_path': file_obj.file.url
+            } if file_obj else None
         return representation
 
     def update(self, instance, validated_data):
         # Handle the update of ImageFile and AudioFile references
         for field in ['front_image', 'back_image', 'front_audio', 'back_audio']:
-            if f'{field}_id' in validated_data:
-                setattr(instance, field, validated_data.pop(f'{field}_id'))
-
+            field_id = f'{field}_id'
+            if field_id in validated_data:
+                setattr(instance, field, validated_data.pop(field_id))
         return super().update(instance, validated_data)
