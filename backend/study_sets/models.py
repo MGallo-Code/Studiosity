@@ -46,7 +46,7 @@ class StudyTerm(models.Model):
     Includes text for the front and back, optional associated image and audio files,
     and a set of tags for categorization. Also tracks creation and update times.
     """
-    study_set = models.ForeignKey(StudySet, on_delete=models.CASCADE, related_name='study_terms')
+    study_set = models.ForeignKey(StudySet, on_delete=models.CASCADE, related_name='terms')
     sort_order = models.IntegerField(null=True, blank=True)
     front_text = models.TextField(blank=True, default='Front')
     back_text = models.TextField(blank=True, default='Back')

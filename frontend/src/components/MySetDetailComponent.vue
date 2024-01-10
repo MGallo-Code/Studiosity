@@ -250,7 +250,7 @@ export default {
 
             // Send the updated sort order to the backend
             try {
-                await axiosAuthInstance.post('/study_sets/update_term_order/', sortOrderData);
+                await axiosAuthInstance.post(`/study_sets/${this.setDetail.id}/update_term_order/`, sortOrderData);
                 // Optionally, refetch the terms to ensure order consistency
                 this.fetchSetTerms();
             } catch (error) {
@@ -262,7 +262,7 @@ export default {
         async fetchSetDetail() {
             try {
                 const setId = this.$route.params.id;
-                const setResponse = await axiosAuthInstance.get(`study_sets/study_sets/${setId}/`);
+                const setResponse = await axiosAuthInstance.get(`study_sets/${setId}/`);
                 this.setDetail = setResponse.data;
             } catch (error) {
                 // If set not found (no permission)
@@ -277,7 +277,7 @@ export default {
         async fetchSetTerms() {
             try {
                 const setId = this.$route.params.id;
-                const termsResponse = await axiosAuthInstance.get(`study_sets/terms_in_set/${setId}/`);
+                const termsResponse = await axiosAuthInstance.get(`study_sets/${setId}/terms/`);
                 this.studyTerms = termsResponse.data;
                 console.log(this.studyTerms);
             } catch (error) {
@@ -316,7 +316,7 @@ export default {
         // Update set using setEditForm
         async updateSetDetails() {
             try {
-                await axiosAuthInstance.put(`/study_sets/study_sets/${this.setDetail.id}/`, this.setEditForm);
+                await axiosAuthInstance.put(`/study_sets/${this.setDetail.id}/`, this.setEditForm);
                 this.setDetail = { ...this.setEditForm };
                 this.toggleEditingSet();
                 this.fetchSetDetail();
@@ -333,7 +333,7 @@ export default {
         // Deletes the study set and redirects
         async deleteSet() {
             try {
-                await axiosAuthInstance.delete(`study_sets/study_sets/${this.setDetail.id}/`);
+                await axiosAuthInstance.delete(`study_sets/${this.setDetail.id}/`);
                 this.$router.push('/my-study-sets/');
             } catch (error) {
                 this.editSetError = extractFirstErrorMessage(error);
@@ -341,7 +341,7 @@ export default {
         },
         // Toggle favorite/unfavorite for study set
         toggleFavorite() {
-            axiosAuthInstance.post(`/study_sets/favorite/${this.setDetail.id}/`)
+            axiosAuthInstance.post(`/study_sets/${this.setDetail.id}/favorite/`)
                 .then(response => {
                     this.setDetail.favorited = response.data.status === 'favorited';
                 })
@@ -418,7 +418,7 @@ export default {
             // Create new term
             this.createTermError = null;
             try {
-                const createTermResponse = await axiosAuthInstance.post('/study_sets/study_terms/', {
+                const createTermResponse = await axiosAuthInstance.post('/study_sets/terms/', {
                     front_text: this.termCreateForm.front_text,
                     back_text: this.termCreateForm.back_text,
                     front_voice_id: this.termCreateForm.selectedFrontVoiceId,
@@ -491,7 +491,7 @@ export default {
                     return;
                 }
 
-                await axiosAuthInstance.patch(`/study_sets/study_terms/${this.termEditForm.id}/`, termUpdateBody);
+                await axiosAuthInstance.patch(`/study_sets/terms/${this.termEditForm.id}/`, termUpdateBody);
                 this.toggleEditingTerm(null);
                 this.fetchSetTerms();
             } catch (error) {
@@ -529,7 +529,7 @@ export default {
                 if (!imageUploadForm.front_image_id && !imageUploadForm.back_image_id) {
                     return null;
                 }
-                await axiosAuthInstance.patch(`/study_sets/study_terms/${studyTermId}/`, imageUploadForm);
+                await axiosAuthInstance.patch(`/study_sets/terms/${studyTermId}/`, imageUploadForm);
                 // Return error status
                 return null;
             } catch (error) {
@@ -544,7 +544,7 @@ export default {
                     const removeImageRequestBody = {}
                     removeImageRequestBody[imageField + '_id'] = null;
 
-                    await axiosAuthInstance.patch(`/study_sets/study_terms/${this.termEditForm.id}/`, removeImageRequestBody);
+                    await axiosAuthInstance.patch(`/study_sets/terms/${this.termEditForm.id}/`, removeImageRequestBody);
                     this.fetchSetTerms();
                 } catch (error) {
                     this.editTermError = extractFirstErrorMessage(error);
@@ -560,7 +560,7 @@ export default {
         // Deletes a term
         async deleteTerm(termId) {
             try {
-                await axiosAuthInstance.delete(`study_sets/study_terms/${termId}/`);
+                await axiosAuthInstance.delete(`study_sets/terms/${termId}/`);
                 this.fetchSetTerms()
             } catch (error) {
                 this.editTermError = extractFirstErrorMessage(error);

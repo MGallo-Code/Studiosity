@@ -5,7 +5,7 @@ from boto3 import Session, client
 from django.db.models import Max, Q
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, mixins, status, viewsets
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
@@ -91,7 +91,7 @@ class CanViewStudyTerm(BasePermission):
         except StudySet.DoesNotExist:
             raise PermissionDenied(detail="No such study set exists or you do not have permission to view it.")
 
-class MyStudySetsView(generics.ListAPIView):
+class MySetsView(generics.ListAPIView):
     serializer_class = StudySetSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
@@ -104,32 +104,39 @@ class MyStudySetsView(generics.ListAPIView):
         user = self.request.user
         return StudySet.objects.filter(uploader=user)
 
-class StudySetViewSet(viewsets.ModelViewSet):
+class PublicStudySetsViewSet(generics.ListAPIView):
+    """
+    Returns all public study sets for any user
+    """
     serializer_class = StudySetSerializer
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        """
-        Returns public study sets for unauthenticated users.
-        Returns all study sets for superusers.
-        Returns public sets and sets owned by the user for authenticated non-superusers.
-        """
+        return StudySet.objects.filter(private=False)
+
+class StudySetViewSet(viewsets.ModelViewSet):
+    """
+    Returns all study sets for superusers.
+    Returns sets owned by the user for authenticated non-superusers.
+    """
+    serializer_class = StudySetSerializer
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
             if user.is_superuser:
                 return StudySet.objects.all()
             else:
-                return StudySet.objects.filter(Q(private=False) | Q(uploader=user))
+                return StudySet.objects.filter(Q(uploader=user))
         else:
-            return StudySet.objects.filter(private=False)
+            return StudySet.objects.filter(Q(private=False))
 
     def get_permissions(self):
         """
         Custom permissions based on action.
         """
-        if self.action in ['list', 'retrieve']:
-            return [AllowAny()]
-        elif self.action in ['create']:
+        if self.action in ['list', 'retrieve', 'create']:
             return [IsAuthenticated()]
         else:  # update, partial_update, destroy
             return [IsOwnerOrSuperuser()]
@@ -318,23 +325,6 @@ class PollyVoicesView(APIView):
         except Exception as e:
             # Handle exceptions
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class TagViewSet(viewsets.ModelViewSet):
-    """
-    A viewset for viewing, creating, and deleting tags.
-    """
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get_permissions(self):
-        """
-        Only authenticated users can create or delete tags.
-        """
-        if self.action in ['create', 'destroy']:
-            return [IsAuthenticated()]
-        return [AllowAny()]
 
 class FavoriteStudySetView(APIView):
     permission_classes = [IsAuthenticated]

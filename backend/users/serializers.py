@@ -11,6 +11,11 @@ class UserCreationSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
         fields = ['id', 'username', 'email', 'password']
+        extra_kwargs = {
+            "username": {"error_messages": {"required": "Please provide a username"}},
+            "email": {"error_messages": {"required": "Please provide an email"}},
+            "password": {"error_messages": {"required": "Please provide a password"}}
+        }
 
     def create(self, validated_data):
         """
@@ -65,7 +70,6 @@ class UserFullProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
         exclude = ('password',)  # Exclude password field from the serializer
-        # Set fields that should not be modified directly via the API
         read_only_fields = ('email', 'is_validated', 'is_staff', 'is_superuser', 'created_at', 'updated_at')
 
     def to_representation(self, instance):

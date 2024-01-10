@@ -1,33 +1,23 @@
-from rest_framework import generics, status
+from rest_framework import status, generics, views
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from uploads.models import ImageFile
 from .models import UserModel
 from .serializers import UserCreationSerializer, UserUpdateSerializer, UserPublicProfileSerializer, UserFullProfileSerializer
 
 
-class IsAuthorizedView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, format=None):
-        # If the request reaches here, the user is authenticated
-        return Response({
-            'message': 'User is authenticated',
-        }, status=status.HTTP_200_OK)
-
 class IsSuperuser(BasePermission):
     """
-    Custom permission to only allow owners of an object or superusers to edit it.
+    Custom permission class to allow access only to superusers.
     """
 
     def has_permission(self, request, view):
         # Check if the request user is the owner of the object or a superuser
         return request.user.is_superuser
 
-class IsOwnerOrSuperuser(BasePermission):
+class IsUserOwnerOrSuperuser(BasePermission):
     """
     Custom permission to only allow owners of an object or superusers to edit it.
     """
@@ -36,7 +26,19 @@ class IsOwnerOrSuperuser(BasePermission):
         # Check if the request user is the owner of the object or a superuser
         return obj == request.user or request.user.is_superuser
 
-class GetAuthUserProfileView(APIView):
+class IsAuthorizedView(APIView):
+    """
+    API view to check if the user is authenticated.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        # If the request reaches here, the user is authenticated
+        return Response({
+            'message': 'User is authenticated',
+        }, status=status.HTTP_200_OK)
+
+class GetAuthUserProfileView(views.APIView):
     """
     API endpoint for retrieving the authenticated user's full profile.
     Requires the user to be authenticated.
@@ -58,6 +60,7 @@ class CreateUserView(generics.CreateAPIView):
     """
     queryset = UserModel.objects.all()
     serializer_class = UserCreationSerializer
+    permission_classes = []
 
 class UpdateUserView(generics.UpdateAPIView):
     """
@@ -66,12 +69,7 @@ class UpdateUserView(generics.UpdateAPIView):
     """
     queryset = UserModel.objects.all()
     serializer_class = UserUpdateSerializer
-
-    def get_permissions(self):
-        """
-        Override get_permissions to enforce custom permissions.
-        """
-        return [IsAuthenticated(), IsOwnerOrSuperuser()]
+    permission_classes = [IsAuthenticated, IsUserOwnerOrSuperuser]
 
     def perform_update(self, serializer):
         user = self.get_object()
@@ -81,12 +79,12 @@ class UpdateUserView(generics.UpdateAPIView):
             try:
                 new_profile_image = ImageFile.objects.get(pk=new_profile_image_id)
             except ImageFile.DoesNotExist:
-                raise PermissionDenied(detail="Profile image not found.")
+                raise PermissionDenied(detail=f"Referenced ImageFile with ID: {new_profile_image_id} does not exist.")
 
             if new_profile_image.uploader != self.request.user:
                 raise PermissionDenied(detail="You do not have permission to use this image.")
 
-            # Check and delete the old profile image if necessary
+            # Check for and delete the old profile image if necessary
             if new_profile_image and user.profile_image and user.profile_image.id != new_profile_image:
                 user.profile_image.delete()
 
@@ -108,14 +106,7 @@ class DeleteUserView(generics.DestroyAPIView):
     Only the user themselves or a superuser can delete the profile.
     """
     queryset = UserModel.objects.all()
-    permission_classes = [IsOwnerOrSuperuser]
-    lookup_field = 'id'
-
-    def get_permissions(self):
-        """
-        Override get_permissions to enforce custom permissions.
-        """
-        return [IsAuthenticated(), IsOwnerOrSuperuser()]
+    permission_classes = [IsAuthenticated, IsUserOwnerOrSuperuser]
 
 class AllUsersView(generics.ListAPIView):
     serializer_class = UserFullProfileSerializer

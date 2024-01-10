@@ -16,7 +16,8 @@
         </div>
         <div class="btn-stack">
             <button @click="createSet" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'plus']" /></button>
-            <button @click="toggleCreateNewSet" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button> 
+            <button @click="toggleCreateNewSet" class="square-btn yellow-btn"><font-awesome-icon
+                    :icon="['fas', 'ban']" /></button>
         </div>
     </div>
 
@@ -26,7 +27,8 @@
     <div v-for="set in public_sets" :key="set.id">
         <div v-if="editingSetId === set.id" class="set-container set-edit">
             <!-- Editable Fields for a Study Set -->
-            <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
+            <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon
+                    :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
             <div class="edit-inputs">
                 <p v-if="editSetError" class="error-message">{{ editSetError }}</p>
                 <input type="text" v-model="set.title" />
@@ -41,18 +43,22 @@
             </div>
             <div class="btn-stack">
                 <button @click="updateSet(set)" class="square-btn green-btn">✔</button>
-                <button @click="editSet(null)" class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button> 
-                <button @click="confirmDeleteSet(set.id)" class="square-btn red-btn"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
+                <button @click="editSet(null)" class="square-btn yellow-btn"><font-awesome-icon
+                        :icon="['fas', 'ban']" /></button>
+                <button @click="confirmDeleteSet(set.id)" class="square-btn red-btn"><font-awesome-icon
+                        :icon="['fas', 'trash-alt']" /></button>
             </div>
         </div>
         <router-link v-else :to="`/my-study-set/${set.id}`" class="set-container set-display">
             <!-- Displaying Study Set Details -->
-            <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
+            <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon
+                    :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
             <div>
                 <h2>{{ set.title }}</h2>
                 <p>{{ set.description }}</p>
             </div>
-            <button @click.prevent="editSet(set)" class="square-btn blue-btn"><font-awesome-icon :icon="['fas', 'edit']" /></button>
+            <button @click.prevent="editSet(set)" class="square-btn blue-btn"><font-awesome-icon
+                    :icon="['fas', 'edit']" /></button>
         </router-link>
     </div>
 
@@ -98,15 +104,15 @@ export default {
         },
         // API call to create a new study set
         createSet() {
-            axiosAuthInstance.post('/study_sets/study_sets/', this.newSet)
-            .then(response => {
-                this.public_sets.push(response.data);
-                this.toggleCreateNewSet();
-                this.createSetError = null;
-            })
-            .catch(error => {
-                this.createSetError = extractFirstErrorMessage(error);
-            });
+            axiosAuthInstance.post('/study_sets/', this.newSet)
+                .then(response => {
+                    this.public_sets.push(response.data);
+                    this.toggleCreateNewSet();
+                    this.createSetError = null;
+                })
+                .catch(error => {
+                    this.createSetError = extractFirstErrorMessage(error);
+                });
         },
         // Set the current set to be edited
         editSet(set) {
@@ -115,14 +121,14 @@ export default {
         },
         // API call to update the study set
         updateSet(set) {
-            axiosAuthInstance.put(`/study_sets/study_sets/${set.id}/`, set)
-            .then(() => {
-                this.editingSetId = null;
-                this.editSetError = null;
-            })
-            .catch(error => {
-                this.editSetError = extractFirstErrorMessage(error);
-            });
+            axiosAuthInstance.put(`/study_sets/${set.id}/`, set)
+                .then(() => {
+                    this.editingSetId = null;
+                    this.editSetError = null;
+                })
+                .catch(error => {
+                    this.editSetError = extractFirstErrorMessage(error);
+                });
         },
         // Confirms and deletes a set
         async confirmDeleteSet(termId) {
@@ -132,13 +138,13 @@ export default {
         },
         // API call to delete the study set
         deleteSet(setId) {
-            axiosAuthInstance.delete(`/study_sets/study_sets/${setId}/`)
-            .then(() => {
-                this.public_sets = this.public_sets.filter(set => set.id !== setId);
-            })
-            .catch(error => {
-                this.editSetError = extractFirstErrorMessage(error);
-            });
+            axiosAuthInstance.delete(`/study_sets/${setId}/`)
+                .then(() => {
+                    this.public_sets = this.public_sets.filter(set => set.id !== setId);
+                })
+                .catch(error => {
+                    this.editSetError = extractFirstErrorMessage(error);
+                });
         },
         // Navigate through paginated study sets
         navigatePage(direction) {
@@ -148,25 +154,25 @@ export default {
         // Fetch study sets for the current page
         getMyStudySets(page) {
             axiosAuthInstance.get(`/study_sets/my_sets/?page=${page}`)
-            .then(response => {
-                this.public_sets = response.data.results;
-                this.pagination_links = response.data.links;
-                this.current_page = response.data.current_page;
-                this.total_pages = response.data.total_pages;
-            })
-            .catch(error => {
-                console.log(error.response ? error.response.data.message : 'Error fetching sets');
-            });
+                .then(response => {
+                    this.public_sets = response.data.results;
+                    this.pagination_links = response.data.links;
+                    this.current_page = response.data.current_page;
+                    this.total_pages = response.data.total_pages;
+                })
+                .catch(error => {
+                    console.log(error.response ? error.response.data.message : 'Error fetching sets');
+                });
         },
         // Toggle favorite/unfavorite for a study set
         toggleFavorite(set) {
-            axiosAuthInstance.post(`/study_sets/favorite/${set.id}/`)
-            .then(response => {
-                set.favorited = response.data.status === 'favorited';
-            })
-            .catch(error => {
-                console.error("Error toggling favorite status:", error.response ? error.response.data : error);
-            });
+            axiosAuthInstance.post(`/study_sets/${set.id}/favorite/`)
+                .then(response => {
+                    set.favorited = response.data.status === 'favorited';
+                })
+                .catch(error => {
+                    console.error("Error toggling favorite status:", error.response ? error.response.data : error);
+                });
         },
     },
     mounted() {
