@@ -5,16 +5,16 @@ from boto3 import Session, client
 from django.db.models import Max, Q
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, mixins, status, viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 
 from uploads.models import ImageFile, TextToSpeechAudio
 from .models import StudySet, StudyTerm, Tag, Favorite
-from .serializers import StudySetSerializer, StudyTermSerializer, TagSerializer
+from .serializers import StudySetSerializer, StudyTermSerializer, PublicSetsDetailSerializer, TagSerializer
 
 
 class CustomPagination(PageNumberPagination):
@@ -104,7 +104,7 @@ class MySetsView(generics.ListAPIView):
         user = self.request.user
         return StudySet.objects.filter(uploader=user)
 
-class PublicStudySetsViewSet(generics.ListAPIView):
+class PublicSetsView(generics.ListAPIView):
     """
     Returns all public study sets for any user
     """
@@ -113,6 +113,23 @@ class PublicStudySetsViewSet(generics.ListAPIView):
 
     def get_queryset(self):
         return StudySet.objects.filter(private=False)
+
+class PublicSetDetailView(generics.RetrieveAPIView):
+    """
+    View to retrieve a single public study set along with its terms.
+    """
+    serializer_class = PublicSetsDetailSerializer
+    queryset = StudySet.objects.filter(private=False)
+
+    def get_object(self):
+        """
+        Override the standard get_object method to ensure that only public study sets can be retrieved.
+        """
+        pk = self.kwargs.get('pk')
+        try:
+            return StudySet.objects.get(pk=pk, private=False)
+        except StudySet.DoesNotExist:
+            raise NotFound('A public study set with this ID does not exist.')
 
 class StudySetViewSet(viewsets.ModelViewSet):
     """

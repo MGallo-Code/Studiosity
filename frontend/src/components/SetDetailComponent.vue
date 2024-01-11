@@ -33,10 +33,11 @@ export default {
         async fetchSetDetail() {
             try {
                 const setId = this.$route.params.id;
-                const setResponse = await axiosAuthInstance.get(`study_sets/study_sets/${setId}/`);
-                this.setDetail = setResponse.data;
-                const termsResponse = await axiosAuthInstance.get(`study_sets/terms_in_set/${setId}/`);
-                this.studyTerms = termsResponse.data;
+                const response = await axiosAuthInstance.get(`study_sets/public_sets/${setId}/`);
+                // Separate terms and the rest of set details
+                const { terms, ...setDetails } = response.data;
+                this.setDetail = setDetails;
+                this.studyTerms = terms;
             } catch (error) {
                 // If set not found (no permission)
                 if (error.response && error.response.data.detail === "Not found.") {

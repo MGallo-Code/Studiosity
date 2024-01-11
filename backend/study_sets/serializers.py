@@ -92,3 +92,38 @@ class StudyTermSerializer(serializers.ModelSerializer):
             if field_id in validated_data:
                 setattr(instance, field, validated_data.pop(field_id))
         return super().update(instance, validated_data)
+
+class PublicStudyTermSerializer(serializers.ModelSerializer):
+    tags = TagSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = StudyTerm
+        fields = ['sort_order', 'front_text', 'back_text', 'front_image', 'back_image', 'front_audio', 'back_audio', 'tags']
+
+    def to_representation(self, instance):
+        """
+        Override the to_representation method to customize the representation of the image and audio fields.
+        """
+        representation = super().to_representation(instance)
+        # Process each file field and add URL to representation if the object exists
+        for field_name in ['front_image', 'back_image', 'front_audio', 'back_audio', 'front_tts_audio', 'back_tts_audio']:
+            file_obj = getattr(instance, field_name)
+            representation[field_name] = {
+                'file_path': file_obj.file.url
+            } if file_obj else None
+        return representation
+
+class PublicSetsDetailSerializer(serializers.ModelSerializer):
+    terms = PublicStudyTermSerializer(many=True, read_only=True)
+    favorited = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StudySet
+        fields = ['id', 'title', 'description', 'uploader', 'created_at', 'favorited', 'terms']
+        read_only_fields = ['uploader', 'created_at', 'favorited', 'terms']
+
+    def get_favorited(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return obj.favorited_by.filter(user=user).exists()
+        return False
