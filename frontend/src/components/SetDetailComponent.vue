@@ -3,8 +3,9 @@
         <h1>{{ setDetail.title }}</h1>
         <p>{{ setDetail.description || 'No description provided.' }}</p>
 
+        <PlayTermsComponent :studyTerms="studyTerms" v-if="studyTerms.length > 0" />
+
         <div class="study-terms">
-            <h2>Study Terms</h2>
             <div v-for="term in studyTerms" :key="term.id" class="term-item">
                 <div><strong>Front:</strong> {{ term.front_text }}</div>
                 <div><strong>Back:</strong> {{ term.back_text }}</div>
@@ -16,9 +17,13 @@
 
 <script>
 import { axiosAuthInstance } from '../utils/axiosConfig';
+import PlayTermsComponent from '@/components/PlayTermsComponent.vue';
 
 
 export default {
+    components: {
+        PlayTermsComponent
+    },
     data() {
         return {
             setDetail: {},
