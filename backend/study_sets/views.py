@@ -334,10 +334,13 @@ class PollyVoicesView(APIView):
             response = polly_client.describe_voices()
             
             # Extract the voice data
-            voices = response.get('Voices', [])
+            all_voices = response.get('Voices', [])
+
+            # Filter for standard engine voices
+            standard_voices = [voice for voice in all_voices if 'standard' in voice.get('SupportedEngines')]
             
             # Return the list of voices
-            return Response({'voices': voices}, status=status.HTTP_200_OK)
+            return Response({'voices': standard_voices}, status=status.HTTP_200_OK)
 
         except Exception as e:
             # Handle exceptions
