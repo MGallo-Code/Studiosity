@@ -1,28 +1,45 @@
 <template>
     <div class="study-playlist-player">
-        <div class="controls">
-            <button @click="resetTermIndex">Back to Beginning</button>
-            <button @click="previousTerm">Previous</button>
-            <button @click="playPause">{{ isPlaying ? 'Pause' : 'Play' }}</button>
-            <button @click="nextTerm">Next</button>
-            <button @click="togglePlayOrder">{{ playFrontFirst ? 'Play Back First' : 'Play Front First' }}</button>
-            <!-- <button @click="shuffleTerms">Shuffle</button> -->
+        <div class="term-play-display">
+            <button @click="previousTerm"><font-awesome-icon :icon="['fas', 'arrow-left']" /></button>
+            <span>
+                <p v-if="(isFirstAudioNext && playFrontFirst) || (!isFirstAudioNext && !playFrontFirst)">{{
+                    currentTerm.front_text }}</p>
+                <p v-else>{{ currentTerm.back_text }}</p>
+                <button @click="playPause">
+                    <font-awesome-icon v-if="isPlaying" :icon="['fas', 'pause']" />
+                    <font-awesome-icon v-else :icon="['fas', 'play']" />
+                </button>
+            </span>
+            <button @click="nextTerm"><font-awesome-icon :icon="['fas', 'arrow-right']" /></button>
         </div>
 
-        <div class="sliders">
+        <div class="term-play-controls">
+            <button @click="resetTermIndex">Back to Beginning</button>
+            <button @click="togglePlayOrder">{{ playFrontFirst ? 'Play Back First' : 'Play Front First' }}</button>
+            <button @click="shuffleTerms">Re-Shuffle Terms</button>
+        </div>
+
+        <div class="term-play-sliders">
             <div>
                 <label for="front-back-pause">Front/Back Pause: {{ frontBackPause }}s</label>
-                <input type="range" id="front-back-pause" min="0" max="10" v-model="frontBackPause" />
+                <input type="range" id="front-back-pause" min="0" max="10" step="0.1" v-model="frontBackPause" />
             </div>
             <div>
                 <label for="term-pause">Term Pause: {{ termPause }}s</label>
-                <input type="range" id="term-pause" min="0" max="20" v-model="termPause" />
+                <input type="range" id="term-pause" min="0" max="20" step="0.1" v-model="termPause" />
             </div>
         </div>
 
         <div class="loop-toggle">
-            <input type="checkbox" id="loop" v-model="loop" />
-            <label for="loop">Loop Playlist</label>
+            <input type="checkbox" id="loop" v-model="loop" style="display:none;" />
+            <label for="loop" :class="{ 'active-toggle': loop, 'inactive-toggle': !loop }"><font-awesome-icon
+                    :icon="['fas', 'repeat']" /></label>
+        </div>
+        <div class="shuffle-toggle">
+            <input type="checkbox" id="shuffle" v-model="shuffle" style="display:none;" />
+            <label for="shuffle" :class="{ 'active-toggle': shuffle, 'inactive-toggle': !shuffle }"><font-awesome-icon
+                    :icon="['fas', 'shuffle']" /></label>
         </div>
     </div>
 </template>
@@ -38,6 +55,7 @@ export default {
     },
     data() {
         return {
+            shuffledTerms: null,
             currentTermIndex: 0,
             isPlaying: false,
             isFirstAudioNext: true,
@@ -45,6 +63,7 @@ export default {
             frontBackPause: 0.6,
             termPause: 1.2,
             loop: false,
+            shuffle: false,
             audioPlayer: null,
             nextTermTimeout: null,
             nextSideTimeout: null,
@@ -53,6 +72,8 @@ export default {
     mounted() {
         this.audioPlayer = new Audio();
         this.audioPlayer.addEventListener('ended', this.handleAudioEnd);
+        // Shuffle terms
+        this.shuffleTerms();
     },
     beforeUnmount() {
         this.audioPlayer.removeEventListener('ended', this.handleAudioEnd);
@@ -60,6 +81,9 @@ export default {
     },
     computed: {
         currentTerm() {
+            if (this.shuffle) {
+                return this.shuffledTerms[this.currentTermIndex];
+            }
             return this.studyTerms[this.currentTermIndex];
         },
         currentAudio() {
@@ -77,9 +101,13 @@ export default {
                 this.playCurrentAudio();
             } else {
                 this.audioPlayer.pause();
-                this.isFirstAudioNext = true;
                 clearTimeout(this.nextTermTimeout);
                 clearTimeout(this.nextSideTimeout);
+            }
+        },
+        shuffle(newValue) {
+            if (newValue) {
+                this.shuffleTerms();
             }
         }
     },
@@ -92,7 +120,6 @@ export default {
             this.isPlaying = !this.isPlaying;
         },
         playCurrentAudio() {
-            console.log('##' + this.isFirstAudioNext);
             if (this.currentAudio) {
                 this.audioPlayer.src = this.currentAudio.file_path;
                 this.audioPlayer.play().catch(error => console.error("Error playing audio:", error));
@@ -107,43 +134,81 @@ export default {
             this.isFirstAudioNext = !this.isFirstAudioNext;
         },
         nextTerm() {
+            const wasPlaying = this.isPlaying;
             if (this.currentTermIndex < this.studyTerms.length - 1) {
                 this.currentTermIndex++;
             } else {
+                if (this.shuffle) {
+                    this.shuffleTerms();
+                }
                 this.currentTermIndex = 0;
                 // Return early to avoid looping
-                if (!this.loop) { return; }
+                if (!this.loop) {
+                    this.isPlaying = false;
+                    return;
+                }
             }
             this.isFirstAudioNext = true;
-            this.playCurrentAudio();
+            this.isPlaying = wasPlaying;
+            if (this.isPlaying) this.playCurrentAudio();
         },
         previousTerm() {
-            this.isPlaying = false;
+            const wasPlaying = this.isPlaying;
             if (this.currentTermIndex > 0) {
                 this.currentTermIndex--;
             } else if (this.loop) {
                 this.currentTermIndex = this.studyTerms.length - 1;
             }
             this.isFirstAudioNext = true;
-            this.isPlaying = true;
+            this.isPlaying = wasPlaying;
         },
         togglePlayOrder() {
             this.isPlaying = false;
             this.playFrontFirst = !this.playFrontFirst;
         },
-        // shuffleTerms() {
-        //     const shuffledTerms = this.shuffleArray([...this.studyTerms]);
-        //     this.$emit('update:studyTerms', shuffledTerms);
-        //     this.currentTermIndex = 0;
-        //     this.refreshPlaying();
-        // },
-        // shuffleArray(array) {
-        //     for (let i = array.length - 1; i > 0; i--) {
-        //         const j = Math.floor(Math.random() * (i + 1));
-        //         [array[i], array[j]] = [array[j], array[i]];
-        //     }
-        //     return array;
-        // },
+        shuffleTerms() {
+            this.isPlaying = false;
+            this.shuffledTerms = this.shuffleArray([...this.studyTerms]);
+            this.currentTermIndex = 0;
+            this.isFirstAudioNext = true;
+        },
+        shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = i === 1 ? 0 : Math.floor(Math.random() * i);
+
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
     }
 };
 </script>
+
+<style scoped>
+/* Shuffle and repeat toggle buttons(/labels) */
+.study-playlist-player label.active-toggle {
+    color: var(--clr-btn-green);
+}
+
+.study-playlist-player label.inactive-toggle {
+    color: #9d5353;
+}
+
+.study-playlist-player label.active-toggle,
+.study-playlist-player label.inactive-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: white;
+    border: 2px solid var(--clr-base-primary);
+    border-radius: 15px;
+}
+
+.study-playlist-player label.active-toggle:hover,
+.study-playlist-player label.inactive-toggle:hover {
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.15);
+}
+</style>

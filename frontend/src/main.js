@@ -4,6 +4,12 @@ import router from "./utils/router.js";
 import store from "./utils/store";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
+    faArrowRight,
+    faArrowLeft,
+    faRepeat,
+    faShuffle,
+    faPause,
+    faPlay,
     faEdit,
     faTrashAlt,
     faClone,
@@ -18,6 +24,12 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import VueSortable from "vue3-sortablejs";
 
 library.add(
+    faArrowRight,
+    faArrowLeft,
+    faRepeat,
+    faShuffle,
+    faPause,
+    faPlay,
     faEdit,
     faTrashAlt,
     faClone,
