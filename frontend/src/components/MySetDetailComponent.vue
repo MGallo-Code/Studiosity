@@ -92,7 +92,7 @@
         </div>
 
         <!-- Button to toggle new term creation form -->
-        <button @click="toggleCreatingTerm" :disabled="isCreatingNewTerm">Create New Term</button>
+        <button @click="toggleCreatingTerm" :disabled="isCreatingNewTerm || isChangingOrder">Create New Term</button>
         <button @click="toggleChangingOrder" :disabled="isTogglingChangeOrderMode">{{ isChangingOrder ? "Save Term Order" :
             "Edit Term Order" }}</button>
 
@@ -292,7 +292,10 @@ export default {
             try {
                 const setId = this.$route.params.id;
                 const termsResponse = await axiosAuthInstance.get(`study_sets/${setId}/terms/`);
-                this.studyTerms = termsResponse.data;
+                // Sort our response by sort_order
+                const terms = termsResponse.data;
+                terms.sort((a, b) => a.sort_order - b.sort_order);
+                this.studyTerms = terms;
             } catch (error) {
                 // If set not found (no permission)
                 if (error.response && error.response.data.detail === "Not found.") {
@@ -444,6 +447,7 @@ export default {
             // Create new term
             this.createTermError = null;
             try {
+                console.log(this.studyTerms.length);
                 const createTermResponse = await axiosAuthInstance.post('/study_sets/terms/', {
                     sort_order: this.studyTerms.length,
                     front_text: this.termCreateForm.front_text,
