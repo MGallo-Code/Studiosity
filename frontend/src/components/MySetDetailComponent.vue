@@ -30,7 +30,7 @@
 
 
         <!-- Inline form for creating a new term -->
-        <div v-if="isCreatingNewTerm" class="term-container">
+        <div v-if="isCreatingNewTerm" class="term-container" id="create-term-form">
             <p v-if="createTermError" class="error-message">{{ createTermError }}</p>
             <form class="term-display" @submit.prevent="createNewTerm">
                 <div class="front-back-display">
@@ -92,9 +92,11 @@
         </div>
 
         <!-- Button to toggle new term creation form -->
-        <button @click="toggleCreatingTerm" :disabled="isCreatingNewTerm || isChangingOrder">Create New Term</button>
-        <button @click="toggleChangingOrder" :disabled="isTogglingChangeOrderMode">{{ isChangingOrder ? "Save Term Order" :
-            "Edit Term Order" }}</button>
+        <div class="term-btn-menu">
+            <button @click="toggleCreatingTerm" :disabled="isCreatingNewTerm || isChangingOrder">Create New Term</button>
+            <button @click="toggleChangingOrder" :disabled="isTogglingChangeOrderMode">
+                {{ isChangingOrder ? "Save Term Order" : "Edit Term Order" }}</button>
+        </div>
 
         <Sortable v-if="isChangingOrder" class="terms-list" :list="studyTerms" :itemKey="id" options="options">
             <template #item="{ element }">
@@ -256,6 +258,7 @@ export default {
             // Form state flags
             isChangingOrder: false,
             isTogglingChangeOrderMode: false,
+            isTogglingCreateTerm: false,
             isEditingSet: false,
             isCreatingNewTerm: false,
             // Forms
@@ -421,26 +424,48 @@ export default {
 
         // Toggles the form for creating a new term
         async toggleCreatingTerm() {
-            // Load available voices if not already loaded
-            if (!this.availableVoices) {
-                await this.fetchPollyVoices();
-            }
-            // Resets the form for creating a new term
-            if (!this.isCreatingNewTerm) {
-                this.termCreateForm = {
-                    front_text: '',
-                    back_text: '',
-                    front_image: null,
-                    back_image: null,
-                    study_set: this.setDetail.id
-                };
-            }
-            this.initializeVoiceSelections(this.termCreateForm, {
-                front_voice_id: 'Joanna',
-                back_voice_id: 'Joanna'
-            })
-            this.isCreatingNewTerm = !this.isCreatingNewTerm;
+            // Ensure atomic running of method
+            if (this.isTogglingCreateTerm) return;
+            this.isTogglingCreateTerm = true;
+
+            // Clear creating term errors
             this.createTermError = null;
+            // If opening create term menu
+            if (!this.isCreatingNewTerm) {
+                // Load available voices if not already loaded
+                if (!this.availableVoices) {
+                    await this.fetchPollyVoices();
+                }
+                // Resets the form for creating a new term
+                if (!this.isCreatingNewTerm) {
+                    this.termCreateForm = {
+                        front_text: '',
+                        back_text: '',
+                        front_image: null,
+                        back_image: null,
+                        study_set: this.setDetail.id
+                    };
+                }
+                // Set inputs for lang/voice to match below default voices
+                this.initializeVoiceSelections(this.termCreateForm, {
+                    front_voice_id: 'Joanna',
+                    back_voice_id: 'Joanna'
+                })
+                this.isCreatingNewTerm = true;
+                // Re-render dom with next tick, then scroll to creating new term form
+                this.$nextTick(() => {
+                    const createTermElement = document.getElementById("create-term-form");
+                    if (createTermElement) {
+                        createTermElement.scrollIntoView({ behavior: "smooth" });
+                    }
+                });
+            }
+            // If closing menu...
+            else {
+                this.isCreatingNewTerm = false;
+            }
+
+            this.isTogglingCreateTerm = false;
         },
         // Creates a new term
         async createNewTerm() {
@@ -766,6 +791,14 @@ form.set-banner .set-edit-fields {
 
 /* TERMS CSS OPTIONS */
 
+
+/* Terms buttons menu */
+.term-btn-menu {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    border-bottom: 1px solid var(--clr-base-primary);
+}
 
 /* Outermost Terms list container */
 .terms-list {
