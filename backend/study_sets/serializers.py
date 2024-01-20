@@ -69,7 +69,6 @@ class StudyTermSerializer(serializers.ModelSerializer):
                   'back_tts_audio_id',
                   'created_at',
                   'updated_at']
-        read_only_fields = ['sort_order']
     
     def to_representation(self, instance):
         """

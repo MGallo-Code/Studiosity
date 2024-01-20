@@ -176,21 +176,24 @@ class StudyTermsInSetView(generics.ListAPIView):
 
 
 class UpdateSortOrderView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         study_set_id = kwargs.get('study_set_id')
         term_order = request.data.get('term_order')
 
+        # Ensure study set exists, and the sender is the owner of this study set
+        study_set = get_object_or_404(StudySet, id=study_set_id)
+        if study_set.uploader != self.request.user:
+            raise PermissionDenied(detail="You do not have permission to change the order of these study terms.")
+        
+        # Ensure term_order list is supplied
         if not term_order:
             return Response({"error": "No term order provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Step 1: Assign intermediate values
-        for index, term_id in enumerate(term_order):
-            intermediate_sort_order = index + len(term_order)  # Ensure the intermediate value is outside the current range
-            StudyTerm.objects.filter(id=term_id, study_set_id=study_set_id).update(sort_order=intermediate_sort_order)
-
-        # Step 2: Assign final values
-        for index, term_id in enumerate(term_order):
-            StudyTerm.objects.filter(id=term_id, study_set_id=study_set_id).update(sort_order=index)
+        # Assign new sort_order values
+        for _, term in enumerate(term_order):
+            StudyTerm.objects.filter(id=term['id'], study_set_id=study_set_id).update(sort_order=term['sort_order'])
 
         return Response({"message": "Sort order updated successfully"}, status=status.HTTP_200_OK)
 

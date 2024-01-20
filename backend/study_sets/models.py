@@ -100,16 +100,6 @@ class StudyTerm(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        # Ensure a unique sort_order within the same study_set
-        unique_together = [['study_set', 'sort_order']]
-
-    def save(self, *args, **kwargs):
-        if self._state.adding and self.sort_order is None:
-            last_sort_order = StudyTerm.objects.aggregate(Max('sort_order'))['sort_order__max'] or 0
-            self.sort_order = last_sort_order + 1
-        super().save(*args, **kwargs)
-
     def delete(self, *args, **kwargs):
         """
         Overridden delete method to remove the associated images

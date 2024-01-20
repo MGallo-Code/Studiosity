@@ -1,7 +1,7 @@
 <template>
     <main v-if="setDetail">
         <!-- Editable Study Set Details -->
-        <form v-if="editingSet" class="set-banner" @submit.prevent="updateSetDetails">
+        <form v-if="isEditingSet" class="set-banner" @submit.prevent="updateSetDetails">
             <div class="set-edit-fields">
                 <p v-if="editSetError" class="error-message">{{ editSetError }}</p>
                 <input type="text" v-model="setEditForm.title" />
@@ -30,7 +30,7 @@
 
 
         <!-- Inline form for creating a new term -->
-        <div v-if="creatingNewTerm" class="term-container">
+        <div v-if="isCreatingNewTerm" class="term-container">
             <p v-if="createTermError" class="error-message">{{ createTermError }}</p>
             <form class="term-display" @submit.prevent="createNewTerm">
                 <div class="front-back-display">
@@ -92,10 +92,40 @@
         </div>
 
         <!-- Button to toggle new term creation form -->
-        <button @click="toggleCreatingTerm" :disabled="creatingNewTerm">Create New Term</button>
+        <button @click="toggleCreatingTerm" :disabled="isCreatingNewTerm">Create New Term</button>
+        <button @click="toggleChangingOrder" :disabled="isTogglingChangeOrderMode">{{ isChangingOrder ? "Save Term Order" :
+            "Edit Term Order" }}</button>
 
-        <!-- <div v-sortable @end="onDragEnd" class="terms-list"> -->
-        <div class="terms-list">
+        <Sortable v-if="isChangingOrder" class="terms-list" :list="studyTerms" :itemKey="id" options="options">
+            <template #item="{ element }">
+                <div class="draggable term-container" :id="`studyTermId=${element.id}`" :key="element.id">
+                    <div class="term-display term-display-reorder">
+                        <div class="front-back-display">
+                            <div class="img-info-flow">
+                                <picture v-if="element.front_image">
+                                    <img :src="element.front_image.file_path" />
+                                </picture>
+                                <span>
+                                    <p>{{ element.front_text }}</p>
+                                </span>
+                            </div>
+                            <div class="spacer"></div>
+                            <div class="img-info-flow">
+                                <picture v-if="element.back_image">
+                                    <img :src="element.back_image.file_path" />
+                                </picture>
+                                <span>
+                                    <p>{{ element.back_text }}</p>
+                                </span>
+                            </div>
+                        </div>
+                        <font-awesome-icon :icon="['fas', 'sort']" class="reorder-symbol" />
+                    </div>
+                </div>
+            </template>
+        </Sortable>
+
+        <div v-else class="terms-list">
             <!-- Iterating over each term to display -->
             <div v-for="term in studyTerms" :key="term.id" class="term-container">
                 <!-- Editable term form -->
@@ -202,6 +232,9 @@
 </template>
 
 
+<script setup>
+import { Sortable } from "sortablejs-vue3";
+</script>
 <script>
 import { axiosAuthInstance } from '../utils/axiosConfig';
 import { extractFirstErrorMessage } from '@/utils/errorHandler';
@@ -211,6 +244,7 @@ export default {
         return {
             // Loaded objects
             studyTerms: [],
+            studyTermOrders: null,
             setDetail: null,
             // AWS Polly voices
             availableVoices: null,
@@ -220,9 +254,11 @@ export default {
             createTermError: null,
             editTermError: null,
             // Form state flags
-            editingSet: false,
-            creatingNewTerm: false,
-            // Forms and errors
+            isChangingOrder: false,
+            isTogglingChangeOrderMode: false,
+            isEditingSet: false,
+            isCreatingNewTerm: false,
+            // Forms
             setEditForm: null,
             termEditForm: null,
             termCreateForm: null,
@@ -234,30 +270,8 @@ export default {
         this.fetchSetTerms();
     },
     methods: {
-        //================================
-        onDragEnd() {
-            this.studyTerms.forEach((term, index) => {
-                term.sort_order = index + 1;  // Assuming sort_order starts at 1
-            });
-            this.updateSortOrder();
-        },
-        async updateSortOrder() {
-            // Prepare the data for sending
-            const sortOrderData = this.studyTerms.map(term => ({
-                id: term.id,
-                sort_order: term.sort_order
-            }));
+        // { API FETCHING }
 
-            // Send the updated sort order to the backend
-            try {
-                await axiosAuthInstance.post(`/study_sets/${this.setDetail.id}/update_term_order/`, sortOrderData);
-                // Optionally, refetch the terms to ensure order consistency
-                this.fetchSetTerms();
-            } catch (error) {
-                console.error("Error updating term order:", error);
-            }
-        },
-        //================================
         // Fetches details of the study set
         async fetchSetDetail() {
             try {
@@ -303,13 +317,17 @@ export default {
             this.availableLanguages = [...new Set(this.availableVoices.map(voice => voice.LanguageName))];
             this.availableLanguages.sort();
         },
+
+
+        // MANAGING SET
+
         // Toggle edit state for study set
         toggleEditingSet() {
             // Reset set edit form 
-            if (!this.editingSet) {
+            if (!this.isEditingSet) {
                 this.setEditForm = { ...this.setDetail };
             }
-            this.editingSet = !this.editingSet;
+            this.isEditingSet = !this.isEditingSet;
             this.editSetError = null;
         },
         // Update set using setEditForm
@@ -338,6 +356,10 @@ export default {
                 this.editSetError = extractFirstErrorMessage(error);
             }
         },
+
+
+        // { FAVORITING SET }
+
         // Toggle favorite/unfavorite for study set
         toggleFavorite() {
             axiosAuthInstance.post(`/study_sets/${this.setDetail.id}/favorite/`)
@@ -349,6 +371,9 @@ export default {
                 });
         },
 
+
+        // { LANGUAGE/VOICE SELECTION }
+
         // Select the language filter based on selected voice
         initializeVoiceSelections(form, term) {
             if (term.front_voice_id) {
@@ -359,7 +384,6 @@ export default {
                     this.updateFilteredVoices(form, 'Front');
                 }
             }
-
             if (term.back_voice_id) {
                 const backVoice = this.availableVoices.find(voice => voice.Id === term.back_voice_id);
                 if (backVoice) {
@@ -389,6 +413,9 @@ export default {
             }
         },
 
+
+        // { TERM CREATION }
+
         // Toggles the form for creating a new term
         async toggleCreatingTerm() {
             // Load available voices if not already loaded
@@ -396,7 +423,7 @@ export default {
                 await this.fetchPollyVoices();
             }
             // Resets the form for creating a new term
-            if (!this.creatingNewTerm) {
+            if (!this.isCreatingNewTerm) {
                 this.termCreateForm = {
                     front_text: '',
                     back_text: '',
@@ -409,7 +436,7 @@ export default {
                 front_voice_id: 'Joanna',
                 back_voice_id: 'Joanna'
             })
-            this.creatingNewTerm = !this.creatingNewTerm;
+            this.isCreatingNewTerm = !this.isCreatingNewTerm;
             this.createTermError = null;
         },
         // Creates a new term
@@ -418,6 +445,7 @@ export default {
             this.createTermError = null;
             try {
                 const createTermResponse = await axiosAuthInstance.post('/study_sets/terms/', {
+                    sort_order: this.studyTerms.length,
                     front_text: this.termCreateForm.front_text,
                     back_text: this.termCreateForm.back_text,
                     front_voice_id: this.termCreateForm.selectedFrontVoiceId,
@@ -441,6 +469,24 @@ export default {
                 this.createTermError = extractFirstErrorMessage(error);
             }
         },
+
+        // Update selected image files
+        onUpdateFrontImageSelected(event) {
+            this.termEditForm.front_image = event.target.files[0];
+        },
+        onUpdateBackImageSelected(event) {
+            this.termEditForm.back_image = event.target.files[0];
+        },
+        onCreateFrontImageSelected(event) {
+            this.termCreateForm.front_image = event.target.files[0];
+        },
+        onCreateBackImageSelected(event) {
+            this.termCreateForm.back_image = event.target.files[0];
+        },
+
+
+        // { UPDATING TERMS }
+
         // Enters edit mode for a specific term (or exits if null provided as the term)
         async toggleEditingTerm(term) {
             // Load available voices if not already loaded
@@ -459,19 +505,6 @@ export default {
                 this.termEditForm = null;
             }
             this.editTermError = null;
-        },
-        // Update selected image files
-        onUpdateFrontImageSelected(event) {
-            this.termEditForm.front_image = event.target.files[0];
-        },
-        onUpdateBackImageSelected(event) {
-            this.termEditForm.back_image = event.target.files[0];
-        },
-        onCreateFrontImageSelected(event) {
-            this.termCreateForm.front_image = event.target.files[0];
-        },
-        onCreateBackImageSelected(event) {
-            this.termCreateForm.back_image = event.target.files[0];
         },
         // Updates the term
         async updateTerm() {
@@ -566,6 +599,9 @@ export default {
             }
         },
 
+
+        // { PLAY TERM AUDIO }
+
         speak(side, term) {
             let audioPath = '';
             if (side === 'front' && term.front_tts_audio) {
@@ -579,6 +615,61 @@ export default {
                 audio.play().catch(e => console.error("Error playing audio:", e));
             } else {
                 alert("No TTS audio available for this term.");
+            }
+        },
+
+
+        // { REORDERING TERMS }
+
+        // Toggle mode for editing order of study terms
+        async toggleChangingOrder() {
+            if (this.isTogglingChangeOrderMode) return;
+            this.isTogglingChangeOrderMode = true;
+
+            // If exiting changing mode, save changes
+            if (this.isChangingOrder) {
+                await this.updateSortOrder();
+                this.studyTermOrders = null;
+                this.isChangingOrder = false;
+            }
+            // If we're entering changing mode, cancel any term creation/editing
+            else {
+                this.toggleEditingTerm(null);
+                if (this.isCreatingNewTerm) {
+                    this.toggleCreatingTerm();
+                }
+                // Reset orders
+                this.studyTermOrders = this.studyTerms.map(term => ({
+                    id: term.id,
+                }));
+                this.isChangingOrder = true;
+            }
+            this.isTogglingChangeOrderMode = false;
+        },
+        // API call to update terms' orders
+        async updateSortOrder() {
+            // Get the container of the terms
+            const termsList = document.querySelector('.terms-list');
+
+            // Create an array from the children of the terms list and map to extract the id and sort order
+            const sortOrderData = Array.from(termsList.children).map((termElement, index) => {
+                // Extracting the numeric ID from the id attribute (e.g., "studyTermId=40" -> "40")
+                const termId = termElement.id.match(/studyTermId=(\d+)/)[1];
+                return {
+                    id: termId,
+                    sort_order: index
+                };
+            });
+
+            // Send the updated sort order to the backend
+            try {
+                await axiosAuthInstance.post(`/study_sets/${this.setDetail.id}/update_term_order/`, {
+                    term_order: sortOrderData
+                });
+                // Refetch the terms to ensure order consistency
+                this.fetchSetTerms();
+            } catch (error) {
+                console.error("Error updating term order:", error);
             }
         },
     }
@@ -714,10 +805,9 @@ form.set-banner .set-edit-fields {
 .front-back-display {
     flex: 1 1 auto;
     display: flex;
-    gap: 0.6rem;
     flex-direction: row;
     /* Ensure maximum width stays below .btn-stack's position */
-    max-width: calc(100%-5rem);
+    max-width: calc(100%-4rem);
 }
 
 /* Level 4 term container, separates text from image */
@@ -789,7 +879,22 @@ form.set-banner .set-edit-fields {
 .spacer {
     flex: 0 0 auto;
     width: 0.2rem;
+    margin: 0 0.6rem 0 0.6rem;
     border-radius: 8px;
-    background-color: var(--clr-base-primary);
+    background-color: gray;
+}
+
+/* term-display class, but for changing sort_order view */
+.term-display-reorder {
+    align-items: center;
+}
+
+/* Symbol for reordering terms */
+.reorder-symbol {
+    color: black;
+    width: 3rem;
+    height: 1.2rem;
+    min-width: 3rem;
+    min-height: 1.2rem;
 }
 </style>
