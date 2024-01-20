@@ -74,10 +74,12 @@ export default {
         this.audioPlayer.addEventListener('ended', this.handleAudioEnd);
         // Shuffle terms
         this.shuffleTerms();
+        window.addEventListener('keydown', this.handleKeyPress);
     },
     beforeUnmount() {
         this.audioPlayer.removeEventListener('ended', this.handleAudioEnd);
         this.audioPlayer = null;
+        window.removeEventListener('keydown', this.handleKeyPress);
     },
     computed: {
         currentTerm() {
@@ -112,6 +114,20 @@ export default {
         }
     },
     methods: {
+        handleKeyPress(event) {
+            switch (event.keyCode) {
+                case 32: // Spacebar
+                    event.preventDefault(); // Prevent the default action (scrolling)
+                    this.playPause();
+                    break;
+                case 37: // Left arrow
+                    this.previousTerm();
+                    break;
+                case 39: // Right arrow
+                    this.nextTerm();
+                    break;
+            }
+        },
         resetTermIndex() {
             this.isPlaying = false;
             this.currentTermIndex = 0;

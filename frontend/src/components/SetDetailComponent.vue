@@ -42,6 +42,8 @@ export default {
                 // Separate terms and the rest of set details
                 const { terms, ...setDetails } = response.data;
                 this.setDetail = setDetails;
+                // Sort our response by sort_order
+                terms.sort((a, b) => a.sort_order - b.sort_order);
                 this.studyTerms = terms;
             } catch (error) {
                 // If set not found (no permission)

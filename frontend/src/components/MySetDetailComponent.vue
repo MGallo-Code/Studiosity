@@ -449,7 +449,7 @@ export default {
                 // Set inputs for lang/voice to match below default voices
                 this.initializeVoiceSelections(this.termCreateForm, {
                     front_voice_id: 'Joanna',
-                    back_voice_id: 'Joanna'
+                    back_voice_id: 'Takumi'
                 })
                 this.isCreatingNewTerm = true;
                 // Re-render dom with next tick, then scroll to creating new term form
