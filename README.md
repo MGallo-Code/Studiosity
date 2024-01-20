@@ -1,106 +1,98 @@
-# LifeLocker
+# Studiosity
 
 ## Description
 
-LifeLocker is a comprehensive web application for personal productivity and data management. It aims to enhance learning, organization, and security in daily life. The application features interactive flashcards for learning, a digital recipe book, a personal journal, and a secure password manager. It employs a robust server-client architecture, prioritizing security and efficiency.
+Studiosity is a comprehensive web application designed to support a wide range of study and learning activities. With its robust language support features, it is also ideal for language learners looking to master new languages. Users can create personalized study sets, utilize interactive flashcards, and track their learning progress across various subjects.
 
 ## Key Features
 
-1. **Flashcard Sets**: Users can create and manage interactive flashcard sets, aiding in effective learning and memory retention.
+1. **Study Set Creation**: Build custom study sets with multimedia support for a diverse learning experience.
+2. **Interactive Learning**: Engage with content using interactive tools like flashcards and quizzes.
+3. **Language Support**: Benefit from text-to-speech features for language pronunciation and learning.
+4. **Progress Tracking**: Keep track of your learning milestones and performance analytics.
+5. **Collaborative Learning**: Share and collaborate on study sets with others for group learning sessions.
 
-2. **Digital Recipe Book**: A module for organizing and storing favorite recipes, with easy access and editing features.
+## Getting Started
 
-3. **Personal Journal**: A digital platform for daily reflections, notes, and thoughts, with an intuitive interface.
+To set up Studiosity on your local or remote Ubuntu machine, follow these steps:
 
-4. **Password Manager**: A secure system for managing and storing passwords, utilizing advanced encryption techniques.
+1. **Clone the Studiosity Repository**
+   - Clone the repository from GitHub:
+     ```
+     git clone https://github.com/MGallo-Code/Studiosity.git
+     ```
+   - Navigate to the cloned directory:
+     ```
+     cd Studiosity
+     ```
 
-## System Architecture
+2. **Install Docker & Docker-Compose**
+   - Follow the official Docker documentation to install Docker and Docker-Compose: [Docker Compose Installation Guide](https://docs.docker.com/compose/install/).
 
-### Server-Side
+3. **Install the Latest Version of Node.js**
+   - Install Node.js using NVM (Node Version Manager) by following the instructions here: [NVM Installation Guide](https://nodejs.org/en/download/package-manager/#nvm).
 
--   **Application Server**: Python with Django, featuring Django’s security measures against CSRF, SQL Injection, and XSS attacks. Configurations include middleware settings, database connections, and URL routing.
--   **Database Server**: PostgreSQL, with a detailed schema for flashcards, recipes, journal entries, and passwords. Utilizes indexes, views, and stored procedures for enhanced performance and security.
--   **Security**: Secure connection to the database, and management of credentials.
+4. **Set Up the Frontend**
+   - Navigate to the `frontend` directory within the Studiosity project:
+     ```
+     cd frontend
+     ```
+   - Install the necessary npm packages:
+     ```
+     npm install
+     ```
+   - Build the frontend assets:
+     ```
+     npm run build
+     ```
 
-### Client-Side
+5. **Configure Docker Permissions**
+   - Add your user to the `docker` group to manage Docker without needing root access:
+     ```
+     sudo usermod -aG docker ${USER}
+     ```
+   - Apply the new group membership:
+     ```
+     newgrp docker
+     ```
 
--   **Frameworks**: Vue.js for a single-page application, focusing on component structure, state management, and routing.
--   **Responsive Design**: Wireframes illustrate design principles for various devices. Utilization of Bootstrap or Tailwind CSS for responsive UI.
+6. **Check Docker Service**
+   - Ensure the Docker service is running properly:
+     ```
+     sudo systemctl status docker
+     ```
 
-### Hosting
+7. **Create Your `.env` File**
+   - In the main project folder, create a new `.env` file with your environment variables:
+     ```
+     nano .env
+     ```
+   - Fill in the `.env` file with your details as shown in the example below:
+     ```
+     DB_USER=your_postgres_user
+     DB_PASSWORD=your_postgres_password
+     AWS_ACCESS_KEY_ID=your_aws_access_key_id
+     AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+     DJANGO_SECRET_KEY=your_django_secret_key
+     SERVER_ADDRESS=your_server_address
+     ```
+   - Save and exit the editor (in nano, press `Ctrl + X`, then `Y` to confirm, and `Enter` to exit).
 
--   **Local Hosting**: Raspberry Pi for local hosting, discussing setup, OS installation, server configuration, and network configuration.
--   **Production Hosting**: Cloud hosting comparison (AWS, Google Cloud, Azure) with a focus on deployment processes.
+8. **Set Up AWS Polly (Optional)**
+   - If you plan to use AWS Polly for text-to-speech functionality, make sure you have an AWS account.
+   - Navigate to the [AWS Management Console](https://aws.amazon.com/console/).
+   - Go to the IAM (Identity and Access Management) page and create a new user with programmatic access.
+   - Attach the `AmazonPollyFullAccess` policy to the user.
+   - Upon creation, you will be provided with the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. Use these for your `.env` file.
 
-## Networking and Accessibility
-
--   **Remote Access**: Secure access methods, including VPNs, firewall configurations, and network security.
--   **Network Security**: Implementation of SSL/TLS, certificate management, and network-level security measures.
-
-## Data Management and Storage
-
--   **Database Design**: An entity-relationship diagram (ERD) for the database schema, discussion on normalization strategies.
--   **Data Backup**: Backup strategy including frequency, tools used, disaster recovery plans, and data restoration processes.
-
-## Security Plan
-
--   **Data Encryption**: AES for data at rest, TLS for data in transit, and key management policies.
--   **Authentication**: Password-based authentication, two-factor authentication, and OAuth integration.
--   **Server Security**: Specific measures for Raspberry Pi security in production, and cloud-native security features.
-
-## User Interface and Experience
-
--   **Design Philosophy**: Pastel color scheme, intuitive layouts, focusing on user-friendliness and accessibility.
--   **Wireframes**: Detailed wireframes for each major screen, layout, navigation, and key UI elements.
--   **User Flow**: Description of user interaction flows, minimal-click philosophy in UI design.
-
-## Development and Deployment
-
-### Methodology
-
--   **Waterfall Model**: With a structured and sequential approach, each phase is given adequate time for development, testing, and refinement.
-
-### Version Control
-
--   **Git**: Employed for version control with an emphasis on branching strategies, commit conventions, and code reviews.
-
-### Deployment Strategy
-
--   Detailed instructions for deploying the application on Raspberry Pi or cloud environments, with strategies for a smooth deployment and rollback plans.
-
-### Project Timeline
-
-#### Phase 1: Flashcard Functionality
-
--   Implementation of flashcard module and UI components (Duration: 2 months).
-
-#### Phase 2: Recipe Book Module
-
--   Interface design and integration with local storage (Duration: 3 weeks).
-
-#### Phase 3: Journal Feature
-
--   Development of journaling interface and local storage integration (Duration: 3 weeks).
-
-#### Phase 4: Password Manager
-
--   Secure interface design and implementation of encryption (Duration: 2 months).
-
-#### Phase 5: Testing and Refinement
-
--   Ongoing testing throughout the development phases, with a focused period for refining UI/UX and performance optimization (Duration: 2 months).
-
-#### Phase 6: Launch and Support
-
--   Preparation for launch and ongoing post-launch support (Duration: Ongoing).
-
-### Additional Considerations
-
--   **Overlapping Phases**: Some development phases may overlap, particularly in design aspects.
--   **Buffer Time**: Additional time has been allocated in each phase to accommodate unforeseen challenges.
--   **Testing Overlaps**: Testing is incorporated into each phase to identify and resolve issues early.
--   **Agile Elements**: Incorporation of Agile principles within the Waterfall model for flexibility and responsiveness to change.
+After completing these steps, you should have Studiosity set up with all necessary services running. Proceed with the application-specific instructions to start using the application.
 
 ## Contributing
 
-Open for community contributions, with guidelines provided for interested participants.
+We are open to contributions! If you're interested in improving Studiosity, feel free to submit your pull requests or feature suggestions.
+
+## Support
+
+For any questions or issues, please open a ticket on our issue tracker, and we'll be happy to help you out.
+
+Thank you for participating in the Studiosity community, and happy studying!
