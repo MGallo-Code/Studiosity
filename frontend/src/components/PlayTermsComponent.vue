@@ -1,43 +1,52 @@
 <template>
     <div class="study-playlist-player">
         <div class="term-play-display">
-            <button @click="previousTerm"><font-awesome-icon :icon="['fas', 'arrow-left']" /></button>
-            <span>
+            <button @click="previousTerm" class="term-play-side-btn"><font-awesome-icon
+                    :icon="['fas', 'arrow-left']" /></button>
+            <span @click="playPause" style="cursor:pointer;">
                 <p>{{ currentText }}</p>
-                <button @click="playPause">
+                <div class="play-pause-btn">
                     <font-awesome-icon v-if="isPlaying" :icon="['fas', 'pause']" />
                     <font-awesome-icon v-else :icon="['fas', 'play']" />
-                </button>
+                </div>
             </span>
-            <button @click="nextTerm"><font-awesome-icon :icon="['fas', 'arrow-right']" /></button>
+            <button @click="nextTerm" class="term-play-side-btn"><font-awesome-icon
+                    :icon="['fas', 'arrow-right']" /></button>
         </div>
 
         <div class="term-play-controls">
             <button @click="resetTermIndex">Back to Beginning</button>
             <button @click="togglePlayOrder">{{ playFrontFirst ? 'Play Back First' : 'Play Front First' }}</button>
             <button @click="shuffleTerms">Re-Shuffle Terms</button>
+            <div class="loop-toggle">
+                <input type="checkbox" id="loop" v-model="loop" style="display:none;" />
+                <label for="loop" :class="{ 'active-toggle': loop, 'inactive-toggle': !loop }"><font-awesome-icon
+                        :icon="['fas', 'repeat']" /></label>
+            </div>
+            <div class="shuffle-toggle">
+                <input type="checkbox" id="shuffle" v-model="shuffle" style="display:none;" />
+                <label for="shuffle" :class="{ 'active-toggle': shuffle, 'inactive-toggle': !shuffle }"><font-awesome-icon
+                        :icon="['fas', 'shuffle']" /></label>
+            </div>
         </div>
 
         <div class="term-play-sliders">
             <div>
-                <label for="front-back-pause">Front/Back Pause: {{ frontBackPause }}s</label>
+                <label for="playback-volume">Audio Volume: {{ playbackVolume }}</label>
+                <input type="range" id="playback-volume" min="0" max="1" step="0.1" v-model="playbackVolume" />
+            </div>
+            <div>
+                <label for="playback-rate">Audio Playback Speed: {{ playbackRate }}x</label>
+                <input type="range" id="playback-rate" min="0.1" max="3" step="0.1" v-model="playbackRate" />
+            </div>
+            <div>
+                <label for="front-back-pause">Pause Between Front/Back: {{ frontBackPause }}s</label>
                 <input type="range" id="front-back-pause" min="0" max="10" step="0.1" v-model="frontBackPause" />
             </div>
             <div>
-                <label for="term-pause">Term Pause: {{ termPause }}s</label>
+                <label for="term-pause">Pause Between Terms: {{ termPause }}s</label>
                 <input type="range" id="term-pause" min="0" max="20" step="0.1" v-model="termPause" />
             </div>
-        </div>
-
-        <div class="loop-toggle">
-            <input type="checkbox" id="loop" v-model="loop" style="display:none;" />
-            <label for="loop" :class="{ 'active-toggle': loop, 'inactive-toggle': !loop }"><font-awesome-icon
-                    :icon="['fas', 'repeat']" /></label>
-        </div>
-        <div class="shuffle-toggle">
-            <input type="checkbox" id="shuffle" v-model="shuffle" style="display:none;" />
-            <label for="shuffle" :class="{ 'active-toggle': shuffle, 'inactive-toggle': !shuffle }"><font-awesome-icon
-                    :icon="['fas', 'shuffle']" /></label>
         </div>
     </div>
 </template>
@@ -58,6 +67,8 @@ export default {
             isPlaying: false,
             currentSide: 'front', // Either 'front' or 'back' 
             playFrontFirst: true,
+            playbackVolume: 1.0,
+            playbackRate: 1.0,
             frontBackPause: 0.6,
             termPause: 1.2,
             loop: false,
@@ -108,9 +119,17 @@ export default {
         }
     },
     watch: {
+        playbackVolume(volume) {
+            this.audioPlayer.volume = volume;
+        },
+        playbackRate(rate) {
+            this.audioPlayer.playbackRate = rate;
+        },
         shuffle(newValue) {
             if (newValue) {
                 this.shuffleTerms();
+                // Make sure that shuffle is enabled...
+                this.shuffle = true;
             }
         }
     },
@@ -131,6 +150,8 @@ export default {
         playCurrentAudio() {
             if (this.currentAudio) {
                 this.audioPlayer.src = this.currentAudio.file_path;
+                this.audioPlayer.volume = Number(this.playbackVolume);
+                this.audioPlayer.playbackRate = this.playbackRate;
                 this.audioPlayer.play().catch(error => console.error("Error playing audio:", error));
             }
         },
@@ -140,11 +161,8 @@ export default {
             clearTimeout(this.nextSideTimeout);
             this.audioPlayer.pause();
 
-            // If we just played side 2 of the card
-            //      i.e. play front first and we're on the back side of the card, or vice versa
-            if ((this.currentSide === 'front' && !this.playFrontFirst)
-                || (this.currentSide === 'back' && this.playFrontFirst)) {
-
+            // If we just played back side of card
+            if (this.currentSide === 'back') {
                 // Switch to next term in this.termPause seconds
                 this.nextTermTimeout = setTimeout(this.nextTerm, 1000 * this.termPause);
             } else {
@@ -176,8 +194,8 @@ export default {
                     return;
                 }
             }
-            // Reset currentSide based on playFrontFirst
-            this.currentSide = this.playFrontFirst ? 'front' : 'back';
+            // Reset currentSide to be the front side
+            this.currentSide = 'front';
             // Only play audio if player is actively in the playing state...
             if (this.isPlaying) this.playCurrentAudio();
         },
@@ -206,8 +224,8 @@ export default {
             else {
                 this.currentTermIndex = this.studyTerms.length - 1;
             }
-            // Reset currentSide based on playFrontFirst
-            this.currentSide = this.playFrontFirst ? 'front' : 'back';
+            // Reset currentSide to be the front side
+            this.currentSide = 'front';
             // Only play audio if player is actively in the playing state...
             if (this.isPlaying) this.playCurrentAudio();
         },
@@ -231,16 +249,17 @@ export default {
             // Change play order
             this.playFrontFirst = !this.playFrontFirst;
 
-            // Reset currentSide based on playFrontFirst
-            this.currentSide = this.playFrontFirst ? 'front' : 'back';
+            // Reset currentSide to be the front side
+            this.currentSide = 'front';
         },
         shuffleTerms() {
             // Clear timeouts to prevent unintended behavior
             clearTimeout(this.nextTermTimeout);
             clearTimeout(this.nextSideTimeout);
-            // Pause if currently playing
+            // Pause if currently playing, reset to card front
             if (this.isPlaying) {
                 this.playPause();
+                this.currentSide = 'front';
             }
 
             // Shuffle!
@@ -278,13 +297,102 @@ export default {
 </script>
 
 <style scoped>
+.study-playlist-player {
+    background-color: lightgray;
+    border: 1px solid #a2a2a2;
+}
+
+.term-play-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 8rem;
+    margin-bottom: 0.4rem;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #a2a2a2;
+}
+
+/* Prev/Next Term Buttons */
+
+.term-play-side-btn {
+    flex: 0 0 3rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 !important;
+    border: none !important;
+}
+
+/* Main term display area */
+
+.term-play-display>span {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+/* Text in term display area */
+.term-play-display>span>p {
+    flex: 1 0 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    padding: 0.8rem 5%;
+}
+
+.play-pause-btn {
+    flex: 0 0 2rem;
+}
+
+/* Play Terms Controls Button Container */
+
+.term-play-controls {
+    display: flex;
+    gap: 0.4rem;
+    margin: 0 repeat(0.4rem, 3);
+    width: 100%;
+    justify-items: space-around;
+}
+
+/* Buttons in Play Terms Controls */
+
+.term-play-controls button {
+    background-color: #f5f5f5;
+    border: 1px solid #a2a2a2;
+    height: 2.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+/* Sliders + Slider Labels */
+
+.term-play-sliders input[type="range"] {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
 /* Shuffle and repeat toggle buttons(/labels) */
+
+.loop-toggle,
+.shuffle-toggle {
+    display: inline-block;
+}
+
 .study-playlist-player label.active-toggle {
     color: var(--clr-btn-green);
+    border: 2px solid var(--clr-btn-green);
 }
 
 .study-playlist-player label.inactive-toggle {
     color: #9d5353;
+    border: 2px solid #9d5353;
 }
 
 .study-playlist-player label.active-toggle,
@@ -294,9 +402,8 @@ export default {
     align-items: center;
     width: 2.5rem;
     height: 2.5rem;
-    background-color: white;
-    border: 2px solid var(--clr-base-primary);
-    border-radius: 15px;
+    background-color: #f5f5f5;
+    border-radius: 11px;
 }
 
 .study-playlist-player label.active-toggle:hover,
