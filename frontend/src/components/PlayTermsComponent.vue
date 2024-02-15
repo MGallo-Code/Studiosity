@@ -3,9 +3,7 @@
         <div class="term-play-display">
             <button @click="previousTerm"><font-awesome-icon :icon="['fas', 'arrow-left']" /></button>
             <span>
-                <p v-if="(isFirstAudioNext && playFrontFirst) || (!isFirstAudioNext && !playFrontFirst)">{{
-                    currentTerm.front_text }}</p>
-                <p v-else>{{ currentTerm.back_text }}</p>
+                <p>{{ currentText }}</p>
                 <button @click="playPause">
                     <font-awesome-icon v-if="isPlaying" :icon="['fas', 'pause']" />
                     <font-awesome-icon v-else :icon="['fas', 'play']" />
@@ -58,19 +56,18 @@ export default {
             shuffledTerms: null,
             currentTermIndex: 0,
             isPlaying: false,
-            isFirstAudioNext: true,
+            currentSide: 'front', // Either 'front' or 'back' 
             playFrontFirst: true,
             frontBackPause: 0.6,
             termPause: 1.2,
             loop: false,
             shuffle: false,
-            audioPlayer: null,
+            audioPlayer: new Audio(),
             nextTermTimeout: null,
             nextSideTimeout: null,
         };
     },
     mounted() {
-        this.audioPlayer = new Audio();
         this.audioPlayer.addEventListener('ended', this.handleAudioEnd);
         // Shuffle terms
         this.shuffleTerms();
@@ -82,31 +79,35 @@ export default {
         window.removeEventListener('keydown', this.handleKeyPress);
     },
     computed: {
+        // Return our term at currentTermIndex based on whether shuffle is enabled
         currentTerm() {
-            if (this.shuffle) {
-                return this.shuffledTerms[this.currentTermIndex];
-            }
-            return this.studyTerms[this.currentTermIndex];
+            return this.shuffle ? this.shuffledTerms[this.currentTermIndex] : this.studyTerms[this.currentTermIndex];
         },
+        // Get the audio for the current term
         currentAudio() {
             const term = this.currentTerm;
-            if ((this.isFirstAudioNext && this.playFrontFirst) || (!this.isFirstAudioNext && !this.playFrontFirst)) {
+            // If we're playing audio from the card's front side
+            if ((this.currentSide === 'front' && this.playFrontFirst)
+                || (this.currentSide === 'back' && !this.playFrontFirst)) {
                 return term.front_audio || term.front_tts_audio;
-            } else {
+            }
+            // If we're playing audio from the card's back side
+            else {
                 return term.back_audio || term.back_tts_audio;
+            }
+        },
+        // Similarly, get the text for the current side of the card
+        currentText() {
+            const term = this.currentTerm;
+            if ((this.currentSide === 'front' && this.playFrontFirst)
+                || (this.currentSide === 'back' && !this.playFrontFirst)) {
+                return term.front_text;
+            } else {
+                return term.back_text;
             }
         }
     },
     watch: {
-        isPlaying(newValue) {
-            if (newValue) {
-                this.playCurrentAudio();
-            } else {
-                this.audioPlayer.pause();
-                clearTimeout(this.nextTermTimeout);
-                clearTimeout(this.nextSideTimeout);
-            }
-        },
         shuffle(newValue) {
             if (newValue) {
                 this.shuffleTerms();
@@ -114,6 +115,150 @@ export default {
         }
     },
     methods: {
+        playPause() {
+            this.isPlaying = !this.isPlaying;
+            // If we're pausing...
+            if (!this.isPlaying) {
+                this.audioPlayer.pause();
+                clearTimeout(this.nextTermTimeout);
+                clearTimeout(this.nextSideTimeout);
+            }
+            // If we're playing...
+            else {
+                this.playCurrentAudio();
+            }
+        },
+        playCurrentAudio() {
+            if (this.currentAudio) {
+                this.audioPlayer.src = this.currentAudio.file_path;
+                this.audioPlayer.play().catch(error => console.error("Error playing audio:", error));
+            }
+        },
+        handleAudioEnd() {
+            // Clear any extra coroutines...
+            clearTimeout(this.nextTermTimeout);
+            clearTimeout(this.nextSideTimeout);
+            this.audioPlayer.pause();
+
+            // If we just played side 2 of the card
+            //      i.e. play front first and we're on the back side of the card, or vice versa
+            if ((this.currentSide === 'front' && !this.playFrontFirst)
+                || (this.currentSide === 'back' && this.playFrontFirst)) {
+
+                // Switch to next term in this.termPause seconds
+                this.nextTermTimeout = setTimeout(this.nextTerm, 1000 * this.termPause);
+            } else {
+                // Flip card side in this.frontBackPause seconds
+                this.nextSideTimeout = setTimeout(this.nextSide, 1000 * this.frontBackPause);
+            }
+        },
+        nextTerm() {
+            // Clear timeouts to prevent unintended behavior when manually navigating terms
+            clearTimeout(this.nextTermTimeout);
+            clearTimeout(this.nextSideTimeout);
+            this.audioPlayer.pause();
+
+            // If not at the end of list, freely increase our currentTermIndex
+            if (this.currentTermIndex < this.studyTerms.length - 1) {
+                this.currentTermIndex++;
+            }
+            // If on the last element...
+            else {
+                // Reset currentTermIndex to beginning of list
+                this.currentTermIndex = 0;
+                // If shuffle is enabled, reshuffle the list since end has been reached
+                if (this.shuffle) {
+                    this.shuffleTerms();
+                }
+                // Return early to avoid looping if loop is not enabled
+                if (!this.loop) {
+                    this.isPlaying = false;
+                    return;
+                }
+            }
+            // Reset currentSide based on playFrontFirst
+            this.currentSide = this.playFrontFirst ? 'front' : 'back';
+            // Only play audio if player is actively in the playing state...
+            if (this.isPlaying) this.playCurrentAudio();
+        },
+        nextSide() {
+            // Clear timeouts to prevent unintended behavior when manually navigating terms
+            clearTimeout(this.nextTermTimeout);
+            clearTimeout(this.nextSideTimeout);
+            this.audioPlayer.pause();
+
+            // Flip card side
+            this.currentSide = this.currentSide === 'front' ? 'back' : 'front';
+            // Play audio
+            this.playCurrentAudio();
+        },
+        previousTerm() {
+            // Clear timeouts to prevent unintended behavior when manually navigating terms
+            clearTimeout(this.nextTermTimeout);
+            clearTimeout(this.nextSideTimeout);
+            this.audioPlayer.pause();
+
+            // If not the first term, simply decrease our term index
+            if (this.currentTermIndex > 0) {
+                this.currentTermIndex--;
+            }
+            // If the first term, set index to the end of list
+            else {
+                this.currentTermIndex = this.studyTerms.length - 1;
+            }
+            // Reset currentSide based on playFrontFirst
+            this.currentSide = this.playFrontFirst ? 'front' : 'back';
+            // Only play audio if player is actively in the playing state...
+            if (this.isPlaying) this.playCurrentAudio();
+        },
+        resetTermIndex() {
+            // Clear timeouts to prevent unintended behavior
+            clearTimeout(this.nextTermTimeout);
+            clearTimeout(this.nextSideTimeout);
+            this.audioPlayer.pause();
+            // Reset our currentTermIndex
+            this.currentTermIndex = 0;
+        },
+        togglePlayOrder() {
+            // Clear timeouts to prevent unintended behavior
+            clearTimeout(this.nextTermTimeout);
+            clearTimeout(this.nextSideTimeout);
+            // Pause if currently playing
+            if (this.isPlaying) {
+                this.playPause();
+            }
+
+            // Change play order
+            this.playFrontFirst = !this.playFrontFirst;
+
+            // Reset currentSide based on playFrontFirst
+            this.currentSide = this.playFrontFirst ? 'front' : 'back';
+        },
+        shuffleTerms() {
+            // Clear timeouts to prevent unintended behavior
+            clearTimeout(this.nextTermTimeout);
+            clearTimeout(this.nextSideTimeout);
+            // Pause if currently playing
+            if (this.isPlaying) {
+                this.playPause();
+            }
+
+            // Shuffle!
+            this.shuffledTerms = this.shuffleArray([...this.studyTerms]);
+
+            // Reset currentSide based on playFrontFirst
+            this.currentSide = this.playFrontFirst ? 'front' : 'back';
+            // Reset term index
+            this.currentTermIndex = 0;
+        },
+        shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = i === 1 ? 0 : Math.floor(Math.random() * i);
+
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        },
         handleKeyPress(event) {
             switch (event.keyCode) {
                 case 32: // Spacebar
@@ -127,74 +272,6 @@ export default {
                     this.nextTerm();
                     break;
             }
-        },
-        resetTermIndex() {
-            this.isPlaying = false;
-            this.currentTermIndex = 0;
-        },
-        playPause() {
-            this.isPlaying = !this.isPlaying;
-        },
-        playCurrentAudio() {
-            if (this.currentAudio) {
-                this.audioPlayer.src = this.currentAudio.file_path;
-                this.audioPlayer.play().catch(error => console.error("Error playing audio:", error));
-            }
-        },
-        handleAudioEnd() {
-            if (!this.isFirstAudioNext) {
-                this.nextTermTimeout = setTimeout(this.nextTerm, 1000 * this.termPause);
-            } else {
-                this.nextSideTimeout = setTimeout(this.playCurrentAudio, 1000 * this.frontBackPause);
-            }
-            this.isFirstAudioNext = !this.isFirstAudioNext;
-        },
-        nextTerm() {
-            const wasPlaying = this.isPlaying;
-            if (this.currentTermIndex < this.studyTerms.length - 1) {
-                this.currentTermIndex++;
-            } else {
-                if (this.shuffle) {
-                    this.shuffleTerms();
-                }
-                this.currentTermIndex = 0;
-                // Return early to avoid looping
-                if (!this.loop) {
-                    this.isPlaying = false;
-                    return;
-                }
-            }
-            this.isFirstAudioNext = true;
-            this.isPlaying = wasPlaying;
-            if (this.isPlaying) this.playCurrentAudio();
-        },
-        previousTerm() {
-            const wasPlaying = this.isPlaying;
-            if (this.currentTermIndex > 0) {
-                this.currentTermIndex--;
-            } else if (this.loop) {
-                this.currentTermIndex = this.studyTerms.length - 1;
-            }
-            this.isFirstAudioNext = true;
-            this.isPlaying = wasPlaying;
-        },
-        togglePlayOrder() {
-            this.isPlaying = false;
-            this.playFrontFirst = !this.playFrontFirst;
-        },
-        shuffleTerms() {
-            this.isPlaying = false;
-            this.shuffledTerms = this.shuffleArray([...this.studyTerms]);
-            this.currentTermIndex = 0;
-            this.isFirstAudioNext = true;
-        },
-        shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = i === 1 ? 0 : Math.floor(Math.random() * i);
-
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
         }
     }
 };
