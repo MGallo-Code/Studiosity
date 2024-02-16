@@ -94,7 +94,8 @@
         <!-- Button to toggle new term creation form -->
         <div class="term-btn-menu">
             <button @click="toggleCreatingTerm" :disabled="isCreatingNewTerm || isChangingOrder">Create New Term</button>
-            <button @click="toggleChangingOrder" :disabled="isTogglingChangeOrderMode">
+            <button @click="toggleChangingOrder"
+                :disabled="isTogglingChangeOrderMode || !studyTerms || studyTerms.length == 0">
                 {{ isChangingOrder ? "Save Term Order" : "Edit Term Order" }}</button>
         </div>
 
@@ -472,7 +473,6 @@ export default {
             // Create new term
             this.createTermError = null;
             try {
-                console.log(this.studyTerms.length);
                 const createTermResponse = await axiosAuthInstance.post('/study_sets/terms/', {
                     sort_order: this.studyTerms.length,
                     front_text: this.termCreateForm.front_text,
@@ -796,13 +796,32 @@ form.set-banner .set-edit-fields {
 .term-btn-menu {
     position: sticky;
     top: 0;
-    background-color: white;
-    border-bottom: 1px solid var(--clr-base-primary);
+    background-color: var(--clr-base-primary);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: .4rem;
+    width: 100%;
+}
+
+/* Buttons in above menu */
+.term-btn-menu button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    background-color: #f5f5f5;
+    border: 1px solid #a2a2a2;
+    height: 2.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 8px;
 }
 
 /* Outermost Terms list container */
 .terms-list {
-    margin: 0 1rem 0 1rem;
+    margin: 0.75rem 1rem;
+    border-radius: 11px;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
 }
 
 /* Level 1 term container, contains:
@@ -814,9 +833,19 @@ form.set-banner .set-edit-fields {
     gap: 1rem;
     flex-direction: column;
     width: 100%;
-    border-radius: 8px;
     border: 1px solid #ddd;
     background-color: #f8f8f8;
+}
+
+/* Round corners of first and last terms in terms-list */
+.term-container:first-child {
+    border-top-left-radius: 11px;
+    border-top-right-radius: 11px;
+}
+
+.term-container:last-child {
+    border-bottom-left-radius: 11px;
+    border-bottom-right-radius: 11px;
 }
 
 /* Level 2 term container, sets basic padding and contains:
