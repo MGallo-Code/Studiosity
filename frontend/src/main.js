@@ -19,6 +19,8 @@ import {
     faCheck,
     faStar as fasStar,
     faSort,
+    faGear,
+    faXmark
 } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -39,7 +41,9 @@ library.add(
     faCheck,
     faSort,
     fasStar,
-    farStar
+    farStar,
+    faGear,
+    faXmark
 );
 
 store.dispatch("checkAuthState").then(() => {

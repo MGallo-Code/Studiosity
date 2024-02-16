@@ -28,9 +28,16 @@
                 <label for="shuffle" :class="{ 'active-toggle': shuffle, 'inactive-toggle': !shuffle }"><font-awesome-icon
                         :icon="['fas', 'shuffle']" /></label>
             </div>
+            <div class="audio-menu-toggle">
+                <input type="checkbox" id="audio-menu-toggle" v-model="showingAudioMenu" style="display:none;" />
+                <label for="audio-menu-toggle"
+                    :class="{ 'menu-active': showingAudioMenu, 'menu-inactive': !showingAudioMenu }">
+                    <font-awesome-icon v-if="showingAudioMenu" :icon="['fas', 'xmark']" />
+                    <font-awesome-icon v-else :icon="['fas', 'gear']" /></label>
+            </div>
         </div>
 
-        <div class="term-play-sliders">
+        <div v-if="showingAudioMenu" class="term-play-sliders">
             <div>
                 <label for="playback-volume">Audio Volume: {{ playbackVolume }}</label>
                 <input type="range" id="playback-volume" min="0" max="1" step="0.1" v-model="playbackVolume" />
@@ -76,6 +83,7 @@ export default {
             audioPlayer: new Audio(),
             nextTermTimeout: null,
             nextSideTimeout: null,
+            showingAudioMenu: false
         };
     },
     mounted() {
@@ -354,28 +362,24 @@ export default {
 
 .term-play-controls {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 0.4rem;
-    margin: 0 repeat(0.4rem, 3);
-    width: 100%;
-    justify-items: space-around;
+    padding: 0 .4rem .4rem .4rem;
+    margin: 0 auto;
 }
 
 /* Buttons in Play Terms Controls */
 
 .term-play-controls button {
+    flex: 0 0 auto;
+    white-space: nowrap;
     background-color: #f5f5f5;
     border: 1px solid #a2a2a2;
     height: 2.5rem;
     padding: 0.5rem 1rem;
     cursor: pointer;
     border-radius: 8px;
-}
-
-/* Sliders + Slider Labels */
-
-.term-play-sliders input[type="range"] {
-    width: 100%;
-    margin-bottom: 1rem;
 }
 
 /* Shuffle and repeat toggle buttons(/labels) */
@@ -410,5 +414,34 @@ export default {
 .study-playlist-player label.inactive-toggle:hover {
     cursor: pointer;
     background-color: rgba(0, 0, 0, 0.15);
+}
+
+/* Slider menu container */
+.term-play-sliders {
+    padding: 0 1rem;
+}
+
+/* Slider menu toggle */
+.audio-menu-toggle label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: #f5f5f5;
+    border-radius: 11px;
+    cursor: pointer;
+}
+
+.audio-menu-toggle label:hover {
+    background-color: #f5f5f5;
+    border: 2px solid black;
+}
+
+/* Sliders + Slider Labels */
+
+.term-play-sliders input[type="range"] {
+    width: 100%;
+    margin-bottom: 1rem;
 }
 </style>
