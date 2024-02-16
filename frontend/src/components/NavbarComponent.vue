@@ -17,8 +17,9 @@
                     <img :src="profileImage" alt="Profile" class="profile-pic">
                 </router-link>
                 <div class="profile-submenu" v-show="showSubMenu">
+                    <router-link to="/my-profile">Profile</router-link>
                     <a href="#" @click="handleLogout">
-                        <span>Logout</span>
+                        <span>Logout&nbsp;&nbsp;<font-awesome-icon :icon="['fas', 'right-from-bracket']" /></span>
                     </a>
                 </div>
             </li>
@@ -97,19 +98,46 @@ export default {
 </script>
 
 <style>
+:root {
+    /* Overall navbar variables */
+
+    --navbar-height: 5rem;
+    --navbar-padding: 1rem;
+
+    /* Navbar logo/brand */
+
+    --navbar-logo-margin-right: 1rem;
+    --navbar-logo-font-size: 1.35rem;
+
+    /* Navbar links */
+
+    --navbar-link-font-size: 1.3rem;
+    /* For horizontal spacing between links */
+    --navbar-link-padding: 0 var(--text-padding-med);
+
+    /* Profile picture */
+
+    /* Left margin of profile image WITHIN user name a/router link */
+    --profile-pic-left-margin: 0.5rem;
+    /* Width + height of profile image in link */
+    --profile-pic-size: 2.2rem;
+}
+
 .navbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    height: 5rem;
-    font-size: 1.3rem;
-    font-family: 'BreeSerif', serif;
-    background-color: var(--clr-base-primary);
+    height: var(--navbar-height);
+    font-size: var(--navbar-font-size);
+    font-family: var(--font-secondary);
+    background-color: var(--clr-primary);
+    color: var(--clr-text-light);
 }
 
 .navbar-brand {
-    margin: 0 1.5rem;
+    margin: 0 1rem;
+    font-size: var(--navbar-logo-font-size);
 }
 
 .navbar-menu {
@@ -120,28 +148,39 @@ export default {
 .navbar-menu li {
     display: inline-block;
     height: 100%;
-    width: 10rem;
+    width: auto;
 }
 
-.navbar a {
+.navbar-brand a {
     display: flex;
     align-items: center;
     justify-content: center;
+    text-decoration: none;
+    color: var(--clr-text-light);
+    font-weight: 800;
+}
+
+.navbar-menu a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--navbar-link-padding);
     width: 100%;
     height: 100%;
     text-decoration: none;
-    color: white;
+    color: var(--clr-text-light);
 }
 
-.navbar a:hover {
-    background-color: rgb(81, 160, 106);
+.navbar a:hover,
+.navbar a:focus {
+    background-color: var(--clr-primary-light);
 }
 
 .profile-pic {
-    width: 30px;
-    height: 30px;
+    width: var(--profile-pic-size);
+    height: var(--profile-pic-size);
     border-radius: 50%;
-    margin-left: 10px;
+    margin-left: var(--profile-pic-left-margin);
 }
 
 .profile-picture {
@@ -152,26 +191,28 @@ export default {
     display: inline-block;
     position: absolute;
     right: 0;
-    top: 100%;
+    top: var(--navbar-height);
     width: 100%;
-    height: 100%;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
+    background-color: var(--clr-primary);
+    border: 2px solid var(--clr-primary-light);
+    box-shadow: 0 2px 5px var(--clr-util-neutral);
     z-index: 100;
 }
 
 .profile-submenu a {
     display: flex;
     align-items: center;
-    width: 100%;
-    color: black;
+    justify-content: center;
+    height: var(--navbar-height);
     text-decoration: none;
+    color: var(--clr-text-light);
 }
 
 .profile-submenu a:hover {
-    background-color: #f0f0f0;
+    background-color: var(--clr-primary-light);
+}
+
+.profile-submenu a:first-child {
+    border-bottom: 2px solid var(--clr-primary-light);
 }
 </style>

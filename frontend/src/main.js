@@ -20,7 +20,8 @@ import {
     faStar as fasStar,
     faSort,
     faGear,
-    faXmark
+    faXmark,
+    faRightFromBracket
 } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -43,7 +44,8 @@ library.add(
     fasStar,
     farStar,
     faGear,
-    faXmark
+    faXmark,
+    faRightFromBracket
 );
 
 store.dispatch("checkAuthState").then(() => {
