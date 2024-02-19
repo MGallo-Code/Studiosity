@@ -1,0 +1,328 @@
+:root {
+
+    --clr-neutral-0: hsl(0, 0%, 100%);
+    --clr-neutral-500: hsl(0, 0%, 59%);
+    --clr-neutral-1000: hsl(0, 0%, 0%);
+
+    --clr-primary-200: hsl(90, 8%, 85%);
+    --clr-primary-300: hsl(100, 35%, 85%);
+    --clr-primary-400: hsl(109, 44%, 55%);
+    --clr-primary-600: hsl(144, 90%, 33%);
+    --clr-primary-700: hsl(161, 82%, 24%);
+    --clr-primary-900: hsl(179, 79%, 13%);
+
+    /* Utility colors for feedback */
+
+    /* Success green */
+    --clr-util-success: var(--clr-primary-400);
+    /* Error red */
+    --clr-util-error: #f44336;
+    /* Warning yellow, also used for the 'Favorite' yellow star */
+    --clr-util-warning: #deb820;
+    /* Information blue */
+    --clr-util-info: #6db0d2;
+    /* Neutral gray */
+    --clr-util-neutral: var(--clr-neutral-500);
+    /* Color for disabled button backgrounds */
+    --clr-util-disabled: #ccc;
+
+    /* Typography */
+
+    --ff-primary: 'Inter', sans-serif;
+    --ff-secondary: 'Nunito', sans-serif;
+
+    --ff-heading: var(--ff-primary);
+    --ff-body: var(--ff-secondary);
+
+    /* Font weights */
+    --fw-regular: 400;
+    --fw-semi-bold: 500;
+    --fw-bold: 700;
+
+    /* Font Sizes */
+    --fs-300: 1.0rem;
+    --fs-400: 1.2rem;
+    --fs-500: 1.6rem;
+    --fs-600: 1.8rem;
+    --fs-700: 2.0rem;
+    --fs-800: 2.5rem;
+
+    --fs-body: var(--fs-400);
+    --fs-primary-heading: var(--fs-800);
+    --fs-secondary-heading: var(--fs-700);
+    --fs-button: var(--fs-500);
+    --fs-fa-icon: var(--fs-400);
+
+    /* Transition */
+
+    --default-transition: all 0.1s ease-in-out;
+
+    /* Default Sizing, spacing */
+
+    --default-btn-size: 3.0rem;
+    --magnified-btn-size: 3.3rem;
+
+    --text-padding-200: 0.3rem;
+    --text-padding-300: 0.6rem;
+    --text-padding-400: 1.0rem;
+    --text-padding-500: 1.2rem;
+    --text-padding-600: 1.6rem;
+    --text-padding-700: 1.8rem;
+    --text-padding-800: 2.1rem;
+    --text-padding-900: 2.8rem;
+    --text-padding-1100: 4.0rem;
+
+    /* Misc Properties */
+
+    --default-border-radius: 7.5px;
+
+    /* Navigation Menu */
+
+
+}
+
+* {
+    transition: var(--default-transition);
+}
+
+body {
+    font-family: var(--ff-body);
+    font-size: var(--fs-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--ff-heading);
+}
+
+h1 {
+    font-weight: var(--fw-bold);
+    font-size: var(--fs-primary-heading);
+}
+
+h2 {
+    font-weight: var(--fw-semi-bold);
+    font-size: var(--fs-secondary-heading);
+}
+
+.error-message {
+    display: block;
+    float: inline-start;
+    clear: both;
+    color: var(--clr-util-error);
+    text-align: center;
+    padding: var(--text-padding-300);
+}
+
+/* Default Button */
+button,
+.btn {
+    /* Center button content */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Button appearance */
+    cursor: pointer;
+    height: var(--default-btn-size);
+    border: none;
+    border-radius: var(--default-border-radius);
+}
+
+/* Stacked Buttons */
+.btn-stack {
+    display: flex;
+    width: min-content;
+    flex-direction: column;
+}
+
+.btn-stack button {
+    margin-bottom: 0.2rem;
+}
+
+/* Default Square Button */
+.square-btn {
+    width: var(--default-btn-size);
+    height: var(--default-btn-size);
+    min-width: var(--default-btn-size);
+    min-height: var(--default-btn-size);
+}
+
+/* Buttons for favoriting items, transparent bg with star fa-icon*/
+.favorite-btn {
+    color: var(--clr-util-warning);
+    background-color: transparent;
+}
+
+/*TODO update hover for btn-stack*/
+/* .btn-stack .square-btn {
+    transition: var(--default-transition);
+}
+.btn-stack .square-btn:hover {
+    transform: translateX(-0.25em) scale(1.06);
+} */
+
+.action-btn {
+    color: var(--clr-text-dark);
+    background-color: transparent;
+}
+
+.green-btn {
+    color: var(--clr-text-light);
+    background-color: var(--clr-util-success) !important;
+}
+
+.blue-btn {
+    color: var(--clr-text-light);
+    background-color: var(--clr-util-info) !important;
+}
+
+.gray-btn {
+    color: var(--clr-text-light);
+    background-color: var(--clr-util-neutral) !important;
+}
+
+.yellow-btn {
+    color: var(--clr-text-light);
+    background-color: var(--clr-util-warning) !important;
+}
+
+.red-btn {
+    color: var(--clr-text-light);
+    background-color: var(--clr-util-error) !important;
+}
+
+/* Pagination */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--clr-primary-600);
+    color: var(--clr-neutral-0);
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    background-color: var(--clr-util-disabled);
+    cursor: not-allowed;
+}
+
+/* font-awesome icons--used in buttons usually, therefore the line height */
+.fa-icon {
+    font-size: var(--fs-fa-icon);
+}
+
+/* Util Classes */
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.text-neutral-0 {
+    color: var(--clr-neutral-0);
+}
+
+.text-neutral-1000 {
+    color: var(--clr-neutral-1000);
+}
+
+.text-primary-300 {
+    color: var(--clr-primary-300);
+}
+
+.text-primary-900 {
+    color: var(--clr-primary-900);
+}
+
+.bg-neutral-0 {
+    background-color: var(--clr-neutral-0);
+}
+
+.bg-neutral-500 {
+    background-color: var(--clr-neutral-500);
+}
+
+.bg-neutral-1000 {
+    background-color: var(--clr-neutral-1000);
+}
+
+.bg-primary-200 {
+    background-color: var(--clr-primary-200);
+}
+
+.bg-primary-300 {
+    background-color: var(--clr-primary-300);
+}
+
+.bg-primary-400 {
+    background-color: var(--clr-primary-400);
+}
+
+.bg-primary-600 {
+    background-color: var(--clr-primary-600);
+}
+
+.bg-primary-700 {
+    background-color: var(--clr-primary-700);
+}
+
+.bg-primary-900 {
+    background-color: var(--clr-primary-900);
+}
+
+.fs-300 {
+    font-size: var(--fs-300);
+}
+
+.fs-400 {
+    font-size: var(--fs-400);
+}
+
+.fs-500 {
+    font-size: var(--fs-500);
+}
+
+.fs-600 {
+    font-size: var(--fs-600);
+}
+
+.fs-700 {
+    font-size: var(--fs-700);
+}
+
+.fs-800 {
+    font-size: var(--fs-800);
+}
+
+.fw-regular {
+    font-weight: var(--fw-regular);
+}
+
+.fw-semi-bold {
+    font-weight: var(--fw-semi-bold);
+}
+
+.fw-bold {
+    font-weight: var(--fw-bold);
+}

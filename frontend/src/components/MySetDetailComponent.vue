@@ -12,17 +12,18 @@
                 </select>
             </div>
             <div class="btn-stack">
-                <button type="submit" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'check']" /></button>
+                <button type="submit" class="square-btn green-btn"><font-awesome-icon class="fa-icon"
+                        :icon="['fas', 'check']" /></button>
                 <button type="button" @click="toggleEditingSet" class="square-btn yellow-btn"><font-awesome-icon
-                        :icon="['fas', 'ban']" /></button>
+                        class="fa-icon" :icon="['fas', 'ban']" /></button>
                 <button type="button" @click="confirmDeleteSet" class="square-btn red-btn"><font-awesome-icon
-                        :icon="['fas', 'trash-alt']" /></button>
+                        class="fa-icon" :icon="['fas', 'trash-alt']" /></button>
             </div>
         </form>
         <div class="set-banner" v-else>
-            <button @click="toggleFavorite" class="favorite-btn square-btn"><font-awesome-icon
+            <button @click="toggleFavorite" class="square-btn favorite-btn"><font-awesome-icon class="fa-icon"
                     :icon="[setDetail.favorited ? 'fas' : 'far', 'star']" /></button>
-            <button @click="toggleEditingSet" class="square-btn blue-btn"><font-awesome-icon
+            <button @click="toggleEditingSet" class="square-btn action-btn"><font-awesome-icon class="fa-icon"
                     :icon="['fas', 'edit']" /></button>
             <h1>{{ setDetail.title }}</h1>
             <p>{{ setDetail.description || 'No description provided.' }}</p>
@@ -38,7 +39,8 @@
                         <input type="file" @change="onCreateFrontImageSelected" />
                         <span>
                             <textarea v-model="termCreateForm.front_text" />
-                            <p @click="speak(termCreateForm.front_text)"><font-awesome-icon icon="volume-up" /></p>
+                            <p @click="speak(termCreateForm.front_text)"><font-awesome-icon class="fa-icon"
+                                    icon="volume-up" /></p>
                         </span>
                         <span>
                             <!-- Front Language Selection -->
@@ -62,7 +64,8 @@
                         <input type="file" @change="onCreateBackImageSelected" />
                         <span>
                             <textarea v-model="termCreateForm.back_text" />
-                            <p @click="speak(termCreateForm.back_text)"><font-awesome-icon icon="volume-up" /></p>
+                            <p @click="speak(termCreateForm.back_text)"><font-awesome-icon class="fa-icon"
+                                    icon="volume-up" /></p>
                         </span>
                         <span>
                             <!-- Back Language Selection -->
@@ -83,10 +86,10 @@
                     </div>
                 </div>
                 <div class="btn-stack">
-                    <button type="submit" class="square-btn green-btn"><font-awesome-icon
+                    <button type="submit" class="square-btn green-btn"><font-awesome-icon class="fa-icon"
                             :icon="['fas', 'plus']" /></button>
                     <button type="button" @click="toggleCreatingTerm" class="square-btn yellow-btn"><font-awesome-icon
-                            :icon="['fas', 'ban']" /></button>
+                            class="fa-icon" :icon="['fas', 'ban']" /></button>
                 </div>
             </form>
         </div>
@@ -122,7 +125,7 @@
                                 </span>
                             </div>
                         </div>
-                        <font-awesome-icon :icon="['fas', 'sort']" class="reorder-symbol" />
+                        <font-awesome-icon :icon="['fas', 'sort']" class="fa-icon reorder-symbol" />
                     </div>
                 </div>
             </template>
@@ -145,7 +148,7 @@
                             <input v-if="!term.front_image" type="file" @change="onUpdateFrontImageSelected" />
                             <span>
                                 <textarea v-model="termEditForm.front_text" />
-                                <p @click="speak('front', term)"><font-awesome-icon icon="volume-up" /></p>
+                                <p @click="speak('front', term)"><font-awesome-icon class="fa-icon" icon="volume-up" /></p>
                             </span>
                             <span>
                                 <!-- Front Language Selection -->
@@ -174,7 +177,7 @@
                             <input v-if="!term.back_image" type="file" @change="onUpdateBackImageSelected" />
                             <span>
                                 <textarea v-model="termEditForm.back_text" />
-                                <p @click="speak('front', term)"><font-awesome-icon icon="volume-up" /></p>
+                                <p @click="speak('front', term)"><font-awesome-icon class="fa-icon" icon="volume-up" /></p>
                             </span>
                             <span>
                                 <!-- Back Language Selection -->
@@ -195,12 +198,14 @@
                         </div>
                     </div>
                     <div class="btn-stack">
-                        <button type="submit" class="square-btn green-btn"><font-awesome-icon
+                        <button type="submit" class="square-btn green-btn"><font-awesome-icon class="fa-icon"
                                 :icon="['fas', 'check']" /></button>
                         <button type="button" @click="toggleEditingTerm(null)"
-                            class="square-btn yellow-btn"><font-awesome-icon :icon="['fas', 'ban']" /></button>
+                            class="square-btn yellow-btn"><font-awesome-icon class="fa-icon"
+                                :icon="['fas', 'ban']" /></button>
                         <button type="button" @click="confirmDeleteTerm(term.id)"
-                            class="square-btn red-btn"><font-awesome-icon :icon="['fas', 'trash-alt']" /></button>
+                            class="square-btn red-btn"><font-awesome-icon class="fa-icon"
+                                :icon="['fas', 'trash-alt']" /></button>
                     </div>
                 </form>
                 <!-- Display term details -->
@@ -212,7 +217,7 @@
                             </picture>
                             <span @click="speak('front', term)">
                                 <p>{{ term.front_text }}</p>
-                                <p v-if="term.front_text != ''"><font-awesome-icon icon="volume-up" /></p>
+                                <p v-if="term.front_text != ''"><font-awesome-icon class="fa-icon" icon="volume-up" /></p>
                             </span>
                         </div>
                         <div class="spacer"></div>
@@ -222,12 +227,12 @@
                             </picture>
                             <span @click="speak('back', term)">
                                 <p>{{ term.back_text }}</p>
-                                <p v-if="term.back_text != ''"><font-awesome-icon icon="volume-up" /></p>
+                                <p v-if="term.back_text != ''"><font-awesome-icon class="fa-icon" icon="volume-up" /></p>
                             </span>
                         </div>
                     </div>
-                    <button @click="toggleEditingTerm(term)" class="square-btn blue-btn"><font-awesome-icon
-                            :icon="['fas', 'edit']" /></button>
+                    <button @click="toggleEditingTerm(term)" class="square-btn action-btn"><font-awesome-icon
+                            class="fa-icon" :icon="['fas', 'edit']" /></button>
                 </div>
             </div>
         </div>
@@ -710,13 +715,13 @@ export default {
 /* Main div holding set information/edit sections */
 .set-banner {
     position: relative;
-    width: 100%;
-    background-color: #f0f0f0;
     padding: 1rem;
-    border-radius: 8px;
+    width: 100%;
+    color: var(--clr-text-dark);
+    background-color: var(--clr-primary-300);
 }
 
-/* Targets edit button in set-banner display */
+/* Place Set-Edit button in top right of set banner */
 .set-banner>button {
     position: absolute;
     top: 1rem;
@@ -727,9 +732,6 @@ export default {
 .set-banner .favorite-btn {
     left: 1rem !important;
     margin-right: 1rem;
-    font-size: 1.2rem;
-    color: var(--clr-btn-yellow) !important;
-    background-color: inherit !important;
 }
 
 .set-banner .btn-stack {
@@ -962,5 +964,4 @@ form.set-banner .set-edit-fields {
     height: 1.2rem;
     min-width: 3rem;
     min-height: 1.2rem;
-}
-</style>
+}</style>
