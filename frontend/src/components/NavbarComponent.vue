@@ -11,20 +11,20 @@
             </div>
             <nav class="primary-navigation" id="primary-navigation">
                 <ul aria-label="Primary" role="list" class="nav-list">
-                    <li><router-link to="/public-study-sets">Public Sets</router-link></li>
-                    <li><router-link to="/my-study-sets">My Sets</router-link></li>
+                    <li><router-link to="/public-study-sets" @click="toggleNavigation">Public Sets</router-link></li>
+                    <li><router-link to="/my-study-sets" @click="toggleNavigation">My Sets</router-link></li>
                 </ul>
                 <div v-if="isAuthenticated">
-                    <router-link to="/my-profile" class="profile-link">
+                    <router-link to="/my-profile" class="profile-link" @click="toggleNavigation">
                         <img :src="profileImage" alt="Profile" class="profile-pic">
                         <span>{{ this.username }}</span>
-                        <button class="square-btn" @click="handleLogout">
+                        <button class="square-btn" @click="() => { handleLogout; toggleNavigation }">
                             <font-awesome-icon class="fa-icon" :icon="['fas', 'right-from-bracket']" />
                         </button>
                     </router-link>
                 </div>
                 <div v-else>
-                    <router-link to="/login" class="btn square-btn nav-login">Login</router-link>
+                    <router-link to="/login" class="btn square-btn nav-login" @click="toggleNavigation">Login</router-link>
                 </div>
             </nav>
         </div>
@@ -41,6 +41,7 @@ export default {
     data() {
         return {
             navIsOpen: false,
+            isAnimating: false,
             profileImage: DefaultProfile,
             username: "",
         };
@@ -99,9 +100,7 @@ export default {
 :root {
     /* Custom variables for navigation */
     --nav-desktop-width: 16rem;
-    --nav-tablet-width: 70%;
-    /* For calculating nav toggle button's position in tablet media query*/
-    --nav-tablet-width-pct: 0.7;
+    --nav-tablet-width: calc(100vw * 0.7);
     --nav-mobile-width: 100%;
     /* Assume mobile for responsive */
     --nav-width: var(--nav-mobile-width);
@@ -122,50 +121,48 @@ export default {
     position: fixed;
     top: 0;
     left: 0;
-    width: 0;
-    height: 0;
+    /* Assume mobile, take mobile width */
+    width: var(--nav-width);
+    height: 100vh;
+    background-color: var(--nav-background-color);
+    /* Initially hide nav menu */
+    transform: translateX(-100%);
+    transition: transform var(--nav-transition-speed) ease-in-out;
     z-index: 999;
+}
+
+/* Move nav menu to accessible position */
+.primary-header.is-open {
+    transform: translateX(0);
 }
 
 /* Assume menu closed, place nav toggle button just outside of left screen for easy access--
     Also style btn...*/
 .nav-toggle {
-    position: absolute;
-    left: 0;
+    position: fixed;
+    top: 0;
+    right: calc(-1 * var(--magnified-btn-size));
     color: var(--nav-text-color);
     background-color: var(--nav-background-color);
     border-radius: 0;
-    transition: left var(--nav-transition-speed) ease-in-out;
+    transition: right var(--nav-transition-speed) ease-in-out;
     z-index: 1000;
 }
 
 /* Set position at which button should take on open nav menu */
 .is-open .nav-toggle {
     /* Assume mobile, place on right side of screen */
-    left: calc(100vw - var(--magnified-btn-size));
+    right: 0;
 }
 
-/* Main navigation container, which slides left and right as required */
+/* Main navigation container, which holds our navigation menu elements (other than the menu toggle */
 .nav-container {
-    position: fixed;
-    top: 0;
-    left: 0;
+    position: relative;
     display: flex;
+    height: 100%;
     flex-direction: column;
-    /* Assume mobile, take mobile width */
-    width: var(--nav-width);
-    height: 100vh;
     justify-content: space-between;
-    background-color: var(--nav-background-color);
     z-index: 999;
-    /* Initially hide nav-container */
-    transform: translateX(-100%);
-    transition: transform var(--nav-transition-speed) ease-in-out;
-}
-
-/* Move container to accessible position */
-.is-open .nav-container {
-    transform: translateX(0);
 }
 
 /* Styling brand/logo */
@@ -184,15 +181,11 @@ export default {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-}
-
-/* Make sure .primaty-navigation flex pushes profile-link to the bottom of nav menu */
-.nav-list {
-    flex-grow: 1;
+    justify-content: space-between;
 }
 
 /* Set style for links in navigation */
-.nav-list a {
+.primary-navigation>.nav-list a {
     /* Ensure main nav links are displayed in column, not inline */
     display: block;
     text-align: left;
@@ -216,6 +209,10 @@ a.nav-login {
     padding: var(--text-padding-700);
     text-align: center;
     background-color: var(--clr-primary-900);
+    font-weight: var(--fw-semi-bold);
+    font-size: var(--fs-nav-link);
+    color: var(--nav-text-color);
+    padding: var(--text-padding-300) 18%;
 }
 
 /* Style profile display to show:
@@ -274,8 +271,8 @@ a.nav-login {
     /* Make buttons bigger, better visibility */
     .profile-link button,
     .nav-toggle {
-        width: 3.2rem !important;
-        height: 3.2rem !important;
+        width: var(--magnified-btn-size) !important;
+        height: var(--magnified-btn-size) !important;
     }
 
     .profile-link button svg {
@@ -292,11 +289,6 @@ a.nav-login {
     :root {
         --nav-width: var(--nav-tablet-width);
     }
-
-    /* Set position which nav toggle button should take on open nav menu */
-    .is-open .nav-toggle {
-        left: calc((100vw * var(--nav-tablet-width-pct)) - var(--magnified-btn-size));
-    }
 }
 
 /* DESKTOP MEDIA QUERY */
@@ -310,8 +302,8 @@ a.nav-login {
     }
 
     /* Set position which nav button should take on open nav menu */
-    .is-open .nav-toggle {
-        left: calc(var(--nav-desktop-width) - var(--magnified-btn-size));
+    .nav-toggle {
+        right: calc(-1 * var(--default-btn-size));
     }
 
     /* Set padding to match our new fs */
@@ -324,6 +316,15 @@ a.nav-login {
 
     .nav-list a {
         padding: var(--text-padding-300) 20%;
+    }
+
+    /* In desktop we want main to not be covered by navbar */
+    main {
+        transition: margin-left var(--nav-transition-speed) ease-in-out;
+    }
+
+    .primary-header.is-open+main {
+        margin-left: var(--nav-width);
     }
 }
 </style>
