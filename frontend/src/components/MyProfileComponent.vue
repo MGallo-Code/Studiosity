@@ -1,18 +1,21 @@
 <template>
-    <div v-if="profile" class="my-profile-container">
-        <img :src="profileImage" alt="Profile Picture" />
-        <h1>{{ profile.username }}</h1>
-        <p>{{ profile.bio || 'No user bio provided.' }}</p>
-    </div>
+    <main>
+        <section id="main-header"><span>My Profile</span></section>
+        <div v-if="profile" class="my-profile-container">
+            <img :src="profileImage" alt="Profile Picture" />
+            <h1>{{ profile.username }}</h1>
+            <p>{{ profile.bio || 'No user bio provided.' }}</p>
+        </div>
 
-    <!-- Editing Form -->
-    <div class="profile-edit-form">
-        <p class="error-message">{{ error }}</p>
-        <input type="file" @change="onFileSelected" />
-        <input type="text" v-model="editableProfile.username" placeholder="Username" />
-        <textarea v-model="editableProfile.bio" placeholder="Bio"></textarea>
-        <button @click="submitProfileUpdate">Submit Changes</button>
-    </div>
+        <!-- Editing Form -->
+        <div class="profile-edit-form">
+            <p class="error-message">{{ error }}</p>
+            <input type="file" @change="onFileSelected" />
+            <input type="text" v-model="editableProfile.username" placeholder="Username" />
+            <textarea v-model="editableProfile.bio" placeholder="Bio"></textarea>
+            <button @click="submitProfileUpdate">Submit Changes</button>
+        </div>
+    </main>
 </template>
 
 <script>

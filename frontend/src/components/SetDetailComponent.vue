@@ -1,18 +1,21 @@
 <template>
-    <div class="set-detail-container">
-        <h1>{{ setDetail.title }}</h1>
-        <p>{{ setDetail.description || 'No description provided.' }}</p>
+    <main>
+        <section id="main-header">Viewing Set: {{ setDetail.title }}</section>
+        <div class="set-detail-container">
+            <h1>{{ setDetail.title }}</h1>
+            <p>{{ setDetail.description || 'No description provided.' }}</p>
 
-        <PlayTermsComponent :studyTerms="studyTerms" v-if="studyTerms.length > 0" />
+            <PlayTermsComponent :studyTerms="studyTerms" v-if="studyTerms.length > 0" />
 
-        <div class="study-terms">
-            <div v-for="term in studyTerms" :key="term.id" class="term-item">
-                <div><strong>Front:</strong> {{ term.front_text }}</div>
-                <div><strong>Back:</strong> {{ term.back_text }}</div>
-                <!-- Display images, audio, and tags if available -->
+            <div class="study-terms">
+                <div v-for="term in studyTerms" :key="term.id" class="term-item">
+                    <div><strong>Front:</strong> {{ term.front_text }}</div>
+                    <div><strong>Back:</strong> {{ term.back_text }}</div>
+                    <!-- Display images, audio, and tags if available -->
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 </template>
 
 <script>

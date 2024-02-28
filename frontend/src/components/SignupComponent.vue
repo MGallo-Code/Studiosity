@@ -1,5 +1,6 @@
 <template>
-    <div class="signup-container">
+    <main class="signup-container">
+        <section id="main-header"><span>Sign up</span></section>
         <form class="signup-form" @submit.prevent="handleSignup">
             <label for="username">Username:</label>
             <input type="text" id="username" v-model="signupForm.username" required>
@@ -14,7 +15,7 @@
             <div v-if="error" class="error-message">{{ error }}</div>
             <button type="submit">Sign Up</button>
         </form>
-    </div>
+    </main>
 </template>
 
 <script>
@@ -69,29 +70,33 @@ export default {
   
 <style>
 .signup-form {
-  display: grid;
-  place-items: center;
-  grid-template-columns: 1fr 2fr;
-  grid-template-rows: auto;
-  row-gap: 0.3rem;
-  width: 80%;
-  margin: 0 auto;
+    display: grid;
+    place-items: center;
+    grid-template-columns: 1fr 2fr;
+    grid-template-rows: auto;
+    row-gap: 0.3rem;
+    width: 80%;
+    margin: 0 auto;
 }
+
 .signup-form label {
-  grid-column: 1;
-  width: 100%;
-  text-align: right;
+    grid-column: 1;
+    width: 100%;
+    text-align: right;
 }
+
 .signup-form input {
-  grid-column: 2;
-  width: 80%;
+    grid-column: 2;
+    width: 80%;
 }
+
 .signup-form button {
-  width: 50%;
-  grid-column: 1 / 3
+    width: 50%;
+    grid-column: 1 / 3
 }
+
 .error-message {
-  grid-column: 1 / 3;
-  text-align: center;
+    grid-column: 1 / 3;
+    text-align: center;
 }
 </style>

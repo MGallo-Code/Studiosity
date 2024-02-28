@@ -1,21 +1,24 @@
 <template>
-    <div class="set-container">
-        <h1>Public Study Sets</h1>
-        <div v-if="error" class="error-message">{{ error }}</div>
-        <div class="sets-list" v-if="public_sets">
-            <router-link v-for="set in public_sets" :key="set.id" :to="`/study-set/${set.id}`">
-                <div class="set-item">
-                    <h3>{{ set.title }}</h3>
-                    <p>{{ set.description || "No description provided." }}</p>
-                </div>
-            </router-link>
+    <main>
+        <section id="main-header"><span>My Sets</span></section>
+        <div class="set-container">
+            <h1>Public Study Sets</h1>
+            <div v-if="error" class="error-message">{{ error }}</div>
+            <div class="sets-list" v-if="public_sets">
+                <router-link v-for="set in public_sets" :key="set.id" :to="`/study-set/${set.id}`">
+                    <div class="set-item">
+                        <h3>{{ set.title }}</h3>
+                        <p>{{ set.description || "No description provided." }}</p>
+                    </div>
+                </router-link>
+            </div>
+            <div class="pagination">
+                <button @click="navigatePage('previous')" :disabled="!pagination_links.previous">Previous</button>
+                <span>Page {{ current_page }} of {{ total_pages }}</span>
+                <button @click="navigatePage('next')" :disabled="!pagination_links.next">Next</button>
+            </div>
         </div>
-        <div class="pagination">
-            <button @click="navigatePage('previous')" :disabled="!pagination_links.previous">Previous</button>
-            <span>Page {{ current_page }} of {{ total_pages }}</span>
-            <button @click="navigatePage('next')" :disabled="!pagination_links.next">Next</button>
-        </div>
-    </div>
+    </main>
 </template>
 
 <script>

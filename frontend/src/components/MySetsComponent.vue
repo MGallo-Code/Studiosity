@@ -1,73 +1,77 @@
 <template>
-    <h1>My Study Sets</h1>
-    <!-- Inline Form for Creating a New Study Set -->
-    <div class="set-container set-edit" v-if="creatingNewSet">
-        <div class="edit-inputs">
-            <p v-if="createSetError" class="error-message">{{ createSetError }}</p>
-            <input type="text" placeholder="Set Title" v-model="newSet.title" />
-            <textarea placeholder="Set Description" v-model="newSet.description"></textarea>
-            <span>
-                Visibility:
-                <select v-model="newSet.private">
-                    <option value="false">Public</option>
-                    <option value="true">Private</option>
-                </select>
-            </span>
-        </div>
-        <div class="btn-stack">
-            <button @click="createSet" class="square-btn green-btn"><font-awesome-icon :icon="['fas', 'plus']" /></button>
-            <button @click="toggleCreateNewSet" class="square-btn yellow-btn"><font-awesome-icon
-                    :icon="['fas', 'ban']" /></button>
-        </div>
-    </div>
-
-    <button @click="toggleCreateNewSet" :disabled="creatingNewSet">Create New Set</button>
-
-    <!-- List of Study Sets -->
-    <div v-for="set in public_sets" :key="set.id">
-        <div v-if="editingSetId === set.id" class="set-container set-edit">
-            <!-- Editable Fields for a Study Set -->
-            <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon
-                    :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
+    <main>
+        <section id="main-header"><span>My Sets</span></section>
+        <h1>My Study Sets</h1>
+        <!-- Inline Form for Creating a New Study Set -->
+        <div class="set-container set-edit" v-if="creatingNewSet">
             <div class="edit-inputs">
-                <p v-if="editSetError" class="error-message">{{ editSetError }}</p>
-                <input type="text" v-model="set.title" />
-                <textarea v-model="set.description"></textarea>
+                <p v-if="createSetError" class="error-message">{{ createSetError }}</p>
+                <input type="text" placeholder="Set Title" v-model="newSet.title" />
+                <textarea placeholder="Set Description" v-model="newSet.description"></textarea>
                 <span>
                     Visibility:
-                    <select v-model="set.private">
+                    <select v-model="newSet.private">
                         <option value="false">Public</option>
                         <option value="true">Private</option>
                     </select>
                 </span>
             </div>
             <div class="btn-stack">
-                <button @click="updateSet(set)" class="square-btn green-btn">✔</button>
-                <button @click="editSet(null)" class="square-btn yellow-btn"><font-awesome-icon
+                <button @click="createSet" class="square-btn green-btn"><font-awesome-icon
+                        :icon="['fas', 'plus']" /></button>
+                <button @click="toggleCreateNewSet" class="square-btn yellow-btn"><font-awesome-icon
                         :icon="['fas', 'ban']" /></button>
-                <button @click="confirmDeleteSet(set.id)" class="square-btn red-btn"><font-awesome-icon
-                        :icon="['fas', 'trash-alt']" /></button>
             </div>
         </div>
-        <router-link v-else :to="`/my-study-set/${set.id}`" class="set-container set-display">
-            <!-- Displaying Study Set Details -->
-            <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon
-                    :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
-            <div>
-                <h2>{{ set.title }}</h2>
-                <p>{{ set.description }}</p>
-            </div>
-            <button @click.prevent="editSet(set)" class="square-btn blue-btn"><font-awesome-icon
-                    :icon="['fas', 'edit']" /></button>
-        </router-link>
-    </div>
 
-    <!-- Pagination Controls -->
-    <div class="pagination">
-        <button @click="navigatePage('previous')" :disabled="!pagination_links.previous">Previous</button>
-        <span>Page {{ current_page }} of {{ total_pages }}</span>
-        <button @click="navigatePage('next')" :disabled="!pagination_links.next">Next</button>
-    </div>
+        <button @click="toggleCreateNewSet" :disabled="creatingNewSet">Create New Set</button>
+
+        <!-- List of Study Sets -->
+        <div v-for="set in public_sets" :key="set.id">
+            <div v-if="editingSetId === set.id" class="set-container set-edit">
+                <!-- Editable Fields for a Study Set -->
+                <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon
+                        :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
+                <div class="edit-inputs">
+                    <p v-if="editSetError" class="error-message">{{ editSetError }}</p>
+                    <input type="text" v-model="set.title" />
+                    <textarea v-model="set.description"></textarea>
+                    <span>
+                        Visibility:
+                        <select v-model="set.private">
+                            <option value="false">Public</option>
+                            <option value="true">Private</option>
+                        </select>
+                    </span>
+                </div>
+                <div class="btn-stack">
+                    <button @click="updateSet(set)" class="square-btn green-btn">✔</button>
+                    <button @click="editSet(null)" class="square-btn yellow-btn"><font-awesome-icon
+                            :icon="['fas', 'ban']" /></button>
+                    <button @click="confirmDeleteSet(set.id)" class="square-btn red-btn"><font-awesome-icon
+                            :icon="['fas', 'trash-alt']" /></button>
+                </div>
+            </div>
+            <router-link v-else :to="`/my-study-set/${set.id}`" class="set-container set-display">
+                <!-- Displaying Study Set Details -->
+                <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon
+                        :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
+                <div>
+                    <h2>{{ set.title }}</h2>
+                    <p>{{ set.description }}</p>
+                </div>
+                <button @click.prevent="editSet(set)" class="square-btn blue-btn"><font-awesome-icon
+                        :icon="['fas', 'edit']" /></button>
+            </router-link>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination">
+            <button @click="navigatePage('previous')" :disabled="!pagination_links.previous">Previous</button>
+            <span>Page {{ current_page }} of {{ total_pages }}</span>
+            <button @click="navigatePage('next')" :disabled="!pagination_links.next">Next</button>
+        </div>
+    </main>
 </template>
   
 <script>

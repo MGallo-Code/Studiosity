@@ -1,5 +1,8 @@
 <template>
     <main v-if="setDetail">
+        <section id="main-header">
+            <span>Viewing My Set: {{ setDetail.title }}</span>
+        </section>
         <!-- Editable Study Set Details -->
         <form v-if="isEditingSet" class="set-banner" @submit.prevent="updateSetDetails">
             <div class="set-edit-fields">
@@ -964,4 +967,5 @@ form.set-banner .set-edit-fields {
     height: 1.2rem;
     min-width: 3rem;
     min-height: 1.2rem;
-}</style>
+}
+</style>
