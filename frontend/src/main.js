@@ -22,6 +22,9 @@ import {
     faGear,
     faXmark,
     faRightFromBracket,
+    faRightToBracket,
+    faAnglesLeft,
+    faAnglesRight,
     faBars
 } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
@@ -47,6 +50,9 @@ library.add(
     faGear,
     faXmark,
     faRightFromBracket,
+    faRightToBracket,
+    faAnglesLeft,
+    faAnglesRight,
     faBars
 );
 

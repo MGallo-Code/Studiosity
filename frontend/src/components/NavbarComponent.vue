@@ -2,7 +2,7 @@
     <header :class="['primary-header', { 'is-open': navIsOpen }]">
         <button class="square-btn nav-toggle" @click="toggleNavigation" aria-controls="primary-navigation"
             :aria-expanded="navIsOpen.toString()">
-            <font-awesome-icon :icon="navIsOpen ? ['fas', 'xmark'] : ['fas', 'bars']" class="fa-icon" />
+            <font-awesome-icon :icon="navIsOpen ? ['fas', 'angles-left'] : ['fas', 'bars']" class="fa-icon" />
             <span class="visually-hidden">Menu</span>
         </button>
         <div class="nav-container">
@@ -11,20 +11,26 @@
             </div>
             <nav class="primary-navigation" id="primary-navigation">
                 <ul aria-label="Primary" role="list" class="nav-list">
-                    <li><router-link to="/public-study-sets" @click="toggleNavigation">Public Sets</router-link></li>
-                    <li><router-link to="/my-study-sets" @click="toggleNavigation">My Sets</router-link></li>
+                    <li><router-link to="/public-study-sets" @click="autoToggleNavigation">Public Sets</router-link></li>
+                    <li><router-link to="/my-study-sets" @click="autoToggleNavigation">My Sets</router-link></li>
                 </ul>
                 <div v-if="isAuthenticated">
-                    <router-link to="/my-profile" class="profile-link" @click="toggleNavigation">
+                    <router-link to="/my-profile" class="profile-link" @click="autoToggleNavigation">
                         <img :src="profileImage" alt="Profile" class="profile-pic">
                         <span>{{ this.username }}</span>
-                        <button class="square-btn" @click="() => { handleLogout; toggleNavigation }">
+                        <button class="square-btn" @click="() => { handleLogout; autoToggleNavigation }">
                             <font-awesome-icon class="fa-icon" :icon="['fas', 'right-from-bracket']" />
                         </button>
                     </router-link>
                 </div>
                 <div v-else>
-                    <router-link to="/login" class="btn square-btn nav-login" @click="toggleNavigation">Login</router-link>
+                    <router-link to="/login" class="profile-link" @click="autoToggleNavigation">
+                        <img :src="profileImage" alt="Profile" class="profile-pic">
+                        <span>Guest</span>
+                        <button class="square-btn">
+                            <font-awesome-icon class="fa-icon" :icon="['fas', 'right-to-bracket']" />
+                        </button>
+                    </router-link>
                 </div>
             </nav>
         </div>
@@ -51,6 +57,18 @@ export default {
     },
     methods: {
         toggleNavigation() {
+            this.navIsOpen = !this.navIsOpen;
+        },
+        // Make sure menu DOESN'T close automatically when link is clicked in desktop mode
+        autoToggleNavigation() {
+            // Get the desktop width threshold from CSS variables
+            const desktopWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-desktop-width'), 10);
+
+            // if current window width >= --nav-desktop-width, exit function
+            if (window.innerWidth >= desktopWidth) {
+                return;
+            }
+            // Otherwise, close menu when a link is clicked on mobile.
             this.navIsOpen = !this.navIsOpen;
         },
         ...mapActions(['logout']),
@@ -99,7 +117,7 @@ export default {
 <style>
 :root {
     /* Custom variables for navigation */
-    --nav-desktop-width: 16rem;
+    --nav-desktop-width: 18rem;
     --nav-tablet-width: calc(100vw * 0.7);
     --nav-mobile-width: 100%;
     /* Assume mobile for responsive */
@@ -188,41 +206,41 @@ export default {
 .primary-navigation>.nav-list a {
     /* Ensure main nav links are displayed in column, not inline */
     display: block;
+    /* Relative position for ::before effects */
+    position: relative;
+    padding: var(--text-padding-300) 18%;
     text-align: left;
     font-weight: var(--fw-semi-bold);
     font-size: var(--fs-nav-link);
     color: var(--nav-text-color);
-    padding: var(--text-padding-300) 18%;
 }
 
-/* TODO */
-/* .nav-list li a:hover::after {
-    display: inline-block;
-    width: 3rem;
-    height: 3rem;
-    background-color: red;
-} */
+/* Animations for hovering over links */
+.primary-navigation>.nav-list a::before {
+    content: "";
+    position: absolute;
+    background: var(--clr-primary-300);
+    width: 0;
+    height: 4px;
+    left: 18%;
+    bottom: 0.4rem;
+    transition: width var(--nav-transition-speed) ease-in-out;
+}
 
-/* Style login button -- replaces .profile-link when user is unauthenticated */
-a.nav-login {
-    display: block;
-    padding: var(--text-padding-700);
-    text-align: center;
-    background-color: var(--clr-primary-900);
-    font-weight: var(--fw-semi-bold);
-    font-size: var(--fs-nav-link);
-    color: var(--nav-text-color);
-    padding: var(--text-padding-300) 18%;
+.primary-navigation>.nav-list a:hover::before {
+    width: calc(100% - (2 * 18%));
 }
 
 /* Style profile display to show:
     profile-pic, span with username, and logout btn inline */
+/* Also styles log IN area, with blank profile picture and 'Guest' username */
 .profile-link {
     display: flex;
     align-items: center;
     justify-content: left;
     gap: var(--text-padding-600);
     padding: var(--text-padding-600);
+    /* Must set because it's changed in media queries */
     padding-left: var(--text-padding-600);
     background-color: var(--clr-primary-900);
 }
@@ -272,6 +290,10 @@ a.nav-login {
     .profile-link button,
     .nav-toggle {
         width: var(--magnified-btn-size) !important;
+        height: var(--magnified-btn-size) !important;
+    }
+
+    #main-header {
         height: var(--magnified-btn-size) !important;
     }
 
