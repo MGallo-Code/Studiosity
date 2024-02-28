@@ -8,22 +8,32 @@ export default createStore({
     mutations: {
         setAuthentication(state, status) {
             state.isAuthenticated = status;
+            localStorage.setItem('isAuthenticated', status);
         },
     },
     actions: {
-        async checkAuthState({ commit }) {
+        initializeAuthState({ commit }) {
+            // Read from localStorage synchronously and update Vuex state
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+            commit('setAuthentication', isAuthenticated);
+        },
+        async validateSession({ commit }) {
             try {
                 await axiosAuthInstance.get("/users/is_authorized/");
-                commit("setAuthentication", true);
+                // If this succeeds, the user is still authenticated
+                commit('setAuthentication', true);
             } catch (error) {
-                commit("setAuthentication", false);
+                // If this fails, the user is not authenticated
+                commit('setAuthentication', false);
+                localStorage.removeItem('isAuthenticated');
             }
         },
         login({ commit }) {
-            commit("setAuthentication", true);
+            commit('setAuthentication', true);
         },
         logout({ commit }) {
             commit("setAuthentication", false);
+            localStorage.removeItem('isAuthenticated');
         },
     },
 });

@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 import store from "@/utils/store";
-import HomeComponent from "@/components/HomeComponent.vue";
 import LoginComponent from "@/components/LoginComponent.vue";
 import SignupComponent from "@/components/SignupComponent.vue";
 import MySetDetailComponent from "@/components/MySetDetailComponent.vue";
@@ -8,9 +7,10 @@ import MySetsComponent from "@/components/MySetsComponent.vue";
 import PublicSetsComponent from "@/components/PublicSetsComponent.vue";
 import SetDetailComponent from "@/components/SetDetailComponent.vue";
 import MyProfileComponent from "@/components/MyProfileComponent.vue";
+// import HomeComponent from "@/components/HomeComponent.vue";
 
 const routes = [
-    { path: "/", component: HomeComponent },
+    { path: "/", component: PublicSetsComponent },
     { path: "/login", component: LoginComponent },
     { path: "/signup", component: SignupComponent },
     {
@@ -37,15 +37,35 @@ const router = createRouter({
     routes,
 });
 
-router.beforeEach((to, from, next) => {
-    if (
-        to.matched.some((record) => record.meta.requiresAuth) &&
-        !store.state.isAuthenticated
-    ) {
-        next({ path: "/login", query: { redirect: to.fullPath } });
-    } else {
+router.beforeEach(async (to, from, next) => {
+    // If the route requires authentication
+    if (to.matched.some(record => record.meta.requiresAuth)) {
+      // Check if the Vuex state already knows the user is authenticated
+      if (store.state.isAuthenticated) {
+        // User appears to be authenticated; proceed with navigation
         next();
+      } else {
+        // Vuex state is not authenticated; check localStorage
+        const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+        if (isAuthenticated) {
+          // Local storage indicates the user is authenticated; validate the session
+          await store.dispatch('validateSession');
+          if (store.state.isAuthenticated) {
+            // Session is valid; proceed with navigation
+            next();
+          } else {
+            // Session is not valid; redirect to login
+            next('/login');
+          }
+        } else {
+          // User is definitely not authenticated; redirect to login
+          next('/login');
+        }
+      }
+    } else {
+      // No authentication required for this route; proceed with navigation
+      next();
     }
-});
+  });
 
 export default router;

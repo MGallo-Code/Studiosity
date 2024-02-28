@@ -40,15 +40,14 @@ export default {
                 await axiosAuthInstance.post('/token/', this.loginForm, {
                     _ignoreInterceptor: true
                 });
+
+                // Update authentication status
                 this.$store.dispatch('login');
+
                 const redirect = this.$route.query.redirect || '/';
                 this.$router.push(redirect);
             } catch (error) {
-                if (error.response && error.response.data.detail) {
-                    this.error = error.response.data.detail;
-                } else {
-                    this.error = "An unknown error occurred while logging in."
-                }
+                this.error = error.response?.data?.detail || "An unknown error occurred while logging in.";
             }
         }
     }

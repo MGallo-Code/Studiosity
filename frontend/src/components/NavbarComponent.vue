@@ -18,7 +18,7 @@
                     <router-link to="/my-profile" class="profile-link" @click="autoToggleNavigation">
                         <img :src="profileImage" alt="Profile" class="profile-pic">
                         <span>{{ this.username }}</span>
-                        <button class="square-btn" @click="() => { handleLogout; autoToggleNavigation }">
+                        <button class="square-btn" @click.stop="handleLogout()">
                             <font-awesome-icon class="fa-icon" :icon="['fas', 'right-from-bracket']" />
                         </button>
                     </router-link>
@@ -91,15 +91,12 @@ export default {
         },
         async handleLogout() {
             try {
-                await axiosAuthInstance.post('/logout/');
+                //TODO Fix error coming from logout function
+                //await axiosAuthInstance.post('/logout/');
                 this.$store.dispatch('logout');
                 this.$router.push('/login');
             } catch (error) {
-                if (error.response && error.response.data.detail) {
-                    console.log("Error logging out: ", error.response.data.detail);
-                } else {
-                    console.log("An unknown error occurred logging out.");
-                }
+                console.error("Error logging out:", error.response?.data?.detail || "An unknown error occurred.");
             }
         }
     },

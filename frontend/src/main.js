@@ -56,7 +56,7 @@ library.add(
     faBars
 );
 
-store.dispatch("checkAuthState").then(() => {
+store.dispatch("initializeAuthState").then(() => {
     const app = createApp(App);
     app.component("font-awesome-icon", FontAwesomeIcon);
     app.use(store);
