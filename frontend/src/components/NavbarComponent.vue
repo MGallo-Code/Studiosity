@@ -18,7 +18,7 @@
                     <router-link to="/my-profile" class="profile-link" @click="autoToggleNavigation">
                         <img :src="profileImage" alt="Profile" class="profile-pic">
                         <span>{{ this.username }}</span>
-                        <button class="square-btn" @click.stop="handleLogout()">
+                        <button class="square-btn logout-btn" @click.stop="handleLogout()">
                             <font-awesome-icon class="fa-icon" :icon="['fas', 'right-from-bracket']" />
                         </button>
                     </router-link>
@@ -27,7 +27,7 @@
                     <router-link to="/login" class="profile-link" @click="autoToggleNavigation">
                         <img :src="profileImage" alt="Profile" class="profile-pic">
                         <span>Guest</span>
-                        <button class="square-btn">
+                        <button class="square-btn login-btn">
                             <font-awesome-icon class="fa-icon" :icon="['fas', 'right-to-bracket']" />
                         </button>
                     </router-link>
@@ -265,6 +265,7 @@ export default {
 
 /* Style logout icon/button */
 .profile-link button {
+    position: relative;
     background-color: var(--clr-primary-900);
 }
 
@@ -344,6 +345,64 @@ export default {
 
     .primary-header.is-open+main {
         margin-left: var(--nav-width);
+    }
+
+    /* Pop-out info informing user of login/logout buttons' purposes */
+    .profile-link button.logout-btn::before {
+        content: "Log out";
+    }
+
+    .profile-link button.login-btn::before {
+        content: "Log in";
+    }
+
+    /* Transitions for login/out border radius on side of popout! */
+    .profile-link button {
+        position: relative;
+        transition: border-top-right-radius 0.2s ease-in-out, border-bottom-right-radius 0.2s ease-in-out;
+
+    }
+
+    /* Remove border radius on corners to connect w/ popout */
+    .profile-link button:hover {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    /* Popout area */
+    .profile-link button::before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        /* Properties that will change on open... */
+        opacity: 0;
+        /* Start mostly open */
+        transform: translateX(92%);
+        /* Sizing */
+        padding: 0 var(--text-padding-300);
+        height: var(--default-btn-size);
+        /* Styling... */
+        background-color: var(--clr-primary-300);
+        border-top-left-radius: var(--default-border-radius);
+        border-bottom-left-radius: var(--default-border-radius);
+        border-top-right-radius: var(--default-border-radius);
+        border-bottom-right-radius: var(--default-border-radius);
+        white-space: nowrap;
+        font-weight: var(--fw-semi-bold);
+        /* Flex */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Animation */
+        transition: all 0.2s ease-in-out;
+    }
+
+    /* Move out sliding menu, make visible */
+    .profile-link button:hover::before {
+        opacity: 1.0;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        transform: translateX(100%);
     }
 }
 </style>
