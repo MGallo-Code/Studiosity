@@ -1,6 +1,7 @@
 <template>
     <main class="signup-container">
-        <section id="main-header"><span>Sign up</span></section>
+        <section id="page-topper"><span>Sign up</span></section>
+        <h1 class="main-header">Create a New Account</h1>
         <form class="signup-form" @submit.prevent="handleSignup">
             <label for="username">Username:</label>
             <input type="text" id="username" v-model="signupForm.username" required>

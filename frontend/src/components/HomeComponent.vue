@@ -1,7 +1,8 @@
 <template>
-  <div class="home-container">
-    <h1>Home</h1>
-  </div>
+  <main class="home-container">
+    <section id="page-topper"><span>Home</span></section>
+    <h1 class="main-header">Home</h1>
+  </main>
 </template>
 
 <!-- Add styles as needed -->

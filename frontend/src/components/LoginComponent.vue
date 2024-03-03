@@ -1,6 +1,7 @@
 <template>
     <main class="login-container">
-        <section id="main-header"><span>Log in</span></section>
+        <section id="page-topper"><span>Log in</span></section>
+        <h1 class="main-header">Log Into an Existing Account</h1>
         <form @submit.prevent="handleLogin">
             <div v-if="error" class="error-message">{{ error }}</div>
             <div>

@@ -1,10 +1,11 @@
 <template>
     <main>
-        <section id="main-header">Viewing Set: {{ setDetail.title }}</section>
-        <div class="set-detail-container">
+        <section id="page-topper">Viewing Set: {{ setDetail.title }}</section>
+        <section class="main-header">
             <h1>{{ setDetail.title }}</h1>
             <p>{{ setDetail.description || 'No description provided.' }}</p>
-
+        </section>
+        <section class="set-detail-container">
             <PlayTermsComponent :studyTerms="studyTerms" v-if="studyTerms.length > 0" />
 
             <div class="study-terms">
@@ -14,7 +15,7 @@
                     <!-- Display images, audio, and tags if available -->
                 </div>
             </div>
-        </div>
+        </section>
     </main>
 </template>
 

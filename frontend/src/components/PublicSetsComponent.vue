@@ -1,8 +1,8 @@
 <template>
     <main>
-        <section id="main-header"><span>My Sets</span></section>
+        <section id="page-topper"><span>Public Study Sets</span></section>
+        <h1 class="main-header">Public Study Sets</h1>
         <div class="set-container">
-            <h1>Public Study Sets</h1>
             <div v-if="error" class="error-message">{{ error }}</div>
             <div class="sets-list" v-if="public_sets">
                 <router-link v-for="set in public_sets" :key="set.id" :to="`/study-set/${set.id}`">

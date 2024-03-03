@@ -1,7 +1,7 @@
 <template>
     <main>
-        <section id="main-header"><span>My Sets</span></section>
-        <h1>My Study Sets</h1>
+        <section id="page-topper"><span>My Sets</span></section>
+        <h1 class="main-header">My Study Sets</h1>
         <!-- Inline Form for Creating a New Study Set -->
         <div class="set-container set-edit" v-if="creatingNewSet">
             <div class="edit-inputs">

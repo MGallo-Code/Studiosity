@@ -1,10 +1,10 @@
 <template>
     <main v-if="setDetail">
-        <section id="main-header">
+        <section id="page-topper">
             <span>Viewing My Set: {{ setDetail.title }}</span>
         </section>
         <!-- Editable Study Set Details -->
-        <form v-if="isEditingSet" class="set-banner" @submit.prevent="updateSetDetails">
+        <form v-if="isEditingSet" class="main-header set-banner" @submit.prevent="updateSetDetails">
             <div class="set-edit-fields">
                 <p v-if="editSetError" class="error-message">{{ editSetError }}</p>
                 <input type="text" v-model="setEditForm.title" />
@@ -23,10 +23,10 @@
                         class="fa-icon" :icon="['fas', 'trash-alt']" /></button>
             </div>
         </form>
-        <div class="set-banner" v-else>
-            <button @click="toggleFavorite" class="square-btn favorite-btn"><font-awesome-icon class="fa-icon"
+        <div class="main-header set-banner" v-else>
+            <button @click="toggleFavorite" class="square-btn favorite-btn transparent-btn"><font-awesome-icon class="fa-icon"
                     :icon="[setDetail.favorited ? 'fas' : 'far', 'star']" /></button>
-            <button @click="toggleEditingSet" class="square-btn action-btn"><font-awesome-icon class="fa-icon"
+            <button @click="toggleEditingSet" class="square-btn transparent-btn"><font-awesome-icon class="fa-icon"
                     :icon="['fas', 'edit']" /></button>
             <h1>{{ setDetail.title }}</h1>
             <p>{{ setDetail.description || 'No description provided.' }}</p>
@@ -42,8 +42,7 @@
                         <input type="file" @change="onCreateFrontImageSelected" />
                         <span>
                             <textarea v-model="termCreateForm.front_text" />
-                            <p @click="speak(termCreateForm.front_text)"><font-awesome-icon class="fa-icon"
-                                    icon="volume-up" /></p>
+                            <p @click="speak(termCreateForm.front_text)"></p>
                         </span>
                         <span>
                             <!-- Front Language Selection -->
@@ -67,8 +66,7 @@
                         <input type="file" @change="onCreateBackImageSelected" />
                         <span>
                             <textarea v-model="termCreateForm.back_text" />
-                            <p @click="speak(termCreateForm.back_text)"><font-awesome-icon class="fa-icon"
-                                    icon="volume-up" /></p>
+                            <p @click="speak(termCreateForm.back_text)"></p>
                         </span>
                         <span>
                             <!-- Back Language Selection -->
@@ -98,7 +96,7 @@
         </div>
 
         <!-- Button to toggle new term creation form -->
-        <div class="term-btn-menu">
+        <div class="control-bar term-btn-menu">
             <button @click="toggleCreatingTerm" :disabled="isCreatingNewTerm || isChangingOrder">Create New Term</button>
             <button @click="toggleChangingOrder"
                 :disabled="isTogglingChangeOrderMode || !studyTerms || studyTerms.length == 0">
@@ -151,7 +149,6 @@
                             <input v-if="!term.front_image" type="file" @change="onUpdateFrontImageSelected" />
                             <span>
                                 <textarea v-model="termEditForm.front_text" />
-                                <p @click="speak('front', term)"><font-awesome-icon class="fa-icon" icon="volume-up" /></p>
                             </span>
                             <span>
                                 <!-- Front Language Selection -->
@@ -180,7 +177,6 @@
                             <input v-if="!term.back_image" type="file" @change="onUpdateBackImageSelected" />
                             <span>
                                 <textarea v-model="termEditForm.back_text" />
-                                <p @click="speak('front', term)"><font-awesome-icon class="fa-icon" icon="volume-up" /></p>
                             </span>
                             <span>
                                 <!-- Back Language Selection -->
@@ -220,7 +216,6 @@
                             </picture>
                             <span @click="speak('front', term)">
                                 <p>{{ term.front_text }}</p>
-                                <p v-if="term.front_text != ''"><font-awesome-icon class="fa-icon" icon="volume-up" /></p>
                             </span>
                         </div>
                         <div class="spacer"></div>
@@ -230,11 +225,10 @@
                             </picture>
                             <span @click="speak('back', term)">
                                 <p>{{ term.back_text }}</p>
-                                <p v-if="term.back_text != ''"><font-awesome-icon class="fa-icon" icon="volume-up" /></p>
                             </span>
                         </div>
                     </div>
-                    <button @click="toggleEditingTerm(term)" class="square-btn action-btn"><font-awesome-icon
+                    <button @click="toggleEditingTerm(term)" class="square-btn transparent-btn"><font-awesome-icon
                             class="fa-icon" :icon="['fas', 'edit']" /></button>
                 </div>
             </div>
@@ -718,10 +712,6 @@ export default {
 /* Main div holding set information/edit sections */
 .set-banner {
     position: relative;
-    padding: 1rem;
-    width: 100%;
-    color: var(--clr-text-dark);
-    background-color: var(--clr-primary-300);
 }
 
 /* Place Set-Edit button in top right of set banner */
@@ -800,33 +790,7 @@ form.set-banner .set-edit-fields {
 /* Terms buttons menu */
 .term-btn-menu {
     position: sticky;
-    top: 0;
-    background-color: var(--clr-base-primary);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.4rem;
-    padding: .4rem;
-    width: 100%;
-}
-
-/* Buttons in above menu */
-.term-btn-menu button {
-    flex: 0 0 auto;
-    white-space: nowrap;
-    background-color: #f5f5f5;
-    border: 1px solid #a2a2a2;
-    height: 2.5rem;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    border-radius: 8px;
-}
-
-/* Outermost Terms list container */
-.terms-list {
-    margin: 0.75rem 1rem;
-    border-radius: 11px;
-    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+    top: var(--default-btn-size);
 }
 
 /* Level 1 term container, contains:

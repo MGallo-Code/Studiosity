@@ -1,6 +1,7 @@
 <template>
     <main>
-        <section id="main-header"><span>My Profile</span></section>
+        <section id="page-topper"><span>My Profile</span></section>
+        <h1 class="main-header">Edit My Profile</h1>
         <div v-if="profile" class="my-profile-container">
             <img :src="profileImage" alt="Profile Picture" />
             <h1>{{ profile.username }}</h1>

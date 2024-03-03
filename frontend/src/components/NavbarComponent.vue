@@ -291,7 +291,7 @@ export default {
         height: var(--magnified-btn-size) !important;
     }
 
-    #main-header {
+    #page-topper {
         height: var(--magnified-btn-size) !important;
     }
 
