@@ -790,7 +790,7 @@ form.set-banner .set-edit-fields {
 /* Terms buttons menu */
 .term-btn-menu {
     position: sticky;
-    top: var(--default-btn-size);
+    top: var(--magnified-btn-size);
 }
 
 /* Level 1 term container, contains:
@@ -931,5 +931,11 @@ form.set-banner .set-edit-fields {
     height: 1.2rem;
     min-width: 3rem;
     min-height: 1.2rem;
+}
+
+@media screen and (min-width: 768px) {
+    .term-btn-menu {
+        top: var(--default-btn-size);
+    }
 }
 </style>
