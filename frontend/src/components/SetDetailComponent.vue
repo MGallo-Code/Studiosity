@@ -1,18 +1,31 @@
 <template>
     <main>
         <section id="page-topper">Viewing Set: {{ setDetail.title }}</section>
-        <section class="main-header">
+        <div class="main-header set-banner">
+            <button @click="toggleFavorite" class="square-btn favorite-btn transparent-btn"><font-awesome-icon class="fa-icon"
+                    :icon="[setDetail.favorited ? 'fas' : 'far', 'star']" /></button>
             <h1>{{ setDetail.title }}</h1>
             <p>{{ setDetail.description || 'No description provided.' }}</p>
-        </section>
-        <section class="set-detail-container">
-            <PlayTermsComponent :studyTerms="studyTerms" v-if="studyTerms.length > 0" />
-
-            <div class="study-terms">
-                <div v-for="term in studyTerms" :key="term.id" class="term-item">
-                    <div><strong>Front:</strong> {{ term.front_text }}</div>
-                    <div><strong>Back:</strong> {{ term.back_text }}</div>
-                    <!-- Display images, audio, and tags if available -->
+        </div>
+        <PlayTermsComponent :studyTerms="studyTerms" v-if="studyTerms.length > 0" />
+        <section class="terms-list">
+            <!-- Iterating over each term to display -->
+            <div v-for="term in studyTerms" :key="term.id" class="term-info-display">
+                <div class="img-info-flow">
+                    <picture v-if="term.front_image">
+                        <img :src="term.front_image.file_path" />
+                    </picture>
+                    <span @click="speak('front', term)">
+                        <p>{{ term.front_text }}</p>
+                    </span>
+                </div>
+                <div class="img-info-flow">
+                    <picture v-if="term.back_image">
+                        <img :src="term.back_image.file_path" />
+                    </picture>
+                    <span @click="speak('back', term)">
+                        <p>{{ term.back_text }}</p>
+                    </span>
                 </div>
             </div>
         </section>
@@ -68,20 +81,84 @@ export default {
 </script>
 
 <style>
-.set-detail-container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
+/* SET BANNER */
+
+/* Main div holding set information/edit sections */
+.set-banner {
+    position: relative;
 }
 
-.study-terms {
-    margin-top: 20px;
+/* Targets favorite button in set-banner display, overrides rules above */
+.set-banner .favorite-btn {
+    position: absolute;
+    top: var(--text-padding-400) !important;
+    left: var(--text-padding-400) !important;
+    margin-right: var(--text-padding-400);
 }
 
-.term-item {
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+/* Set title */
+.set-banner h1 {
+    padding: var(--text-padding-400) var(--text-padding-1100) 0 var(--text-padding-1100);
+}
+
+/* Set description */
+.set-banner p {
+    padding: var(--text-padding-250) var(--text-padding-1000) var(--text-padding-400) var(--text-padding-1000);
+}
+
+/* SET TERMS */
+
+/* Set background outside of terms list */
+.terms-list {
+    background-color: var(--clr-primary-250);
+}
+
+/* Level 1 term container contains:
+    2x .img-info-flow
+*/
+.term-info-display {
+    display: flex;
+    flex-direction: row;
+    gap: var(--text-padding-200);
+    padding: var(--text-padding-400);
+    width: 100%;
+    border: 1px solid var(--clr-neutral-300);
+    background-color: var(--clr-neutral-50);
+}
+
+/* Level 2 term container, separates text from image */
+.img-info-flow {
+    flex: 0 0 50%;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    overflow: hidden;
+    align-items: center;
+}
+
+/* Term images */
+.term-info-display picture {
+    position: relative;
+    max-width: 100%;
+    width: 12rem;
+    height: 12rem;
+}
+
+.term-info-display img {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid var(--clr-base-primary);
+}
+
+/* When <main> is at least */
+@container (min-width: 1000px) {
+    /* Give terms list some spacing on large main width */
+    .terms-list {
+        padding-left: 13%;
+        padding-right: 13%;
+    }
 }
 </style>

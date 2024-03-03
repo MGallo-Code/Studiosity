@@ -68,14 +68,16 @@
     --magnified-btn-size: 3.3rem;
 
     --text-padding-200: 0.3rem;
-    --text-padding-250: 0.45rem;
+    --text-padding-250: 0.5rem;
     --text-padding-300: 0.6rem;
     --text-padding-400: 1.0rem;
     --text-padding-500: 1.2rem;
     --text-padding-600: 1.6rem;
     --text-padding-700: 1.8rem;
-    --text-padding-800: 2.1rem;
+    --text-padding-800: 2.0rem;
+    --text-padding-850: 2.4rem;
     --text-padding-900: 2.8rem;
+    --text-padding-1000: 3.0rem;
     --text-padding-1100: 4.0rem;
 
     /* Misc Properties */
@@ -147,7 +149,7 @@ main {
 
 /* Light green background main header style */
 .main-header {
-    padding: 1rem;
+    padding: var(--text-padding-400);
     width: 100%;
     color: var(--clr-neutral-1000);
     background-color: var(--clr-primary-300);

@@ -243,7 +243,7 @@ export default {
 
 .set-display p {
     overflow: hidden;
-    line-height: 1.6rem;
+    line-height:var(--text-padding-600);
     max-height: 3.2rem;
     padding-left: 0.25rem;
     color: var(--clr-primary-900);
@@ -256,7 +256,7 @@ export default {
 
 .set-edit input {
     width: 100%;
-    height: 2rem;
+    height: var(--text-padding-800);
     font-size: var(--fs-500);
     font-weight: var(--fw-semi-bold);
 }

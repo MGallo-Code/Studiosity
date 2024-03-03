@@ -75,7 +75,7 @@ export default {
     place-items: center;
     grid-template-columns: 1fr 2fr;
     grid-template-rows: auto;
-    row-gap: 0.3rem;
+    row-gap: var(--text-padding-200);
     width: 80%;
     margin: 0 auto;
 }

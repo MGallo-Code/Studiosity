@@ -220,7 +220,7 @@ export default {
     width: 0;
     height: 4px;
     left: 18%;
-    bottom: 0.4rem;
+    bottom: var(--text-padding-250);
     transition: width var(--nav-transition-speed) ease-in-out;
 }
 

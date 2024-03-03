@@ -37,7 +37,7 @@
         <div v-if="isCreatingNewTerm" class="term-container" id="create-term-form">
             <p v-if="createTermError" class="error-message">{{ createTermError }}</p>
             <form class="term-display" @submit.prevent="createNewTerm">
-                <div class="front-back-display">
+                <div class="term-info-display">
                     <div class="img-info-flow">
                         <input type="file" @change="onCreateFrontImageSelected" />
                         <span>
@@ -61,7 +61,6 @@
                             </select>
                         </span>
                     </div>
-                    <div class="spacer"></div>
                     <div class="img-info-flow">
                         <input type="file" @change="onCreateBackImageSelected" />
                         <span>
@@ -107,7 +106,7 @@
             <template #item="{ element }">
                 <div class="draggable term-container" :id="`studyTermId=${element.id}`" :key="element.id">
                     <div class="term-display term-display-reorder">
-                        <div class="front-back-display">
+                        <div class="term-info-display">
                             <div class="img-info-flow">
                                 <picture v-if="element.front_image">
                                     <img :src="element.front_image.file_path" />
@@ -116,7 +115,6 @@
                                     <p>{{ element.front_text }}</p>
                                 </span>
                             </div>
-                            <div class="spacer"></div>
                             <div class="img-info-flow">
                                 <picture v-if="element.back_image">
                                     <img :src="element.back_image.file_path" />
@@ -132,14 +130,14 @@
             </template>
         </Sortable>
 
-        <div v-else class="terms-list">
+        <section v-else class="terms-list">
             <!-- Iterating over each term to display -->
             <div v-for="term in studyTerms" :key="term.id" class="term-container">
                 <!-- Editable term form -->
                 <p v-if="editTermError && termEditForm && termEditForm.id === term.id" class="error-message">{{
                     editTermError }}</p>
                 <form v-if="termEditForm && termEditForm.id === term.id" class="term-display" @submit.prevent="updateTerm">
-                    <div class="front-back-display">
+                    <div class="term-info-display">
                         <div class="img-info-flow">
                             <picture v-if="term.front_image">
                                 <img :src="term.front_image.file_path" />
@@ -167,7 +165,6 @@
                                 </select>
                             </span>
                         </div>
-                        <div class="spacer"></div>
                         <div class="img-info-flow">
                             <picture v-if="term.back_image">
                                 <img :src="term.back_image.file_path" />
@@ -209,7 +206,7 @@
                 </form>
                 <!-- Display term details -->
                 <div v-else class="term-display">
-                    <div class="front-back-display">
+                    <div class="term-info-display">
                         <div class="img-info-flow">
                             <picture v-if="term.front_image">
                                 <img :src="term.front_image.file_path" />
@@ -218,7 +215,6 @@
                                 <p>{{ term.front_text }}</p>
                             </span>
                         </div>
-                        <div class="spacer"></div>
                         <div class="img-info-flow">
                             <picture v-if="term.back_image">
                                 <img :src="term.back_image.file_path" />
@@ -232,7 +228,7 @@
                             class="fa-icon" :icon="['fas', 'edit']" /></button>
                 </div>
             </div>
-        </div>
+        </section>
     </main>
 </template>
 
@@ -717,28 +713,28 @@ export default {
 /* Place Set-Edit button in top right of set banner */
 .set-banner>button {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: var(--text-padding-400);
+    right: var(--text-padding-400);
 }
 
 /* Targets favorite button in set-banner display, overrides rules above */
 .set-banner .favorite-btn {
-    left: 1rem !important;
-    margin-right: 1rem;
+    left: var(--text-padding-400) !important;
+    margin-right: var(--text-padding-400);
 }
 
 .set-banner .btn-stack {
-    margin-left: 1rem;
+    margin-left: var(--text-padding-400);
 }
 
 /* Set title */
 .set-banner h1 {
-    padding: 1rem 4rem 0 4rem;
+    padding: var(--text-padding-400) var(--text-padding-1100) 0 var(--text-padding-1100);
 }
 
 /* Set description */
 .set-banner p {
-    padding: 0.4rem 3rem 1rem 3rem;
+    padding: var(--text-padding-250) var(--text-padding-1000) var(--text-padding-400) var(--text-padding-1000);
 }
 
 /* Set banner edit form, contains:
@@ -758,9 +754,9 @@ form.set-banner .set-edit-fields {
 
 /* Set title input */
 .set-banner input {
-    margin-bottom: 0.6rem;
-    padding: 0.5rem 4rem 0.5rem 0.5rem;
-    height: 3rem;
+    margin-bottom: var(--text-padding-300);
+    padding: var(--text-padding-250) var(--text-padding-1100) var(--text-padding-250) var(--text-padding-250);
+    height: var(--text-padding-1000);
     width: 100%;
     border-radius: 8px;
     border: 1px solid #ddd;
@@ -768,8 +764,8 @@ form.set-banner .set-edit-fields {
 
 /* Set description input */
 .set-banner textarea {
-    margin-bottom: 0.6rem;
-    padding: 0.5rem 4rem 0.5rem 0.5rem;
+    margin-bottom: var(--text-padding-300);
+    padding: var(--text-padding-250) var(--text-padding-1100) var(--text-padding-250) var(--text-padding-250);
     height: 6rem;
     width: 100%;
     resize: none;
@@ -779,14 +775,14 @@ form.set-banner .set-edit-fields {
 
 /* Set privacy input */
 .set-banner select {
-    padding-right: 4rem;
+    padding-right: var(--text-padding-1100);
     width: 100%;
 }
 
 
 /* TERMS CSS OPTIONS */
 
-
+/* Set background outside of terms list */
 .terms-list {
     background-color: var(--clr-primary-250);
 }
@@ -803,7 +799,7 @@ form.set-banner .set-edit-fields {
 */
 .term-container {
     display: flex;
-    gap: 1rem;
+    gap: var(--text-padding-400);
     flex-direction: column;
     width: 100%;
     border: 1px solid #ddd;
@@ -811,31 +807,30 @@ form.set-banner .set-edit-fields {
 }
 
 /* Level 2 term container, sets basic padding and contains:
-    - div/form : .front-back-display
+    - div/form : .term-info-display
     - div : .btn-stack
 */
 .term-display {
     display: flex;
-    gap: 1rem;
+    gap: var(--text-padding-400);
     flex-direction: row;
-    padding: 1rem;
+    padding: var(--text-padding-400);
     width: 100%;
 }
 
 /* Level 3 term container, the non-btn-stack half with display/inputs.
     Contains:
-        - span : .front-back-display span
+        - span : .term-info-display span
             (display front card info)
-        - div : .spacer
-        - span : .front-back-display span
+        - span : .term-info-display span
             (display back card info)
 */
-.front-back-display {
+.term-info-display {
     flex: 1 1 auto;
     display: flex;
     flex-direction: row;
     /* Ensure maximum width stays below .btn-stack's position */
-    max-width: calc(100%-4rem);
+    max-width: calc(100% - var(--text-padding-1100));
 }
 
 /* Level 4 term container, separates text from image */
@@ -849,31 +844,31 @@ form.set-banner .set-edit-fields {
 }
 
 /* Level 5 term container, organizes front/back info displays */
-.front-back-display span {
+.term-info-display span {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--text-padding-250);
     justify-content: center;
     cursor: pointer;
 }
 
 /* Level 5 term container, ONLY in display format */
-:not(form)>.front-back-display span {
-    padding-top: 0.8rem;
-    padding-bottom: 0.8rem;
+:not(form)>.term-info-display span {
+    padding-top: var(--text-padding-400);
+    padding-bottom: var(--text-padding-400);
 }
 
 /* Term image selectors */
-.front-back-display>input,
+.term-info-display>input,
 
 /* Term images */
-.front-back-display picture {
+.term-info-display picture {
     position: relative;
     max-width: 100%;
     width: 12rem;
     height: 12rem;
 }
 
-.front-back-display img {
+.term-info-display img {
     width: 100%;
     height: 100%;
     overflow: hidden;
@@ -883,33 +878,24 @@ form.set-banner .set-edit-fields {
 }
 
 /* Button to remove images */
-.front-back-display picture button {
+.term-info-display picture button {
     position: absolute;
-    left: 0.5rem;
-    top: 0.5rem;
+    left: var(--text-padding-250);
+    top: var(--text-padding-250);
     border-radius: 12px !important;
     border: 2px solid white;
 }
 
-.front-back-display picture button:hover {
+.term-info-display picture button:hover {
     opacity: 1 !important;
     background-color: rgb(248, 84, 84);
     border: 2px solid rgb(250, 100, 100);
 }
 
 /* Term front/back textarea input */
-.front-back-display textarea {
+.term-info-display textarea {
     width: 100%;
     resize: vertical;
-}
-
-/* Small spacer between front/back term information */
-.spacer {
-    flex: 0 0 auto;
-    width: 0.2rem;
-    margin: 0 0.6rem 0 0.6rem;
-    border-radius: 8px;
-    background-color: gray;
 }
 
 /* term-display class, but for changing sort_order view */
@@ -920,10 +906,10 @@ form.set-banner .set-edit-fields {
 /* Symbol for reordering terms */
 .reorder-symbol {
     color: black;
-    width: 3rem;
-    height: 1.2rem;
-    min-width: 3rem;
-    min-height: 1.2rem;
+    width: var(--text-padding-1000);
+    height:var(--text-padding-500);
+    min-width: var(--text-padding-1000);
+    min-height:var(--text-padding-500);
 }
 
 /* Make sure that the controls menu adjusts for the shorter top bar in desktop */
@@ -933,7 +919,7 @@ form.set-banner .set-edit-fields {
     }
 }
 
-/* When <main> is at least: DESKTOP MEDIA QUERY */
+/* When <main> is at least */
 @container (min-width: 1000px) {
     /* Give terms list some spacing on large main width */
     .terms-list {

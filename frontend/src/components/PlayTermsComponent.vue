@@ -316,7 +316,7 @@ export default {
     justify-content: space-between;
     width: 100%;
     height: 8rem;
-    margin-bottom: 0.4rem;
+    margin-bottom: var(--text-padding-250);
     background-color: #f5f5f5;
     border-bottom: 1px solid #a2a2a2;
 }
@@ -324,7 +324,7 @@ export default {
 /* Prev/Next Term Buttons */
 
 .term-play-side-btn {
-    flex: 0 0 3rem;
+    flex: 0 0 var(--text-padding-1000);
     height: 100%;
     display: flex;
     align-items: center;
@@ -351,11 +351,11 @@ export default {
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    padding: 0.8rem 5%;
+    padding: var(--text-padding-400) 5%;
 }
 
 .play-pause-btn {
-    flex: 0 0 2rem;
+    flex: 0 0 var(--text-padding-800);
 }
 
 /* Play Terms Controls Button Container */
@@ -364,8 +364,8 @@ export default {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 0.4rem;
-    padding: 0 .4rem .4rem .4rem;
+    gap: var(--text-padding-250);
+    padding: 0 var(--text-padding-250) var(--text-padding-250) var(--text-padding-250);
     margin: 0 auto;
 }
 
@@ -376,8 +376,8 @@ export default {
     white-space: nowrap;
     background-color: #f5f5f5;
     border: 1px solid #a2a2a2;
-    height: 2.5rem;
-    padding: 0.5rem 1rem;
+    height: var(--text-padding-850);
+    padding: var(--text-padding-250) var(--text-padding-400);
     cursor: pointer;
     border-radius: 8px;
 }
@@ -404,8 +404,8 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: var(--text-padding-850);
+    height: var(--text-padding-850);
     background-color: #f5f5f5;
     border-radius: 11px;
 }
@@ -418,7 +418,7 @@ export default {
 
 /* Slider menu container */
 .term-play-sliders {
-    padding: 0 1rem;
+    padding: 0 var(--text-padding-400);
 }
 
 /* Slider menu toggle */
@@ -426,8 +426,8 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: var(--text-padding-850);
+    height: var(--text-padding-850);
     background-color: #f5f5f5;
     border-radius: 11px;
     cursor: pointer;
@@ -442,6 +442,6 @@ export default {
 
 .term-play-sliders input[type="range"] {
     width: 100%;
-    margin-bottom: 1rem;
+    margin-bottom: var(--text-padding-400);
 }
 </style>
