@@ -10,25 +10,34 @@ import MyProfileComponent from "@/components/MyProfileComponent.vue";
 // import HomeComponent from "@/components/HomeComponent.vue";
 
 const routes = [
-    { path: "/", component: PublicSetsComponent },
-    { path: "/login", component: LoginComponent },
-    { path: "/signup", component: SignupComponent },
+    { path: "/", component: PublicSetsComponent, name: "Home", meta: { title: "Home Page" } },
+    { path: "/login", component: LoginComponent, name: "Login", meta: { title: "Login" } },
+    { path: "/signup", component: SignupComponent, name: "Signup", meta: { title: "Sign Up" } },
     {
         path: "/my-study-sets/:page?",
         component: MySetsComponent,
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, title: "My Study Sets" },
+        name: "MyStudySets",
     },
     {
         path: "/my-study-set/:id/:page?",
         component: MySetDetailComponent,
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, title: "My Study Set Details" },
     },
-    { path: "/public-study-sets/:page?", component: PublicSetsComponent },
-    { path: "/study-set/:id", component: SetDetailComponent },
+    {
+        path: "/public-study-sets/:page?",
+        component: PublicSetsComponent,
+        meta: { title: "Public Study Sets" },
+    },
+    {
+        path: "/study-set/:id",
+        component: SetDetailComponent,
+        meta: { title: "Study Set Details" },
+    },
     {
         path: "/my-profile",
         component: MyProfileComponent,
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, title: "My Profile" },
     },
 ];
 
@@ -38,6 +47,9 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+    // Set the document title using the meta field of the route
+    document.title = to.meta.title || "Studiosity";
+
     // If the route requires authentication
     if (to.matched.some(record => record.meta.requiresAuth)) {
       // Check if the Vuex state already knows the user is authenticated
