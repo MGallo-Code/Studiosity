@@ -787,6 +787,10 @@ form.set-banner .set-edit-fields {
 /* TERMS CSS OPTIONS */
 
 
+.terms-list {
+    background-color: var(--clr-primary-250);
+}
+
 /* Terms buttons menu */
 .term-btn-menu {
     position: sticky;
@@ -804,17 +808,6 @@ form.set-banner .set-edit-fields {
     width: 100%;
     border: 1px solid #ddd;
     background-color: #f8f8f8;
-}
-
-/* Round corners of first and last terms in terms-list */
-.term-container:first-child {
-    border-top-left-radius: 11px;
-    border-top-right-radius: 11px;
-}
-
-.term-container:last-child {
-    border-bottom-left-radius: 11px;
-    border-bottom-right-radius: 11px;
 }
 
 /* Level 2 term container, sets basic padding and contains:
@@ -933,9 +926,19 @@ form.set-banner .set-edit-fields {
     min-height: 1.2rem;
 }
 
+/* Make sure that the controls menu adjusts for the shorter top bar in desktop */
 @media screen and (min-width: 768px) {
     .term-btn-menu {
         top: var(--default-btn-size);
+    }
+}
+
+/* When <main> is at least: DESKTOP MEDIA QUERY */
+@container (min-width: 1000px) {
+    /* Give terms list some spacing on large main width */
+    .terms-list {
+        padding-left: 13%;
+        padding-right: 13%;
     }
 }
 </style>

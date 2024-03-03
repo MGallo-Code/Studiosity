@@ -204,7 +204,7 @@ export default {
     width: 100%;
     padding: var(--text-padding-400);
     border: 1px solid var(--clr-neutral-300);
-    background-color: var(--clr-neutral-50);
+    background-color: var(--clr-neutral-250);
     align-items: center;
     text-align: left;
 }
@@ -280,7 +280,7 @@ export default {
 }
 
 /* When <main> is at least: DESKTOP MEDIA QUERY */
-@container (min-width: 768px) {
+@container (min-width: 1000px) {
     /* List container for sets */
 
     .set-list {

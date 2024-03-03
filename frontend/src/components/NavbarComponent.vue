@@ -115,7 +115,7 @@ export default {
 :root {
     /* Custom variables for navigation */
     --nav-desktop-width: 18rem;
-    --nav-tablet-width: calc(100vw * 0.7);
+    --nav-tablet-width: calc(100vw * 0.6);
     --nav-mobile-width: 100%;
     /* Assume mobile for responsive */
     --nav-width: var(--nav-mobile-width);
