@@ -3,7 +3,7 @@
         <section id="page-topper"><span>My Sets</span></section>
         <h1 class="main-header">My Study Sets</h1>
         <!-- Inline Form for Creating a New Study Set -->
-        <div class="set-container set-edit" v-if="creatingNewSet">
+        <div class="set-container set-edit set-creator" v-if="creatingNewSet">
             <div class="edit-inputs">
                 <p v-if="createSetError" class="error-message">{{ createSetError }}</p>
                 <input type="text" placeholder="Set Title" v-model="newSet.title" />
@@ -17,22 +17,24 @@
                 </span>
             </div>
             <div class="btn-stack">
-                <button @click="createSet" class="square-btn green-btn"><font-awesome-icon
+                <button @click="createSet" class="square-btn green-btn"><font-awesome-icon class="fa-icon"
                         :icon="['fas', 'plus']" /></button>
-                <button @click="toggleCreateNewSet" class="square-btn yellow-btn"><font-awesome-icon
+                <button @click="toggleCreateNewSet" class="square-btn yellow-btn"><font-awesome-icon class="fa-icon"
                         :icon="['fas', 'ban']" /></button>
             </div>
         </div>
 
-        <button @click="toggleCreateNewSet" :disabled="creatingNewSet">Create New Set</button>
+        <div class="control-bar">
+            <button @click="toggleCreateNewSet" :disabled="creatingNewSet">Create New Set</button>
+        </div>
 
         <!-- List of Study Sets -->
-        <div v-for="set in public_sets" :key="set.id">
+        <section v-for="set in public_sets" :key="set.id" class="set-list">
             <div v-if="editingSetId === set.id" class="set-container set-edit">
                 <!-- Editable Fields for a Study Set -->
-                <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon
+                <button @click.prevent="toggleFavorite(set)" class="square-btn transparent-btn favorite-btn"><font-awesome-icon class="fa-icon"
                         :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
-                <div class="edit-inputs">
+                <div>
                     <p v-if="editSetError" class="error-message">{{ editSetError }}</p>
                     <input type="text" v-model="set.title" />
                     <textarea v-model="set.description"></textarea>
@@ -46,24 +48,24 @@
                 </div>
                 <div class="btn-stack">
                     <button @click="updateSet(set)" class="square-btn green-btn">✔</button>
-                    <button @click="editSet(null)" class="square-btn yellow-btn"><font-awesome-icon
+                    <button @click="editSet(null)" class="square-btn yellow-btn"><font-awesome-icon class="fa-icon"
                             :icon="['fas', 'ban']" /></button>
-                    <button @click="confirmDeleteSet(set.id)" class="square-btn red-btn"><font-awesome-icon
+                    <button @click="confirmDeleteSet(set.id)" class="square-btn red-btn"><font-awesome-icon class="fa-icon"
                             :icon="['fas', 'trash-alt']" /></button>
                 </div>
             </div>
             <router-link v-else :to="`/my-study-set/${set.id}`" class="set-container set-display">
                 <!-- Displaying Study Set Details -->
-                <button @click.prevent="toggleFavorite(set)" class="favorite-btn square-btn"><font-awesome-icon
+                <button @click.prevent="toggleFavorite(set)" class="square-btn transparent-btn favorite-btn"><font-awesome-icon class="fa-icon"
                         :icon="[set.favorited ? 'fas' : 'far', 'star']" /></button>
                 <div>
                     <h2>{{ set.title }}</h2>
                     <p>{{ set.description }}</p>
                 </div>
-                <button @click.prevent="editSet(set)" class="square-btn blue-btn"><font-awesome-icon
+                <button @click.prevent="editSet(set)" class="square-btn transparent-btn"><font-awesome-icon class="fa-icon"
                         :icon="['fas', 'edit']" /></button>
             </router-link>
-        </div>
+        </section>
 
         <!-- Pagination Controls -->
         <div class="pagination">
@@ -187,88 +189,103 @@ export default {
 </script>
 
 <style scoped>
-.set-container {
-    width: calc(100% - 2rem);
-    height: calc(100% - 2rem);
-    margin: 0 1rem 0.8rem 1rem;
-    padding: 0;
-    border-radius: 0.35rem;
-    border: 1px solid #ddd;
-    background-color: #f0f0f0;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+/* List container for sets */
+
+.set-list {
+    background-color: var(--clr-primary-50);
 }
 
-.set-container:hover {
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-}
-
+/* Level 1 container of set information */
 /* SET VIEW (a block) */
 
-.favorite-btn {
-    margin-right: 1rem;
-    font-size: 1.2rem;
-    color: var(--clr-btn-yellow) !important;
-    background-color: inherit !important;
-}
-
-.favorite-btn:hover {
-    background-color: #e0e0e0 !important;
-}
-
-.set-display {
+.set-container {
     display: flex;
+    gap: var(--text-padding-400);
+    width: 100%;
+    padding: var(--text-padding-400);
+    border: 1px solid var(--clr-neutral-300);
+    background-color: var(--clr-neutral-50);
     align-items: center;
-    padding: 1rem;
+    text-align: left;
 }
 
-.set-display div {
+/* Level 2 container of set information, holds display information
+    - Set display should grow to cover empty space between buttons */
+
+.set-container div {
     flex-grow: 1;
-    text-align: left;
-    padding-right: 1rem;
 }
+
+/* Make sure display doesn't push list item off of screen,
+    - But ensure it doesn't limit the size allowed in set creator */
+
+.set-container:not(.set-creator) div {
+    max-width: calc(100% - (2 * var(--text-padding-400)) - (2 * var(--default-btn-size)));
+}
+
+/* Color in the favorite button */
+
+.favorite-btn {
+    color: var(--clr-util-warning);
+}
+
+/* Make sure set title doesn't wrap, style... */
 
 .set-display h2 {
-    color: var(--clr-base-primary);
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--clr-neutral-1000);
+    font-size: var(--fs-500);
+    font-weight: var(--fw-semi-bold);
 }
+
+/* Keep description within specific height bounds, style... */
 
 .set-display p {
     overflow: hidden;
-    max-height: 3rem;
-    padding-left: 0.2rem;
-    color: black;
+    line-height: 1.6rem;
+    max-height: 3.2rem;
+    padding-left: 0.25rem;
+    color: var(--clr-primary-900);
+    font-size: var(--fs-300);
 }
 
 /* SET EDIT */
 
-.set-edit {
-    display: flex;
-    padding: 1rem;
-}
-
-/* div with set edit inputs */
-
-.edit-inputs {
-    flex-grow: 1;
-}
+/* Set title input editor */
 
 .set-edit input {
     width: 100%;
     height: 2rem;
-    font-size: 1.4rem;
+    font-size: var(--fs-500);
+    font-weight: var(--fw-semi-bold);
 }
+
+/* Set description textarea editor */
 
 .set-edit textarea {
     padding: 0.05rem;
     width: 100%;
     height: 5.6rem;
-    font-size: 1rem;
+    font-size: var(--fs-300);
 }
+
+/* Set visibility select label editor */
 
 .set-edit span {
     display: block;
-    padding: 0.4rem;
+    padding: var(--text-padding-250);
     width: 100%;
-    text-align: left;
-    font-weight: 800;
+    font-weight: var(--fw-bold);
+}
+
+/* When <main> is at least: DESKTOP MEDIA QUERY */
+@container (min-width: 768px) {
+    /* List container for sets */
+
+    .set-list {
+        padding-left: 13%;
+        padding-right: 13%;
+    }
 }
 </style>

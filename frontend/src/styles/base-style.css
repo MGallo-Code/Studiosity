@@ -44,6 +44,7 @@
     --fw-bold: 700;
 
     /* Font Sizes */
+    --fs-200: 0.8rem;
     --fs-300: 1.0rem;
     --fs-400: 1.2rem;
     --fs-500: 1.6rem;
@@ -121,6 +122,10 @@ h2 {
     color: var(--clr-util-error);
     text-align: center;
     padding: var(--text-padding-300);
+}
+
+main {
+    container-type: inline-size;
 }
 
 /* Main bar at the top of each page */
