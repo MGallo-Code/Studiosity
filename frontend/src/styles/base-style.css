@@ -115,6 +115,10 @@ h2 {
     font-size: var(--fs-secondary-heading);
 }
 
+.search-input {
+    border-radius: var(--default-border-radius);
+}
+
 .error-message {
     display: block;
     float: inline-start;

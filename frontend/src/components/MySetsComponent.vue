@@ -29,7 +29,7 @@
         </div>
 
         <!-- List of Study Sets -->
-        <section v-for="set in public_sets" :key="set.id" class="set-list">
+        <section v-for="set in public_sets" :key="set.id" class="sets-list">
             <div v-if="editingSetId === set.id" class="set-container set-edit">
                 <!-- Editable Fields for a Study Set -->
                 <button @click.prevent="toggleFavorite(set)" class="square-btn transparent-btn favorite-btn"><font-awesome-icon class="fa-icon"
@@ -191,8 +191,8 @@ export default {
 <style scoped>
 /* List container for sets */
 
-.set-list {
-    background-color: var(--clr-primary-50);
+.sets-list {
+    background-color: var(--clr-primary-250);
 }
 
 /* Level 1 container of set information */
@@ -204,7 +204,7 @@ export default {
     width: 100%;
     padding: var(--text-padding-400);
     border: 1px solid var(--clr-neutral-300);
-    background-color: var(--clr-neutral-250);
+    background-color: var(--clr-neutral-50);
     align-items: center;
     text-align: left;
 }
@@ -283,7 +283,7 @@ export default {
 @container (min-width: 1000px) {
     /* List container for sets */
 
-    .set-list {
+    .sets-list {
         padding-left: 13%;
         padding-right: 13%;
     }
