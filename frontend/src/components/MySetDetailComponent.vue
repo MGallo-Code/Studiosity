@@ -799,11 +799,12 @@ form.set-banner .set-edit-fields {
 */
 .term-container {
     display: flex;
-    gap: var(--text-padding-400);
     flex-direction: column;
+    gap: var(--text-padding-400);
+    padding: var(--text-padding-400);
     width: 100%;
-    border: 1px solid #ddd;
-    background-color: #f8f8f8;
+    border-bottom: 1px solid var(--clr-neutral-300);
+    background-color: var(--clr-neutral-50);
 }
 
 /* Level 2 term container, sets basic padding and contains:
@@ -811,10 +812,10 @@ form.set-banner .set-edit-fields {
     - div : .btn-stack
 */
 .term-display {
+    position: relative;
     display: flex;
     gap: var(--text-padding-400);
     flex-direction: row;
-    padding: var(--text-padding-400);
     width: 100%;
 }
 
@@ -827,20 +828,32 @@ form.set-banner .set-edit-fields {
 */
 .term-info-display {
     flex: 1 1 auto;
+    position: relative;
     display: flex;
     flex-direction: row;
-    /* Ensure maximum width stays below .btn-stack's position */
-    max-width: calc(100% - var(--text-padding-1100));
+    border-bottom: none;
 }
 
 /* Level 4 term container, separates text from image */
 .img-info-flow {
-    flex: 1 1 auto;
+    flex: 0 0 50%;
     display: flex;
     flex-direction: column;
     max-width: 100%;
     overflow: hidden;
     align-items: center;
+}
+
+/* Spacer between terms */
+.img-info-flow:first-child::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: calc(50% + (var(--text-padding-400) / 2) - (var(--text-padding-200) / 2));
+    width: var(--text-padding-200);
+    height: 100%;
+    background-color: var(--clr-neutral-300);
+    border-radius: 1000vh;
 }
 
 /* Level 5 term container, organizes front/back info displays */

@@ -119,16 +119,15 @@ export default {
 .term-info-display {
     display: flex;
     flex-direction: row;
-    gap: var(--text-padding-200);
-    padding: var(--text-padding-400);
+    gap: var(--text-padding-400);
     width: 100%;
-    border: 1px solid var(--clr-neutral-300);
+    border-bottom: 1px solid var(--clr-neutral-300);
     background-color: var(--clr-neutral-50);
 }
 
 /* Level 2 term container, separates text from image */
 .img-info-flow {
-    flex: 0 0 50%;
+    flex: 0 0 calc(50% - (var(--text-padding-400) / 2));
     display: flex;
     flex-direction: column;
     max-width: 100%;
