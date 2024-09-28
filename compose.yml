@@ -3,7 +3,9 @@ services:
     image: certbot/certbot:latest
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:rw
-      - /var/certbot/www:/var/www/certbot:rw
+      # May have to temporarily change if having access problems
+      #  Will have to create a directory: /home/ubuntu/certbot-challenge/.well-known
+      - /home/ubuntu/certbot-challenge:/var/www/certbot:rw
     entrypoint: '/bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;"'
     depends_on:
       - nginx
@@ -17,6 +19,8 @@ services:
       - ./frontend/dist:/usr/share/nginx/html
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - media_volume:/usr/share/nginx/media
+      # May have to temporarily change if having access problems
+      - /home/ubuntu/certbot-challenge:/var/www/certbot:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - django

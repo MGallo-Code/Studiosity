@@ -16,7 +16,11 @@ Studiosity is a comprehensive web application designed to support a wide range o
 
 To set up Studiosity on your local or remote Ubuntu machine, follow these steps:
 
-1. **Clone the Studiosity Repository**
+1. **Confirm Port Rules**
+   - Ensure that your AWS server (or whichever server you use) allows inbound connections from any IP on the following port ranges for TCP: 22, 80, 443.
+   - Ensure that your server sends outgoing connections to anywhere.
+   - (In AWS, this would be adding rules to the associated security group)
+2. **Clone the Studiosity Repository**
    - Clone the repository from GitHub:
      ```
      git clone https://github.com/MGallo-Code/Studiosity.git
@@ -26,13 +30,15 @@ To set up Studiosity on your local or remote Ubuntu machine, follow these steps:
      cd Studiosity
      ```
 
-2. **Install Docker & Docker-Compose**
+3. **Install Docker & Docker-Compose**
    - Follow the official Docker documentation to install Docker and Docker-Compose: [Docker Compose Installation Guide](https://docs.docker.com/compose/install/).
+   - Remember to use `sudo` when using `curl` to download docker-compose!
+   - Run `sudo chmod +x /usr/local/bin/docker-compose`
 
-3. **Install the Latest Version of Node.js**
+4. **Install the Latest Version of Node.js**
    - Install Node.js using NVM (Node Version Manager) by following the instructions here: [NVM Installation Guide](https://nodejs.org/en/download/package-manager/#nvm).
 
-4. **Set Up the Frontend**
+5. **Set Up the Frontend**
    - Navigate to the `frontend` directory within the Studiosity project:
      ```
      cd frontend
@@ -46,7 +52,7 @@ To set up Studiosity on your local or remote Ubuntu machine, follow these steps:
      npm run build
      ```
 
-5. **Configure Docker Permissions**
+6. **Configure Docker Permissions**
    - Add your user to the `docker` group to manage Docker without needing root access:
      ```
      sudo usermod -aG docker ${USER}
@@ -56,13 +62,13 @@ To set up Studiosity on your local or remote Ubuntu machine, follow these steps:
      newgrp docker
      ```
 
-6. **Check Docker Service**
+7. **Check Docker Service**
    - Ensure the Docker service is running properly:
      ```
      sudo systemctl status docker
      ```
 
-7. **Create Your `.env` File**
+8. **Create Your `.env` File**
    - In the main project folder, create a new `.env` file with your environment variables:
      ```
      nano .env
@@ -78,7 +84,21 @@ To set up Studiosity on your local or remote Ubuntu machine, follow these steps:
      ```
    - Save and exit the editor (in nano, press `Ctrl + X`, then `Y` to confirm, and `Enter` to exit).
 
-8. **Set Up AWS Polly (Optional)**
+9. **Build & Run Docker Container**
+   - Run `sudo docker-compose up --build`
+
+10. **Renew/Create Certificate**
+   - First, update Studiosity/nginx.conf's `studiosity.io` links to match your website's domain.
+   - In the same file, make sure you comment/uncomment any lines specified by comments.
+   - Ensure that you renew or create a certificate to access the web page on https:
+   ```
+   sudo docker-compose exec certbot certbot --webroot --webroot-path=/var/www/certbot -d studiosity.io -d www.studiosity.io --email mgallo.code@gmail.com --agree-tos --no-eff-email certonly
+   ```
+   - **NOTE!** If having trouble renewing, ensure that the directory `/var/www/certbot/.well-known/acme-challenge/` (as mapped in compose.yml) is somewhere the user has valid access to on the non-container computer.
+      - You will probably have to create a directory: `/home/ubuntu/certbot-challenge/.well-known`, or whatever is necessary to match the lines linking to `/var/www/certbot` on the container.
+      - /home/ubuntu/certbot-challenge:/var/www/certbot:rw
+
+11. **Set Up AWS Polly (Optional)**
    - If you plan to use AWS Polly for text-to-speech functionality, make sure you have an AWS account.
    - Navigate to the [AWS Management Console](https://aws.amazon.com/console/).
    - Go to the IAM (Identity and Access Management) page and create a new user with programmatic access.
