@@ -91,12 +91,10 @@ export default {
         },
         async handleLogout() {
             try {
-                //TODO Fix error coming from logout function
-                //await axiosAuthInstance.post('/logout/');
-                this.$store.dispatch('logout');
+                await this.$store.dispatch('logout');
                 this.$router.push('/login');
             } catch (error) {
-                console.error("Error logging out:", error.response?.data?.detail || "An unknown error occurred.");
+                console.error("Error logging out:", JSON.parse(JSON.stringify(error.response?.data?.detail || "An unknown error occurred.")));
             }
         }
     },

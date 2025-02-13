@@ -31,9 +31,17 @@ export default createStore({
         login({ commit }) {
             commit('setAuthentication', true);
         },
-        logout({ commit }) {
+        async logout({ commit }) {
+            try {
+                // Remove httponly cookies with django
+                await axiosAuthInstance.post("/logout/");
+            } catch (error) {
+                console.error("Logout request failed:", JSON.parse(JSON.stringify(error?.response || error)));
+            }
+            
+            // Clear local auth state
             commit("setAuthentication", false);
-            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem("isAuthenticated");
         },
     },
 });

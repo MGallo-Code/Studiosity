@@ -9,7 +9,7 @@
         <div class="sets-list" v-if="public_sets">
             <router-link v-for="set in public_sets" :key="set.id" :to="`/study-set/${set.id}`" class="set-container">
                 <button @click.prevent="toggleFavorite(set)" class="square-btn transparent-btn favorite-btn">
-                    <font-awesome-icon class="fa-icon" :icon="[set.favorited ? 'fas' : 'far', 'star']" />
+                    <font-awesome-icon class="fa-icon" :icon="[(this.$store.state.isAuthenticated && set.favorited) ? 'fas' : 'far', 'star']"/>
                 </button>
                 <div>
                     <h2>{{ set.title }}</h2>
@@ -26,7 +26,9 @@
 </template>
 
 <script>
-import { axiosDefaultInstance } from '../utils/axiosConfig';
+import { axiosDefaultInstance, axiosAuthInstance } from '../utils/axiosConfig';
+import store from "../utils/store";
+import router from "../utils/router";
 
 export default {
     data() {
@@ -55,7 +57,25 @@ export default {
         navigatePage(direction) {
             const nextPage = direction === 'next' ? this.current_page + 1 : this.current_page - 1;
             this.$router.push({ path: '/public-study-sets/' + nextPage.toString() });
-        }
+        },
+        // Toggle favorite/unfavorite for a study set
+        toggleFavorite(set) {
+            // 1) Immediately check if user is authenticated
+            if (!store.state.isAuthenticated) {
+                // 2) Redirect if not logged in
+                router.push('/login');
+                return;
+            }
+            
+            // 3) If user is authenticated, proceed with favorite/unfavorite
+            axiosAuthInstance.post(`/study_sets/${set.id}/favorite/`)
+                .then(response => {
+                    set.favorited = response.data.status === 'favorited';
+                })
+                .catch(error => {
+                    console.error("Error toggling favorite status:", error.response ? error.response.data : error);
+                });
+        },
     },
     watch: {
         '$route.params.page': {
