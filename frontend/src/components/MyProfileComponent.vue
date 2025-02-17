@@ -89,7 +89,12 @@ export default {
 
                 this.getUserProfile(); // Refresh the profile
             } catch (error) {
-                this.error = extractFirstErrorMessage(error);
+                if (error.response?.data?.username
+                    && error.response?.data?.username[0] == "user model with this username already exists.") {
+                    this.error = "This username is taken. Please choose another name."
+                } else {
+                    this.error = extractFirstErrorMessage(error);
+                }
             }
         },
     },
