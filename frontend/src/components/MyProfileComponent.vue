@@ -2,6 +2,8 @@
     <main>
         <section id="page-topper"><span>My Profile</span></section>
         <h1 class="main-header">Edit My Profile</h1>
+
+        <!-- User Profile Display -->
         <div v-if="profile" class="my-profile-container">
             <img :src="profileImage" alt="Profile Picture" />
             <h1>{{ profile.username }}</h1>
@@ -113,12 +115,87 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+/* --- MY PROFILE DISPLAY --- */
+.my-profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Optional spacing & max width */
+    margin: var(--text-padding-700) auto;
+    max-width: 600px;
+    gap: var(--text-padding-300);
+}
+
+/* Keep or adjust image style as desired */
 .my-profile-container img {
     object-fit: cover;
     width: 20rem;
     height: 20rem;
     border-radius: 100%;
-    border: 2px solid var(--clr-base-primary);
+    border: 2px solid var(--clr-primary-600); /* Example token usage */
+}
+
+.my-profile-container h1 {
+    margin: 0;
+    font-size: var(--fs-600);
+    font-weight: var(--fw-bold);
+}
+
+.my-profile-container p {
+    font-size: var(--fs-400);
+    text-align: center;
+    margin: 0;
+}
+
+/* --- PROFILE EDIT FORM --- */
+.profile-edit-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Spacing & sizing */
+    gap: var(--text-padding-300);
+    max-width: 600px;
+    margin: var(--text-padding-400) auto;
+}
+
+.profile-edit-form .error-message {
+    color: var(--clr-util-error);
+    text-align: center;
+    padding: var(--text-padding-300);
+    margin: 0; /* Remove default paragraph spacing */
+}
+
+.profile-edit-form input[type="file"],
+.profile-edit-form input[type="text"],
+.profile-edit-form textarea {
+    width: 80%;
+    max-width: 500px;
+    padding: var(--text-padding-250);
+    border: 1px solid var(--clr-neutral-300);
+    border-radius: var(--default-border-radius);
+    font-size: var(--fs-400);
+    font-family: var(--ff-body);
+}
+
+.profile-edit-form textarea {
+    min-height: 6rem; /* Provide a bit more vertical space for user bio */
+    resize: vertical; /* Let user expand the textarea if needed */
+}
+
+.profile-edit-form button {
+    background-color: var(--clr-primary-600);
+    color: var(--clr-neutral-0);
+    font-size: var(--fs-button);
+    font-weight: var(--fw-bold);
+    border-radius: var(--default-border-radius);
+    border: none;
+    cursor: pointer;
+    height: var(--default-btn-size);
+
+    /* Sizing & alignment */
+    width: 50%;
+    max-width: 15rem;
+    margin-top: var(--text-padding-300);
 }
 </style>
