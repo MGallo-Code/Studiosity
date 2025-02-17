@@ -3,7 +3,7 @@
         <section id="page-topper">Viewing Set: {{ setDetail.title }}</section>
         <div class="main-header set-banner">
             <button @click="toggleFavorite" class="square-btn favorite-btn transparent-btn"><font-awesome-icon class="fa-icon"
-                    :icon="[setDetail.favorited ? 'fas' : 'far', 'star']" /></button>
+                    :icon="[(this.$store.state.isAuthenticated && setDetail.favorited) ? 'fas' : 'far', 'star']" /></button>
             <h1>{{ setDetail.title }}</h1>
             <p>{{ setDetail.description || 'No description provided.' }}</p>
         </div>
@@ -34,8 +34,9 @@
 
 <script>
 import { axiosAuthInstance } from '../utils/axiosConfig';
+import store from "../utils/store";
+import router from "../utils/router";
 import PlayTermsComponent from '@/components/PlayTermsComponent.vue';
-
 
 export default {
     components: {
@@ -75,7 +76,25 @@ export default {
                     }
                 }
             }
-        }
+        },
+        // Toggle favorite/unfavorite for a study set
+        toggleFavorite() {
+            // 1) Immediately check if user is authenticated
+            if (!store.state.isAuthenticated) {
+                // 2) Redirect if not logged in
+                router.push('/login');
+                return;
+            }
+            
+            // 3) If user is authenticated, proceed with favorite/unfavorite
+            axiosAuthInstance.post(`/study_sets/${this.setDetail.id}/favorite/`)
+                .then(response => {
+                    this.setDetail.favorited = response.data.status === 'favorited';
+                })
+                .catch(error => {
+                    console.error("Error toggling favorite status:", error.response ? error.response.data : error);
+                });
+        },
     }
 };
 </script>
