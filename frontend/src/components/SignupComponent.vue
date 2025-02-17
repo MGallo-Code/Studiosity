@@ -77,27 +77,48 @@ export default {
     grid-template-rows: auto;
     row-gap: var(--text-padding-200);
     width: 80%;
-    margin: 0 auto;
+    margin: 20px auto;
 }
 
 .signup-form label {
     grid-column: 1;
     width: 100%;
     text-align: right;
+    font-weight: var(--fw-semi-bold);
 }
 
 .signup-form input {
     grid-column: 2;
     width: 80%;
-}
-
-.signup-form button {
-    width: 50%;
-    grid-column: 1 / 3
+    /* Adopt base font styling & border from your design tokens */
+    padding: var(--text-padding-250);
+    border: 1px solid var(--clr-neutral-300);
+    border-radius: var(--default-border-radius);
+    font-size: var(--fs-400);
+    font-family: var(--ff-body);
 }
 
 .error-message {
     grid-column: 1 / 3;
     text-align: center;
+    color: var(--clr-util-error);
+    padding: var(--text-padding-300);
+}
+
+.signup-form button {
+    /* Spans both columns */
+    grid-column: 1 / 3;
+    width: 50%;
+    margin-top: var(--text-padding-300);
+
+    /* Visual style from base tokens */
+    background-color: var(--clr-primary-600);
+    color: var(--clr-neutral-0);
+    font-size: var(--fs-button);
+    font-weight: var(--fw-bold);
+    border-radius: var(--default-border-radius);
+    border: none;
+    cursor: pointer;
+    height: var(--default-btn-size);
 }
 </style>
