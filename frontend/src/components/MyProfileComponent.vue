@@ -1,22 +1,55 @@
 <template>
     <main>
+        <!-- Existing page topper / header remain untouched -->
         <section id="page-topper"><span>My Profile</span></section>
         <h1 class="main-header">Edit My Profile</h1>
 
-        <!-- User Profile Display -->
-        <div v-if="profile" class="my-profile-container">
+        <!-- VIEW MODE (Read-only) -->
+        <div
+            v-if="profile && !editMode"
+            class="my-profile-container"
+        >
             <img :src="profileImage" alt="Profile Picture" />
             <h1>{{ profile.username }}</h1>
             <p>{{ profile.bio || 'No user bio provided.' }}</p>
+
+            <!-- Toggle to Edit Mode -->
+            <button @click="toggleEditMode">
+                Edit Profile
+            </button>
         </div>
 
-        <!-- Editing Form -->
-        <div class="profile-edit-form">
-            <p class="error-message">{{ error }}</p>
-            <input type="file" @change="onFileSelected" />
-            <input type="text" v-model="editableProfile.username" placeholder="Username" />
-            <textarea v-model="editableProfile.bio" placeholder="Bio"></textarea>
-            <button @click="submitProfileUpdate">Submit Changes</button>
+        <!-- EDIT MODE (Show form) -->
+        <div
+            v-else-if="profile && editMode"
+            class="profile-edit-form"
+        >
+            <p class="error-message" v-if="error">{{ error }}</p>
+
+            <input
+                type="file"
+                @change="onFileSelected"
+            />
+
+            <input
+                type="text"
+                v-model="editableProfile.username"
+                placeholder="Username"
+            />
+
+            <textarea
+                v-model="editableProfile.bio"
+                placeholder="Bio"
+            ></textarea>
+
+            <!-- Submit updates -->
+            <button @click="submitProfileUpdate">
+                Save Changes
+            </button>
+            <!-- Cancel editing (revert edits, hide form) -->
+            <button class="cancel-btn" @click="cancelEdit">
+                Cancel
+            </button>
         </div>
     </main>
 </template>
@@ -38,6 +71,7 @@ export default {
             },
             profileImage: DefaultProfile,
             error: null,
+            editMode: false,
         };
     },
     computed: {
@@ -89,7 +123,10 @@ export default {
                 // Update user profile
                 await axiosAuthInstance.patch(`/users/update/${this.profile.id}/`, profileUpdateBody);
 
-                this.getUserProfile(); // Refresh the profile
+                // Refresh profile, then exit edit mode
+                this.getUserProfile();
+                this.editMode = false;
+                
             } catch (error) {
                 if (error.response?.data?.username
                     && error.response?.data?.username[0] == "user model with this username already exists.") {
@@ -99,14 +136,40 @@ export default {
                 }
             }
         },
+
+        // Toggles whether or not the form is shown
+        toggleEditMode() {
+            // Copy the current read-only profile into editable fields
+            this.editableProfile.username = this.profile.username;
+            this.editableProfile.bio = this.profile.bio;
+            this.editableProfile.profileImage = this.profile.profile_image || DefaultProfile;
+            this.editableProfile.file = null;
+
+            this.editMode = true;
+        },
+
+        // Cancel editing by reverting to original profile, hide form
+        cancelEdit() {
+            // Restore from current profile
+            this.editableProfile.username = this.profile.username;
+            this.editableProfile.bio = this.profile.bio;
+            this.editableProfile.profileImage = this.profile.profile_image || DefaultProfile;
+            this.editableProfile.file = null;
+
+            this.editMode = false;
+            this.error = null; // Clear any error messages
+        }
     },
     watch: {
         profile: {
             handler(newProfile) {
                 if (newProfile) {
-                    this.editableProfile.username = newProfile.username;
-                    this.editableProfile.bio = newProfile.bio;
-                    this.editableProfile.profileImage = newProfile.profile_image || DefaultProfile;
+                    // Keep editable data in sync if user isn't editing
+                    if (!this.editMode) {
+                        this.editableProfile.username = newProfile.username;
+                        this.editableProfile.bio = newProfile.bio;
+                        this.editableProfile.profileImage = newProfile.profile_image || DefaultProfile;
+                    }
                 }
             },
             deep: true,
@@ -116,24 +179,22 @@ export default {
 </script>
 
 <style scoped>
-/* --- MY PROFILE DISPLAY --- */
+/* Existing read-only profile display */
 .my-profile-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* Optional spacing & max width */
-    margin: var(--text-padding-700) auto;
-    max-width: 600px;
     gap: var(--text-padding-300);
+    max-width: 600px;
+    margin: var(--text-padding-700) auto;
 }
 
-/* Keep or adjust image style as desired */
 .my-profile-container img {
     object-fit: cover;
     width: 20rem;
     height: 20rem;
     border-radius: 100%;
-    border: 2px solid var(--clr-primary-600); /* Example token usage */
+    border: 2px solid var(--clr-primary-600);
 }
 
 .my-profile-container h1 {
@@ -148,22 +209,35 @@ export default {
     margin: 0;
 }
 
-/* --- PROFILE EDIT FORM --- */
+.my-profile-container button {
+    background-color: var(--clr-primary-600);
+    color: var(--clr-neutral-0);
+    font-size: var(--fs-button);
+    font-weight: var(--fw-bold);
+    border-radius: var(--default-border-radius);
+    border: none;
+    cursor: pointer;
+    height: var(--default-btn-size);
+    width: 50%;
+    max-width: 15rem;
+    margin-top: var(--text-padding-300);
+}
+
+/* Edit form (shown only if editMode == true) */
 .profile-edit-form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* Spacing & sizing */
     gap: var(--text-padding-300);
     max-width: 600px;
-    margin: var(--text-padding-400) auto;
+    margin: var(--text-padding-700) auto;
 }
 
 .profile-edit-form .error-message {
     color: var(--clr-util-error);
     text-align: center;
     padding: var(--text-padding-300);
-    margin: 0; /* Remove default paragraph spacing */
+    margin: 0;
 }
 
 .profile-edit-form input[type="file"],
@@ -179,8 +253,8 @@ export default {
 }
 
 .profile-edit-form textarea {
-    min-height: 6rem; /* Provide a bit more vertical space for user bio */
-    resize: vertical; /* Let user expand the textarea if needed */
+    min-height: 6rem;
+    resize: vertical;
 }
 
 .profile-edit-form button {
@@ -192,10 +266,15 @@ export default {
     border: none;
     cursor: pointer;
     height: var(--default-btn-size);
-
-    /* Sizing & alignment */
     width: 50%;
     max-width: 15rem;
-    margin-top: var(--text-padding-300);
+}
+
+/* Cancel button variation */
+.profile-edit-form .cancel-btn {
+    background-color: var(--clr-util-error);
+    width: auto;
+    padding: 0 1.2rem;
+    margin-top: 0;
 }
 </style>
