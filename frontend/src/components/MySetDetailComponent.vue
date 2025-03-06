@@ -830,7 +830,7 @@ form.set-banner .set-edit-fields {
     flex: 1 1 auto;
     position: relative;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     border-bottom: none;
 }
 
@@ -848,12 +848,11 @@ form.set-banner .set-edit-fields {
 .img-info-flow:first-child::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: calc(50% + (var(--text-padding-400) / 2) - (var(--text-padding-200) / 2));
-    width: var(--text-padding-200);
-    height: 100%;
     background-color: var(--clr-neutral-300);
     border-radius: 1000vh;
+    top: 50%;
+    width: 100%;
+    height: var(--text-padding-200);
 }
 
 /* Level 5 term container, organizes front/back info displays */
@@ -929,6 +928,17 @@ form.set-banner .set-edit-fields {
 @media screen and (min-width: 768px) {
     .term-btn-menu {
         top: var(--default-btn-size);
+    }
+
+    .img-info-flow:first-child::before {
+        top: 0;
+        left: calc(50% + (var(--text-padding-400) / 2) - (var(--text-padding-200) / 2));
+        width: var(--text-padding-200);
+        height: 100%;
+    }
+
+    .term-info-display {
+        flex-direction: row;
     }
 }
 
