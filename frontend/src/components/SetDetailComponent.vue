@@ -7,7 +7,12 @@
             <h1>{{ setDetail.title }}</h1>
             <p>{{ setDetail.description || 'No description provided.' }}</p>
         </div>
-        <PlayTermsComponent :studyTerms="studyTerms" v-if="studyTerms.length > 0" />
+        <FlashcardViewerComponent
+            v-if="showFlashcards"
+            :cards="studyTerms"
+            @close="showFlashcards = false"
+        />
+        <button @click="showFlashcards = true">Show Flashcards</button>
         <section class="terms-list">
             <!-- Iterating over each term to display -->
             <div v-for="term in studyTerms" :key="term.id" class="term-info-display">
@@ -36,16 +41,18 @@
 import { axiosAuthInstance } from '../utils/axiosConfig';
 import store from "../utils/store";
 import router from "../utils/router";
-import PlayTermsComponent from '@/components/PlayTermsComponent.vue';
+import FlashcardViewerComponent from './FlashcardViewerComponent.vue';
 
 export default {
     components: {
-        PlayTermsComponent
+        PlayTermsComponent,
+        FlashcardViewerComponent
     },
     data() {
         return {
             setDetail: {},
             studyTerms: [],
+            showFlashcards: false,
             error: null,
         };
     },
