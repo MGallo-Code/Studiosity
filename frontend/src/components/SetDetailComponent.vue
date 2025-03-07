@@ -45,7 +45,6 @@ import FlashcardViewerComponent from './FlashcardViewerComponent.vue';
 
 export default {
     components: {
-        PlayTermsComponent,
         FlashcardViewerComponent
     },
     data() {
