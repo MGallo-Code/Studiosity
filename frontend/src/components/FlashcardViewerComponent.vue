@@ -46,54 +46,56 @@
                 </button>
             </div>
         </div>
-        <!-- Advanced Settings Panel -->
-        <div v-if="showAdvancedSettings" class="advanced-settings">
-            <!-- Advanced settings panel close button -->
-            <button class="advanced-close" @click="toggleAdvancedSettings">
-                <FontAwesomeIcon :icon="['fas', 'xmark']" />
-            </button>
-            <div class="setting-item">
-                <label for="volume">Audio Volume: {{ playbackVolume }}</label>
-                <input id="volume" type="range" min="0" max="1" step="0.1" v-model.number="playbackVolume" />
-            </div>
-            <div class="setting-item">
-                <label for="speed">Playback Speed: {{ playbackRate }}x</label>
-                <input id="speed" type="range" min="0.1" max="3" step="0.1" v-model.number="playbackRate" />
-            </div>
-            <div class="setting-item">
-                <label for="frontBackPause">Pause Between Front/Back: {{ frontBackPause }}s</label>
-                <input id="frontBackPause" type="range" min="0" max="10" step="0.1" v-model.number="frontBackPause" />
-            </div>
-            <div class="setting-item">
-                <label for="termPause">Pause Between Terms: {{ termPause }}s</label>
-                <input id="termPause" type="range" min="0" max="20" step="0.1" v-model.number="termPause" />
-            </div>
-            <div class="setting-item">
-                <label for="noAudioPause">Pause Without Audio: {{ noAudioPause }}s</label>
-                <input id="noAudioPause" type="range" min="0" max="10" step="0.1" v-model.number="noAudioPause" />
-            </div>
-            <div class="setting-item">
-                <label for="pauseAfterAudio">Pause After Audio: {{ pauseAfterAudio }}s</label>
-                <input id="pauseAfterAudio" type="range" min="0" max="5" step="0.1" v-model.number="pauseAfterAudio" />
-            </div>
-            <div class="setting-item toggles">
-                <div class="toggle-control" @click="loop = !loop">
-                    <label :class="{ 'active-toggle': loop, 'inactive-toggle': !loop }">
-                        <FontAwesomeIcon :icon="['fas', 'repeat']" />
-                    </label>
-                    <span>Loop</span>
+        <!-- Advanced Settings Panel - Now a Modal -->
+        <div v-if="showAdvancedSettings" class="settings-modal-overlay" @click.self="toggleAdvancedSettings">
+            <div class="advanced-settings">
+                <!-- Advanced settings panel close button -->
+                <button class="advanced-close" @click="toggleAdvancedSettings">
+                    <FontAwesomeIcon :icon="['fas', 'xmark']" />
+                </button>
+                <div class="setting-item">
+                    <label for="volume">Audio Volume: {{ playbackVolume }}</label>
+                    <input id="volume" type="range" min="0" max="1" step="0.1" v-model.number="playbackVolume" />
                 </div>
-                <div class="toggle-control" @click="shuffle = !shuffle">
-                    <label :class="{ 'active-toggle': shuffle, 'inactive-toggle': !shuffle }">
-                        <FontAwesomeIcon :icon="['fas', 'random']" />
-                    </label>
-                    <span>Shuffle</span>
+                <div class="setting-item">
+                    <label for="speed">Playback Speed: {{ playbackRate }}x</label>
+                    <input id="speed" type="range" min="0.1" max="3" step="0.1" v-model.number="playbackRate" />
                 </div>
-                <div class="toggle-control" @click="audioEnabled = !audioEnabled">
-                    <label :class="{ 'active-toggle': audioEnabled, 'inactive-toggle': !audioEnabled }">
-                        <FontAwesomeIcon :icon="['fas', 'volume-up']" />
-                    </label>
-                    <span>Audio</span>
+                <div class="setting-item">
+                    <label for="frontBackPause">Pause Between Front/Back: {{ frontBackPause }}s</label>
+                    <input id="frontBackPause" type="range" min="0" max="10" step="0.1" v-model.number="frontBackPause" />
+                </div>
+                <div class="setting-item">
+                    <label for="termPause">Pause Between Terms: {{ termPause }}s</label>
+                    <input id="termPause" type="range" min="0" max="20" step="0.1" v-model.number="termPause" />
+                </div>
+                <div class="setting-item">
+                    <label for="noAudioPause">Pause Without Audio: {{ noAudioPause }}s</label>
+                    <input id="noAudioPause" type="range" min="0" max="10" step="0.1" v-model.number="noAudioPause" />
+                </div>
+                <div class="setting-item">
+                    <label for="pauseAfterAudio">Pause After Audio: {{ pauseAfterAudio }}s</label>
+                    <input id="pauseAfterAudio" type="range" min="0" max="5" step="0.1" v-model.number="pauseAfterAudio" />
+                </div>
+                <div class="setting-item toggles">
+                    <div class="toggle-control" @click="loop = !loop">
+                        <label :class="{ 'active-toggle': loop, 'inactive-toggle': !loop }">
+                            <FontAwesomeIcon :icon="['fas', 'repeat']" />
+                        </label>
+                        <span>Loop</span>
+                    </div>
+                    <div class="toggle-control" @click="shuffle = !shuffle">
+                        <label :class="{ 'active-toggle': shuffle, 'inactive-toggle': !shuffle }">
+                            <FontAwesomeIcon :icon="['fas', 'random']" />
+                        </label>
+                        <span>Shuffle</span>
+                    </div>
+                    <div class="toggle-control" @click="audioEnabled = !audioEnabled">
+                        <label :class="{ 'active-toggle': audioEnabled, 'inactive-toggle': !audioEnabled }">
+                            <FontAwesomeIcon :icon="['fas', 'volume-up']" />
+                        </label>
+                        <span>Audio</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -553,25 +555,39 @@ onBeforeUnmount(() => {
 }
 
 /* Advanced Settings Panel */
-.advanced-settings {
+.settings-modal-overlay {
     position: fixed;
-    bottom: 60px;
+    top: 0;
     left: 0;
     width: 100%;
-    background: var(--clr-neutral-0);
-    border-top: 1px solid var(--clr-neutral-300);
-    padding: var(--text-padding-250) var(--text-padding-400);
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1100;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px); /* Optional: adds blur to background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1300; /* Ensure it's above everything else */
+}
+
+.advanced-settings {
+    /* Now the modal content box */
+    position: relative; /* For positioning the close button */
+    background-color: var(--clr-neutral-0);
+    padding: var(--text-padding-850) var(--text-padding-800);
+    padding-top: var(--text-padding-1000); /* More space at top for close button */
+    border-radius: var(--default-border-radius);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     gap: var(--text-padding-250);
+    width: 90%; /* Responsive width */
+    max-width: 500px; /* Max width on larger screens */
 }
 
 .advanced-close {
     position: absolute;
-    top: var(--text-padding-250);
-    right: var(--text-padding-250);
+    top: var(--text-padding-300); /* Position inside the modal */
+    right: var(--text-padding-300);
     background-color: var(--clr-util-error);
     color: var(--clr-neutral-0);
     border: none;
@@ -634,7 +650,7 @@ onBeforeUnmount(() => {
 /* For smaller screens, allow the container to expand */
 @media (max-width: 950px) {
     .flashcard-container {
-        width: 90%;
+        width: 95%;
     }
 
     .flashcard {
@@ -655,8 +671,9 @@ onBeforeUnmount(() => {
     }
 
     .advanced-settings {
-        bottom: 110px;
-        padding: var(--text-padding-250);
+        /* Modal styling handles responsiveness, remove specific mobile overrides */
+        /* bottom: 110px; */
+        /* padding: var(--text-padding-250); */
     }
 
     /* Ensure the toggle button is visible */
