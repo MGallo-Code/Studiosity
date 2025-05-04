@@ -7,7 +7,7 @@
         </button>
         <!-- Centered flashcard container -->
         <div class="flashcard-container">
-            <div class="flashcard" :class="{ flipped: isFlipped }" @click="flipCard">
+            <div class="flashcard" :class="{ flipped: isFlipped, changing: isChangingCard }" @click="flipCard">
                 <!-- Front face -->
                 <div class="flashcard-face flashcard-front">
                     <img v-if="frontImage" :src="frontImage.file_path" class="flashcard-image" />
@@ -33,7 +33,7 @@
                 <button class="menu-button" @click="flipCard">Flip</button>
                 <button class="menu-button" @click="nextCard">Next</button>
                 <button class="menu-button" @click="toggleAutoPlay">
-                    {{ autoPlay ? "Play" : "Pause" }}
+                    {{ autoPlay ? "Pause" : "Play" }}
                 </button>
                 <button class="menu-button" @click="toggleReverseSides">
                     {{ reverseSides ? "Normal Sides" : "Reverse Sides" }}
@@ -68,6 +68,14 @@
                 <label for="termPause">Pause Between Terms: {{ termPause }}s</label>
                 <input id="termPause" type="range" min="0" max="20" step="0.1" v-model.number="termPause" />
             </div>
+            <div class="setting-item">
+                <label for="noAudioPause">Pause Without Audio: {{ noAudioPause }}s</label>
+                <input id="noAudioPause" type="range" min="0" max="10" step="0.1" v-model.number="noAudioPause" />
+            </div>
+            <div class="setting-item">
+                <label for="pauseAfterAudio">Pause After Audio: {{ pauseAfterAudio }}s</label>
+                <input id="pauseAfterAudio" type="range" min="0" max="5" step="0.1" v-model.number="pauseAfterAudio" />
+            </div>
             <div class="setting-item toggles">
                 <div class="toggle-control" @click="loop = !loop">
                     <label :class="{ 'active-toggle': loop, 'inactive-toggle': !loop }">
@@ -93,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeUnmount, defineProps, defineEmits } from 'vue';
+import { ref, computed, onBeforeUnmount, defineProps, defineEmits, nextTick } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 // Import additional icons and add them to the library
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -121,6 +129,7 @@ const autoPlay = ref(false);
 const reverseSides = ref(false);
 const showAdvancedSettings = ref(false);
 const menuExpanded = ref(false); // state for bottom menu on small screens
+const isChangingCard = ref(false); // Flag for inter-card transition
 
 // Advanced settings
 const playbackVolume = ref(1.0);
@@ -130,9 +139,14 @@ const termPause = ref(2.0);
 const loop = ref(false);
 const shuffle = ref(false);
 const audioEnabled = ref(true);
+const noAudioPause = ref(1.0); // Pause duration when no audio is present
+const pauseAfterAudio = ref(0.5); // Pause duration *after* audio finishes
 
 // Audio player
 const audioPlayer = ref(new Audio());
+// Store current listeners to remove them later
+const currentOnEndListener = ref(null);
+const currentOnErrorListener = ref(null);
 
 // Computed properties
 const currentCard = computed(() => props.cards[currentIndex.value] || {});
@@ -182,80 +196,191 @@ function clearAutoPlayTimer() {
         clearTimeout(autoPlayTimer);
         autoPlayTimer = null;
     }
+    // Remove existing listeners
+    if (currentOnEndListener.value) {
+        audioPlayer.value?.removeEventListener('ended', currentOnEndListener.value);
+        currentOnEndListener.value = null;
+    }
+    if (currentOnErrorListener.value) {
+        audioPlayer.value?.removeEventListener('error', currentOnErrorListener.value);
+        currentOnErrorListener.value = null;
+    }
 }
-function playAudio() {
-    if (!audioEnabled.value || !currentAudio.value) return;
-    audioPlayer.value.src = currentAudio.value.file_path;
-    audioPlayer.value.volume = playbackVolume.value;
-    audioPlayer.value.playbackRate = playbackRate.value;
-    audioPlayer.value.play().catch(err => console.error("Audio play error:", err));
+function scheduleNextAutoPlayAction() {
+    if (!autoPlay.value) return;
+
+    clearAutoPlayTimer(); // Ensure no old timers/listeners interfere
+
+    const audioForThisFace = currentAudio.value;
+    const shouldPlayAudio = audioEnabled.value && audioForThisFace;
+    const nextAction = isFlipped.value ? nextCard : flipCard;
+
+    if (shouldPlayAudio) {
+        const onEnd = () => {
+            removeAudioListeners(); // Ensure listeners are removed before setting timeout
+            autoPlayTimer = setTimeout(nextAction, pauseAfterAudio.value * 1000);
+        };
+        const onError = () => {
+            console.warn("Audio failed, using non-audio pause.");
+            removeAudioListeners();
+            const fallbackPause = isFlipped.value ? termPause.value : frontBackPause.value;
+            autoPlayTimer = setTimeout(nextAction, fallbackPause * 1000);
+        };
+
+        // Store listeners so they can be removed by clearAutoPlayTimer
+        currentOnEndListener.value = onEnd;
+        currentOnErrorListener.value = onError;
+
+        // Add one-time listeners
+        audioPlayer.value.addEventListener('ended', onEnd, { once: true });
+        audioPlayer.value.addEventListener('error', onError, { once: true });
+
+        // Set source, volume, rate and play
+        audioPlayer.value.src = audioForThisFace.file_path;
+        audioPlayer.value.volume = playbackVolume.value;
+        audioPlayer.value.playbackRate = playbackRate.value;
+        audioPlayer.value.play().catch(err => {
+            console.error("Audio play error on initial call:", err);
+            onError(); // Trigger error handling path if play() fails immediately
+        });
+
+    } else {
+        // No audio: use standard non-audio pause
+        const pauseDuration = isFlipped.value ? termPause.value : frontBackPause.value;
+        autoPlayTimer = setTimeout(nextAction, pauseDuration * 1000);
+    }
 }
+
+// Helper to remove listeners inside the listeners themselves if needed
+function removeAudioListeners() {
+    if (currentOnEndListener.value) {
+        audioPlayer.value?.removeEventListener('ended', currentOnEndListener.value);
+        currentOnEndListener.value = null;
+    }
+    if (currentOnErrorListener.value) {
+        audioPlayer.value?.removeEventListener('error', currentOnErrorListener.value);
+        currentOnErrorListener.value = null;
+    }
+}
+
 function flipCard() {
     isFlipped.value = !isFlipped.value;
+    // If autoplay is on, schedule the next action (next card or flip back)
     if (autoPlay.value) {
-        clearAutoPlayTimer();
-        autoAdvance();
+        scheduleNextAutoPlayAction();
     }
-    if (audioEnabled.value) playAudio();
 }
+
 function nextCard() {
-    clearAutoPlayTimer();
-    if (currentIndex.value < props.cards.length - 1) {
-        currentIndex.value++;
+    clearAutoPlayTimer(); // Stop pending actions before manual navigation
+    if (props.cards.length <= 1) {
+        autoPlay.value = false;
+        return;
+    }
+
+    let nextIndex;
+    if (shuffle.value) {
+        do {
+            nextIndex = Math.floor(Math.random() * props.cards.length);
+        } while (props.cards.length > 1 && nextIndex === currentIndex.value);
     } else {
-        if (loop.value) {
-            currentIndex.value = shuffle.value
-                ? Math.floor(Math.random() * props.cards.length)
-                : 0;
+        if (currentIndex.value < props.cards.length - 1) {
+            nextIndex = currentIndex.value + 1;
         } else {
-            autoPlay.value = false;
-            return;
+            if (loop.value) {
+                nextIndex = 0;
+            } else {
+                autoPlay.value = false;
+                return;
+            }
         }
     }
-    isFlipped.value = false;
-    if (audioEnabled.value) playAudio();
-    if (autoPlay.value) autoAdvance();
+
+    isChangingCard.value = true; // Activate transition state
+    isFlipped.value = false;     // Ensure front face is target state
+
+    setTimeout(() => {
+        currentIndex.value = nextIndex; // Update content *after* flip back starts
+
+        // Use nextTick ensures the DOM has the new content before resetting transition state
+        nextTick(() => {
+            isChangingCard.value = false; // Deactivate transition state
+            if (autoPlay.value) {
+                scheduleNextAutoPlayAction(); // Schedule based on the new card's front face
+            }
+        });
+    }, 100); // Increased timeout to allow CSS hide transition more time
 }
+
 function prevCard() {
-    clearAutoPlayTimer();
+    clearAutoPlayTimer(); // Stop pending actions before manual navigation
+    let prevIndex;
     if (currentIndex.value > 0) {
-        currentIndex.value--;
+        prevIndex = currentIndex.value - 1;
     } else {
-        currentIndex.value = props.cards.length - 1;
+        prevIndex = props.cards.length - 1; // Wrap around
     }
-    isFlipped.value = false;
-    if (audioEnabled.value) playAudio();
-    if (autoPlay.value) autoAdvance();
+
+    isChangingCard.value = true; // Activate transition state
+    isFlipped.value = false;     // Ensure front face is target state
+
+    setTimeout(() => {
+        currentIndex.value = prevIndex; // Update content *after* flip back starts
+
+        nextTick(() => {
+            isChangingCard.value = false; // Deactivate transition state
+            if (autoPlay.value) {
+                scheduleNextAutoPlayAction(); // Schedule based on the new card's front face
+            }
+        });
+    }, 100);
 }
+
 function toggleAutoPlay() {
     autoPlay.value = !autoPlay.value;
-    clearAutoPlayTimer();
-    if (autoPlay.value) autoAdvance();
-}
-function autoAdvance() {
-    if (!autoPlay.value) return;
-    if (!isFlipped.value) {
-        autoPlayTimer = setTimeout(() => {
-            flipCard();
-        }, frontBackPause.value * 1000);
+    if (autoPlay.value) {
+        // Start the cycle
+        scheduleNextAutoPlayAction();
     } else {
-        autoPlayTimer = setTimeout(() => {
-            nextCard();
-        }, termPause.value * 1000);
+        // Stop the cycle
+        clearAutoPlayTimer();
     }
 }
+
 function toggleReverseSides() {
     reverseSides.value = !reverseSides.value;
     isFlipped.value = false;
-}
-function shuffleCards() {
-    if (props.cards.length > 1) {
-        currentIndex.value = Math.floor(Math.random() * props.cards.length);
+    // Reschedule if autoplay is on, as content has changed
+    if (autoPlay.value) {
+        scheduleNextAutoPlayAction();
     }
-    isFlipped.value = false;
-    clearAutoPlayTimer();
-    if (autoPlay.value) autoAdvance();
 }
+
+function shuffleCards() {
+    clearAutoPlayTimer();
+    shuffle.value = !shuffle.value;
+    let newIndex = currentIndex.value; // Default to current if only 1 card
+    if (props.cards.length > 1) {
+        do {
+            newIndex = Math.floor(Math.random() * props.cards.length);
+        } while (newIndex === currentIndex.value);
+    }
+
+    isChangingCard.value = true; // Activate transition state
+    isFlipped.value = false;     // Ensure front face is target state
+
+    setTimeout(() => {
+        currentIndex.value = newIndex; // Update content *after* flip back starts
+
+        nextTick(() => {
+            isChangingCard.value = false; // Deactivate transition state
+            if (autoPlay.value) {
+                scheduleNextAutoPlayAction(); // Schedule based on the new card's front face
+            }
+        });
+    }, 100);
+}
+
 function toggleAdvancedSettings() {
     showAdvancedSettings.value = !showAdvancedSettings.value;
 }
@@ -551,5 +676,12 @@ onBeforeUnmount(() => {
         flex-direction: row;
         gap: var(--text-padding-250);
     }
+}
+
+.flashcard.changing .flashcard-back {
+    backface-visibility: hidden; /* Reinforce */
+    visibility: hidden;          /* Hide during content swap */
+    opacity: 0;
+    transition: opacity 0.05s ease-out, visibility 0.05s ease-out; /* Quick hide transition */
 }
 </style>
