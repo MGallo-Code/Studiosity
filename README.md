@@ -2,15 +2,13 @@
 
 ## Description
 
-Studiosity is a comprehensive web application designed to support a wide range of study and learning activities. With its robust language support features, it is also ideal for language learners looking to master new languages. Users can create personalized study sets, utilize interactive flashcards, and track their learning progress across various subjects.
+Built for studying for my Japanese classes :), Studiosity is a web application created to help you study in the background. It supports a large range of study and learning activities, using flashcards, with text, audio, and images. With its audio-generating features supporting multiple languages (thanks to AWS Polly API), it's also ideal for language learners looking to master new languages. Users can create personalized study sets!
 
-## Key Features
+## Features
 
-1. **Study Set Creation**: Build custom study sets with multimedia support for a diverse learning experience.
-2. **Interactive Learning**: Engage with content using interactive tools like flashcards and quizzes.
-3. **Language Support**: Benefit from text-to-speech features for language pronunciation and learning.
-4. **Progress Tracking**: Keep track of your learning milestones and performance analytics.
-5. **Collaborative Learning**: Share and collaborate on study sets with others for group learning sessions.
+1. **Study Set Creation**: Build custom study sets with multimedia support
+2. **Language Support**: Benefit from text-to-speech features for language pronunciation and learning.
+3. **Flashcard Autoplay**: Play your flashcards' audio in the background while you do other tasks
 
 ## Getting Started
 
